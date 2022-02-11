@@ -316,6 +316,7 @@
 	mw.loader.addStyleTag(
 		'#Wikiplus-Quickedit+.CodeMirror,#Wikiplus-Setting-Input+.CodeMirror{border:1px solid #c8ccd1;line-height:1.3;clear:both}'
 		+ '.skin-minerva #Wikiplus-Quickedit+.CodeMirror{font-size:16px}'
+		+ 'div.Wikiplus-InterBox{z-index:100}'
 	);
 
 	/**
