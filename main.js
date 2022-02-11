@@ -220,17 +220,16 @@
 	 * 检查页面语言类型
 	 */
 	const getPageMode = async () => {
-		if (ns === 828 && !page.endsWith('/doc')) {
+		if ([274, 828].includes(ns) && !page.endsWith('/doc')) {
+			const pageMode = ns === 274 ? 'Widget' : 'Lua';
 			await mw.loader.using('oojs-ui-windows');
 			const bool = await OO.ui.confirm('Please choose the content model:', {
 				actions: [
-					{label: 'Lua'},
+					{label: pageMode},
 					{label: 'Wikitext', action: 'accept'}
 				]
 			});
-			return bool ? 'mediawiki' : 'lua';
-		} else if (ns === 274 && !page.endsWith('/doc')) {
-			return 'widget';
+			return bool ? 'mediawiki' : pageMode.toLowerCase();
 		} else if (page.endsWith('/doc')) {
 			return 'mediawiki';
 		}
