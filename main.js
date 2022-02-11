@@ -308,15 +308,10 @@
 	});
 	observer.observe(document.body, {childList: true});
 
-	mw.loader.addStyleTag(`
-	#Wikiplus-Quickedit + .CodeMirror {
-    	border: 1px solid #c8ccd1;
-    	line-height: 1.3;
-    	clear: both;
-    }
-    .skin-minerva #Wikiplus-Quickedit + .CodeMirror {
-    	font-size: 16px;
-    }`);
+	mw.loader.addStyleTag(
+		'#Wikiplus-Quickedit+.CodeMirror{border:1px solid #c8ccd1;line-height:1.3;clear:both}'
+		+ '.skin-minerva #Wikiplus-Quickedit+.CodeMirror{font-size:16px}'
+	);
 
 	$.valHooks.textarea = {
 		get(elem) {
