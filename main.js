@@ -38,7 +38,6 @@
 			wgPageName: page,
 			wgNamespaceNumber: ns,
 			wgPageContentModel: contentmodel,
-			wgRevisionId: revid,
 			wgServerName: server,
 			wgScriptPath: scriptPath
 		} = mw.config.values,
@@ -151,6 +150,7 @@
 		if (!['mediawiki', 'widget'].includes(type)) {
 			return;
 		}
+
 		let config = mw.config.get('extCodeMirrorConfig');
 		if (config) {
 			$.extend(config.functionSynonyms[0], {
@@ -163,13 +163,14 @@
 			updateCachedConfig(config);
 			return config;
 		}
+
 		if (SITE_SETTINGS?.time > Date.now() - 86400 * 1000 * 3) {
 			({config} = SITE_SETTINGS);
 			mw.config.set('extCodeMirrorConfig', config);
 			return config;
 		}
-		config = {};
 
+		config = {};
 		const {
 			query: {magicwords, extensiontags, functionhooks, variables}
 		} = await new mw.Api().get({
@@ -199,11 +200,7 @@
 				...getAliases(
 					allMagicwords.filter(word => !word['case-sensitive'])
 				).map(alias => alias.toLowerCase()),
-				'msg',
-				'raw',
-				'msgnw',
-				'subst',
-				'safesubst'
+				'msg', 'raw', 'msgnw', 'subst', 'safesubst'
 			];
 		config.doubleUnderscore = [
 			getConfig(insensitive.filter(alias => /^__.+__$/.test(alias))),
@@ -243,17 +240,20 @@
 	/**
 	 * 渲染编辑器
 	 * @param {jQuery<HTMLTextAreaElement>} $target 目标编辑框
+	 * @param {boolean} setting 是否是Wikiplus设置（使用json语法）
 	 */
-	const renderEditor = async ($target) => {
-		const mode = await getPageMode();
+	const renderEditor = async ($target, setting) => {
+		const mode = setting ? 'javascript' : await getPageMode();
 		await initMode(mode);
 		const mwConfig = await getMwConfig(mode);
 
+		// 储存初始高度
 		const height = $target.height();
 
 		if (cm) {
 			cm.toTextArea();
 		}
+
 		if (mode === 'widget' && !CodeMirror.mimeModes.widget) {
 			CodeMirror.defineMIME('widget', {
 				name: 'htmlmixed',
@@ -267,7 +267,7 @@
 			lineWrapping: true,
 			mode,
 			mwConfig,
-			json: contentmodel === 'json'
+			json: setting || contentmodel === 'json'
 		}, mode === 'mediawiki'
 			? {}
 			: {
@@ -277,22 +277,24 @@
 		));
 		cm.setSize(null, height);
 		cm.refresh();
-		cm.addKeyMap($.extend({
-			'Ctrl-S': () => {
-				$('#Wikiplus-Quickedit-Submit').triggerHandler('click');
-			},
-			'Shift-Ctrl-S': () => {
-				$('#Wikiplus-Quickedit-MinorEdit').click();
-				$('#Wikiplus-Quickedit-Submit').triggerHandler('click');
-			}
-		}, Wikiplus.getSetting('esc_to_exit_quickedit')
-			? {
-				Esc() {
-					$('#Wikiplus-Quickedit-Back').click();
+		if (!setting) {
+			cm.addKeyMap($.extend({
+				'Ctrl-S': () => {
+					$('#Wikiplus-Quickedit-Submit').triggerHandler('click');
+				},
+				'Shift-Ctrl-S': () => {
+					$('#Wikiplus-Quickedit-MinorEdit').click();
+					$('#Wikiplus-Quickedit-Submit').triggerHandler('click');
 				}
-			}
-			: {}
-		));
+			}, Wikiplus.getSetting('esc_to_exit_quickedit')
+				? {
+					Esc() {
+						$('#Wikiplus-Quickedit-Back').click();
+					}
+				}
+				: {}
+			));
+		}
 		mw.hook('wiki-codemirror').fire(cm);
 	};
 
@@ -300,31 +302,43 @@
 	 * 监视 Wikiplus 编辑框
 	 */
 	const observer = new MutationObserver(records => {
-		const $editArea = $(records[0].addedNodes[0]).find('#Wikiplus-Quickedit');
+		const $editArea = $(records[0].addedNodes[0]).find('#Wikiplus-Quickedit, #Wikiplus-Setting-Input');
 		if ($editArea.length === 0) {
 			return;
 		}
-		renderEditor($editArea);
+		renderEditor($editArea, $editArea.attr('id') === 'Wikiplus-Setting-Input');
 	});
 	observer.observe(document.body, {childList: true});
 
+	/**
+	 * 添加样式
+	 */
 	mw.loader.addStyleTag(
-		'#Wikiplus-Quickedit+.CodeMirror{border:1px solid #c8ccd1;line-height:1.3;clear:both}'
+		'#Wikiplus-Quickedit+.CodeMirror,#Wikiplus-Setting-Input+.CodeMirror{border:1px solid #c8ccd1;line-height:1.3;clear:both}'
 		+ '.skin-minerva #Wikiplus-Quickedit+.CodeMirror{font-size:16px}'
 	);
 
-	$.valHooks.textarea = {
-		get(elem) {
-			if (elem.id === 'Wikiplus-Quickedit' && cm) {
-				return cm.getValue();
-			}
+	/**
+	 * 对编辑框调用jQuery.val方法时从CodeMirror获取文本
+	 */
+	const {
+		get = function(elem) {
 			return elem.value;
 		},
+		set = function(elem, value) {
+			elem.value = value;
+		}
+	} = $.valHooks.textarea ?? {};
+	const isWikiplus = (elem) => ['Wikiplus-Quickedit', 'Wikiplus-Setting-Input'].includes(elem.id);
+	$.valHooks.textarea = {
+		get(elem) {
+			return isWikiplus(elem) && cm ? cm.getValue() : get(elem);
+		},
 		set(elem, value) {
-			if (elem.id === 'Wikiplus-Quickedit' && cm) {
+			if (isWikiplus(elem) && cm) {
 				cm.setValue(value);
 			} else {
-				elem.value = value;
+				set(elem, value);
 			}
 		}
 	};
