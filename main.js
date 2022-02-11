@@ -302,7 +302,8 @@
 	 * 监视 Wikiplus 编辑框
 	 */
 	const observer = new MutationObserver(records => {
-		const $editArea = $(records[0].addedNodes[0]).find('#Wikiplus-Quickedit, #Wikiplus-Setting-Input');
+		const $editArea = $(records.flatMap(({addedNodes}) => Array.from(addedNodes)))
+			.find('#Wikiplus-Quickedit, #Wikiplus-Setting-Input');
 		if ($editArea.length === 0) {
 			return;
 		}
