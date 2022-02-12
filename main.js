@@ -318,7 +318,7 @@
 				'Cmd-S': submit,
 				'Shift-Ctrl-S': submitMinor,
 				'Shift-Cmd-S': submitMinor
-			}, Wikiplus.getSetting('esc_to_exit_quickedit')
+			}, Wikiplus.getSetting('esc_to_exit_quickedit') === 'true'
 				? {
 					Esc() {
 						$('#Wikiplus-Quickedit-Back').click();
@@ -354,6 +354,7 @@
 		+ '#Wikiplus-highlight-dialog>.oo-ui-messageDialog-title{margin-bottom:0.28571429em}'
 		+ '#Wikiplus-highlight-dialog .oo-ui-flaggedElement-notice{font-weight:normal;margin:0}'
 		+ '#Wikiplus-highlight-dialog .oo-ui-flaggedElement-notice>.oo-ui-labelElement-label{margin-left:0}'
+		+ 'Wikiplus-highlight-dialog .oo-ui-image-notice{display:none}'
 	);
 
 	/**
