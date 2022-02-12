@@ -4,6 +4,8 @@
  * @author 机智的小鱼君 <https://github.com/Dragon-Fish>
  */
 (() => {
+	const version = '1.4';
+
 	mw.storage = $.extend({
 		getObject(key) {
 			const json = localStorage.getItem(key);
@@ -31,7 +33,7 @@
 	const CDN = '//cdn.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.35.0',
 		WMGH_CDN = 'gh/wikimedia/mediawiki-extensions-CodeMirror@REL1_37/resources/mode/mediawiki',
-		REPO_CDN = 'gh/bhsd-harry/Wikiplus-highlight@1.2',
+		REPO_CDN = `gh/bhsd-harry/Wikiplus-highlight@${version}`,
 		USING_LOCAL = mw.loader.getState('ext.CodeMirror') !== null,
 
 		// Page configs
@@ -40,7 +42,8 @@
 			wgNamespaceNumber: ns,
 			wgPageContentModel: contentmodel,
 			wgServerName: server,
-			wgScriptPath: scriptPath
+			wgScriptPath: scriptPath,
+			wgUserLanguage: userLang
 		} = mw.config.values,
 
 		// Local settings cache
@@ -88,6 +91,26 @@
 	};
 	const defaultAddons = ['search'];
 	let addons = mw.storage.getObject('Wikiplus-highlight-addons') ?? defaultAddons;
+
+	const i18nLanguages = {
+			zh: 'zh-hans', 'zh-hans': 'zh-hans', 'zh-cn': 'zh-hans', 'zh-my': 'zh-hans', 'zh-sg': 'zh-hans',
+			'zh-hant': 'zh-hant', 'zh-tw': 'zh-hant', 'zh-hk': 'zh-hant', 'zh-mo': 'zh-hant'
+		},
+		i18nLang = i18nLanguages[userLang] ?? 'en',
+		i18n = mw.storage.getObject('Wikiplus-highlight-i18n'),
+		I18N_CDN = `${REPO_CDN}/i18n/${i18nLang}.min.js`;
+	let i18nReady = false;
+	const setI18N = () => {
+		if (i18nReady) {
+			return true;
+		}
+		if (i18n?.['wphl-version'] === version && i18n?.['wphl-lang'] === i18nLang) {
+			mw.messages.set(i18n);
+			i18nReady = true;
+			return true;
+		}
+		return false;
+	};
 
 	let cm;
 
@@ -138,6 +161,9 @@
 		if (!window.CodeMirror?.optionHandlers?.showTrailingSpace && addons.includes('trailingspace')) {
 			addonScript.push(ADDON_LIST.trailingspace);
 		}
+		if (!setI18N()) {
+			addonScript.push(I18N_CDN);
+		}
 		if (type === 'widget') {
 			['css', 'javascript', 'mediawiki', 'htmlmixed', 'xml'].forEach(lang => {
 				if (!window.CodeMirror?.modes?.[lang]) {
@@ -154,7 +180,7 @@
 				scripts = scripts.concat(MODE_LIST[type]);
 			}
 		}
-		return Promise.all([getScript(scripts, USING_LOCAL), getScript(externalScript, false)]);
+		return Promise.all([getScript(scripts, USING_LOCAL), getScript(externalScript)]);
 	};
 
 	/**
@@ -271,6 +297,7 @@
 	const renderEditor = async ($target, setting) => {
 		const mode = setting ? 'javascript' : await getPageMode();
 		await initMode(mode);
+		i18nReady = true;
 		const mwConfig = await getMwConfig(mode);
 
 		// 储存初始高度
@@ -384,42 +411,50 @@
 	};
 
 	let dialog, field;
-	$(mw.util.addPortletLink('p-cactions', '#', 'Wikiplus Highlight', 'Wikiplus-highlight-addons'))
-		.click(async (e) => {
-			e.preventDefault();
-			if (!dialog) {
-				await mw.loader.using('oojs-ui-windows');
-				// eslint-disable-next-line require-atomic-updates
-				dialog = new OO.ui.MessageDialog({id: 'Wikiplus-highlight-dialog'});
-				const windowManager = new OO.ui.WindowManager();
-				windowManager.$element.appendTo(document.body);
-				windowManager.addWindows([dialog]);
-				const widget = new OO.ui.CheckboxMultiselectInputWidget({
-					options: [
-						{data: 'search', label: 'Search'},
-						{data: 'activeLine', label: 'Show active line'},
-						{data: 'trailingspace', label: 'Show trailing spaces'}
-					]
-				});
-				widget.setValue(addons);
-				field = new OO.ui.FieldLayout(widget, {
-					label: 'Please select the addons you wish to load',
-					notices: ['Changes will apply when opening a new Wikiplus dialog.'],
-					align: 'top'
-				});
-			}
-			dialog.open({
-				title: 'Wikiplus Highlight Addons',
-				message: field.$element,
-				actions: [
-					{action: 'reject', label: mw.msg('ooui-dialog-message-reject')},
-					{action: 'accept', label: mw.msg('ooui-dialog-message-accept'), flags: 'progressive'}
+	$(mw.util.addPortletLink(
+		'p-cactions',
+		'#',
+		i18nLang === 'en' ? 'Wikiplus Highlight' : 'Wikiplus高亮',
+		'Wikiplus-highlight-addons'
+	)).click(async (e) => {
+		e.preventDefault();
+		if (!dialog) {
+			await Promise.all([
+				mw.loader.using('oojs-ui-windows'),
+				setI18N() || getScript([I18N_CDN])
+			]);
+			i18nReady = true;
+			// eslint-disable-next-line require-atomic-updates
+			dialog = new OO.ui.MessageDialog({id: 'Wikiplus-highlight-dialog'});
+			const windowManager = new OO.ui.WindowManager();
+			windowManager.$element.appendTo(document.body);
+			windowManager.addWindows([dialog]);
+			const widget = new OO.ui.CheckboxMultiselectInputWidget({
+				options: [
+					{data: 'search', label: 'Search'},
+					{data: 'activeLine', label: 'Show active line'},
+					{data: 'trailingspace', label: 'Show trailing spaces'}
 				]
-			}).closed.then(data => {
-				if (data?.action === 'accept') {
-					addons = field.getField().getValue();
-					mw.storage.setObject('Wikiplus-highlight-addons', addons);
-				}
 			});
+			widget.setValue(addons);
+			field = new OO.ui.FieldLayout(widget, {
+				label: 'Please select the addons you wish to load',
+				notices: ['Changes will apply when opening a new Wikiplus dialog.'],
+				align: 'top'
+			});
+		}
+		dialog.open({
+			title: 'Wikiplus Highlight Addons',
+			message: field.$element,
+			actions: [
+				{action: 'reject', label: mw.msg('ooui-dialog-message-reject')},
+				{action: 'accept', label: mw.msg('ooui-dialog-message-accept'), flags: 'progressive'}
+			]
+		}).closed.then(data => {
+			if (data?.action === 'accept') {
+				addons = field.getField().getValue();
+				mw.storage.setObject('Wikiplus-highlight-addons', addons);
+			}
 		});
+	});
 })();
