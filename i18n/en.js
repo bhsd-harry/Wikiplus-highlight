@@ -1,6 +1,6 @@
 (() => {
 	const i18n = {
-		'wphl-version': '1.4',
+		'wphl-version': '1.5',
 		'wphl-lang': 'en',
 		'wphl-addon-search': 'Search',
 		'wphl-addon-active-line': 'Show active line',

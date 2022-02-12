@@ -1,6 +1,6 @@
 (() => {
 	const i18n = {
-		'wphl-version': '1.4',
+		'wphl-version': '1.5',
 		'wphl-lang': 'zh-hans',
 		'wphl-addon-search': '搜索',
 		'wphl-addon-active-line': '高亮显示光标所在行',

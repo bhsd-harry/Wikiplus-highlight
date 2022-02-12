@@ -1,6 +1,6 @@
 (() => {
 	const i18n = {
-		'wphl-version': '1.4',
+		'wphl-version': '1.5',
 		'wphl-lang': 'zh-hant',
 		'wphl-addon-search': '搜尋',
 		'wphl-addon-active-line': '突出顯示游標所在行',
