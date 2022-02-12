@@ -31,7 +31,7 @@
 
 	// Constants
 	const CDN = '//cdn.jsdelivr.net',
-		CM_CDN = 'npm/codemirror@5.35.0',
+		CM_CDN = 'npm/codemirror@5.65.1',
 		WMGH_CDN = 'gh/wikimedia/mediawiki-extensions-CodeMirror@REL1_37/resources/mode/mediawiki',
 		REPO_CDN = `gh/bhsd-harry/Wikiplus-highlight@${version}`,
 		USING_LOCAL = mw.loader.getState('ext.CodeMirror') !== null,
@@ -97,19 +97,22 @@
 			'zh-hant': 'zh-hant', 'zh-tw': 'zh-hant', 'zh-hk': 'zh-hant', 'zh-mo': 'zh-hant'
 		},
 		i18nLang = i18nLanguages[userLang] ?? 'en',
-		i18n = mw.storage.getObject('Wikiplus-highlight-i18n'),
-		I18N_CDN = `${REPO_CDN}/i18n/${i18nLang}.min.js`;
-	let i18nReady = false;
-	const setI18N = () => {
+		I18N_CDN = `${CDN}/${REPO_CDN}/i18n/${i18nLang}.json`;
+	let i18nReady = false,
+		i18n = mw.storage.getObject('Wikiplus-highlight-i18n');
+	const setI18N = async () => {
 		if (i18nReady) {
-			return true;
+			return;
 		}
-		if (i18n?.['wphl-version'] === version && i18n?.['wphl-lang'] === i18nLang) {
-			mw.messages.set(i18n);
-			i18nReady = true;
-			return true;
+		if (i18n?.['wphl-version'] !== version || i18n?.['wphl-lang'] !== i18nLang) {
+			i18n = await $.ajax(`${I18N_CDN}`, { // eslint-disable-line require-atomic-updates
+				dataType: 'json',
+				cache: true
+			});
+			mw.storage.setObject('Wikiplus-highlight-i18n', i18n);
 		}
-		return false;
+		mw.messages.set(i18n);
+		i18nReady = true; // eslint-disable-line require-atomic-updates
 	};
 	const msg = (key) => mw.msg(`wphl-${key}`);
 
@@ -141,11 +144,11 @@
 	 * @param {string} type
 	 */
 	const initMode = (type) => {
-		let scripts = [],
-			externalScript = [];
-		const addonScript = USING_LOCAL ? externalScript : scripts;
+		let scripts = [];
+		const externalScript = [],
+			addonScript = [];
 		if (!window.CodeMirror) {
-			scripts.push(MODE_LIST.lib);
+			(USING_LOCAL ? scripts : addonScript).push(MODE_LIST.lib);
 		}
 		if (!window.CodeMirror?.prototype?.getSearchCursor && addons.includes('search')) {
 			addonScript.push(ADDON_LIST.searchcursor);
@@ -162,9 +165,6 @@
 		if (!window.CodeMirror?.optionHandlers?.showTrailingSpace && addons.includes('trailingspace')) {
 			addonScript.push(ADDON_LIST.trailingspace);
 		}
-		if (!setI18N()) {
-			addonScript.push(I18N_CDN);
-		}
 		if (type === 'widget') {
 			['css', 'javascript', 'mediawiki', 'htmlmixed', 'xml'].forEach(lang => {
 				if (!window.CodeMirror?.modes?.[lang]) {
@@ -176,12 +176,16 @@
 				mw.loader.load(`${CDN}/${WMGH_CDN}/mediawiki.min.css`, 'text/css');
 			}
 			if (type === 'lua') {
-				externalScript = [MODE_LIST.lua];
+				(USING_LOCAL ? externalScript : scripts).push(MODE_LIST.lua);
 			} else {
 				scripts = scripts.concat(MODE_LIST[type]);
 			}
 		}
-		return Promise.all([getScript(scripts, USING_LOCAL), getScript(externalScript)]);
+		return Promise.all([
+			getScript(scripts, USING_LOCAL), // CodeMirror modes
+			getScript(externalScript), // CodeMirror Lua mode when using local lib, always external
+			getScript(addonScript) // CodeMirror addons, always external
+		]);
 	};
 
 	/**
@@ -200,11 +204,14 @@
 	 * 加载codemirror的mediawiki模块需要的设置数据
 	 * @param {string} type
 	 */
-	const getMwConfig = async (type) => {
+	const getMwConfig = async (type, initModePromise) => {
 		if (!['mediawiki', 'widget'].includes(type)) {
 			return;
 		}
 
+		if (USING_LOCAL) {
+			await initModePromise;
+		}
 		let config = mw.config.get('extCodeMirrorConfig');
 		if (config) {
 			$.extend(config.functionSynonyms[0], {
@@ -218,7 +225,7 @@
 			return config;
 		}
 
-		if (SITE_SETTINGS?.time > Date.now() - 86400 * 1000 * 3) {
+		if (SITE_SETTINGS?.time > Date.now() - 86400 * 1000 * 30) {
 			({config} = SITE_SETTINGS);
 			mw.config.set('extCodeMirrorConfig', config);
 			return config;
@@ -297,9 +304,12 @@
 	 */
 	const renderEditor = async ($target, setting) => {
 		const mode = setting ? 'javascript' : await getPageMode();
-		await initMode(mode);
-		i18nReady = true;
-		const mwConfig = await getMwConfig(mode);
+		const initModePromise = initMode(mode);
+		const [mwConfig] = await Promise.all([
+			getMwConfig(mode, initModePromise),
+			initModePromise,
+			setI18N()
+		]);
 
 		// 储存初始高度
 		const height = $target.height();
@@ -425,7 +435,7 @@
 		if (!dialog) {
 			await Promise.all([
 				mw.loader.using('oojs-ui-windows'),
-				setI18N() || getScript([I18N_CDN])
+				setI18N()
 			]);
 			i18nReady = true;
 			// eslint-disable-next-line require-atomic-updates
