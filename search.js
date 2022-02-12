@@ -1,8 +1,10 @@
 (() => {
+	const msg = (key) => mw.msg(`wphl-${key}`);
+
 	// Prepare elements
 	const $search = $('<input>', {
 			id: 'Wikiplus-Quickedit-Search',
-			placeholder: 'Search'
+			placeholder: msg('search-placeholder')
 		}),
 		$searchClose = $('<span>', {
 			text: '×',
@@ -17,7 +19,7 @@
 		}),
 		$searchBtn = $('<span>', {
 			class: 'Wikiplus-Btn',
-			text: 'Search'
+			text: msg('addon-search')
 		});
 
 	const escapeRegExp = mw.util.escapeRegExp ?? mw.RegExp.escape;
@@ -55,8 +57,10 @@
 			return;
 		}
 
-		if (/^\/.+\/$/.test(ptn)) {
-			ptn = RegExp(ptn.slice(1, -1));
+		if (/^\/.+\/i?$/.test(ptn)) {
+			ptn = ptn.endsWith('i')
+				? RegExp(ptn.slice(1, -2), 'i')
+				: RegExp(ptn.slice(1, -1));
 		}
 		if (ptn !== lastPtn) {
 			cm.removeOverlay(overlay);

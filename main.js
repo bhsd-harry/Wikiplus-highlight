@@ -111,6 +111,7 @@
 		}
 		return false;
 	};
+	const msg = (key) => mw.msg(`wphl-${key}`);
 
 	let cm;
 
@@ -276,7 +277,7 @@
 		if ([274, 828].includes(ns) && !page.endsWith('/doc')) {
 			const pageMode = ns === 274 ? 'Widget' : 'Lua';
 			await mw.loader.using('oojs-ui-windows');
-			const bool = await OO.ui.confirm('Please choose the content model:', {
+			const bool = await OO.ui.confirm(msg('contentmodel'), {
 				actions: [
 					{label: pageMode},
 					{label: 'Wikitext', action: 'accept'}
@@ -411,11 +412,14 @@
 	};
 
 	let dialog, field;
+	const portletLabel = {
+		en: 'Highlight',
+		'zh-hans': '高亮设置',
+		'zh-hant': '突顯設定'
+	};
+	mw.messages.set('wphl-portlet', portletLabel[i18nLang]);
 	$(mw.util.addPortletLink(
-		'p-cactions',
-		'#',
-		i18nLang === 'en' ? 'Wikiplus Highlight' : 'Wikiplus高亮',
-		'Wikiplus-highlight-addons'
+		'p-cactions', '#', msg('portlet'), 'Wikiplus-highlight-addons'
 	)).click(async (e) => {
 		e.preventDefault();
 		if (!dialog) {
@@ -431,20 +435,20 @@
 			windowManager.addWindows([dialog]);
 			const widget = new OO.ui.CheckboxMultiselectInputWidget({
 				options: [
-					{data: 'search', label: 'Search'},
-					{data: 'activeLine', label: 'Show active line'},
-					{data: 'trailingspace', label: 'Show trailing spaces'}
+					{data: 'search', label: msg('addon-search')},
+					{data: 'activeLine', label: msg('addon-active-line')},
+					{data: 'trailingspace', label: msg('addon-trailingspace')}
 				]
 			});
 			widget.setValue(addons);
 			field = new OO.ui.FieldLayout(widget, {
-				label: 'Please select the addons you wish to load',
-				notices: ['Changes will apply when opening a new Wikiplus dialog.'],
+				label: msg('addon-label'),
+				notices: [msg('addon-notice')],
 				align: 'top'
 			});
 		}
 		dialog.open({
-			title: 'Wikiplus Highlight Addons',
+			title: msg('addon-title'),
 			message: field.$element,
 			actions: [
 				{action: 'reject', label: mw.msg('ooui-dialog-message-reject')},
