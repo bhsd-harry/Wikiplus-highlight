@@ -122,9 +122,12 @@
 		$searchClose.click(() => {
 			reset(cm);
 		});
-		$search.val('').keyup(e => {
+		$search.val('').keydown(e => {
 			if (e.key === 'Enter') {
 				findNext(cm, true);
+			} else if (e.key === 'Escape') {
+				e.stopPropagation();
+				reset(cm);
 			}
 		});
 		cm.addKeyMap({
