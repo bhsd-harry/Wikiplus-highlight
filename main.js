@@ -31,7 +31,7 @@
 	const CDN = '//cdn.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.35.0',
 		WMGH_CDN = 'gh/wikimedia/mediawiki-extensions-CodeMirror@REL1_37/resources/mode/mediawiki',
-		REPO_CDN = 'gh/bhsd-harry/Wikiplus-highlight@1.1',
+		REPO_CDN = 'gh/bhsd-harry/Wikiplus-highlight@1.2',
 		USING_LOCAL = mw.loader.getState('ext.CodeMirror') !== null,
 
 		// Page configs
