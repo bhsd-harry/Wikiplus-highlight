@@ -80,10 +80,8 @@
 		};
 
 	const ADDON_LIST = {
-		search: [
-			`${CM_CDN}/addon/search/searchcursor.min.js`,
-			`${REPO_CDN}/search.min.js`
-		],
+		searchcursor: `${CM_CDN}/addon/search/searchcursor.min.js`,
+		search: `${REPO_CDN}/search.min.js`,
 		activeLine: `${CM_CDN}/addon/selection/active-line.min.js`,
 		markSelection: `${CM_CDN}/addon/selection/mark-selection.min.js`,
 		trailingspace: `${CM_CDN}/addon/edit/trailingspace.min.js`
@@ -126,7 +124,10 @@
 			scripts.push(MODE_LIST.lib);
 		}
 		if (!window.CodeMirror?.prototype?.getSearchCursor && addons.includes('search')) {
-			addonScript.push(...ADDON_LIST.search);
+			addonScript.push(ADDON_LIST.searchcursor);
+		}
+		if (!window.CodeMirror?.commands?.findForward && addons.includes('search')) {
+			addonScript.push(ADDON_LIST.search);
 		}
 		if (!window.CodeMirror?.optionHandlers?.styleActiveLine && addons.includes('activeLine')) {
 			addonScript.push(ADDON_LIST.activeLine);

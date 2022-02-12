@@ -50,11 +50,14 @@
 	// keyboard event handler of $search
 	let lastPtn, cursor;
 	const findNext = (cm, dir) => {
-		const ptn = $search.val();
+		let ptn = $search.val();
 		if (!ptn) {
 			return;
 		}
 
+		if (/^\/.+\/$/.test(ptn)) {
+			ptn = RegExp(ptn.slice(1, -1));
+		}
 		if (ptn !== lastPtn) {
 			cm.removeOverlay(overlay);
 			overlay.token = token(ptn);
@@ -98,6 +101,13 @@
 		lastPtn = '';
 	};
 
+	CodeMirror.commands.findForward = (doc) => {
+		findNext(doc, true);
+	};
+	CodeMirror.commands.findBackward = (doc) => {
+		findNext(doc, false);
+	};
+
 	mw.hook('wiki-codemirror').add(cm => {
 		const $textarea = $(cm.getWrapperElement()).prev('#Wikiplus-Quickedit');
 		if ($textarea.length === 0) {
@@ -116,18 +126,10 @@
 		cm.addKeyMap({
 			'Ctrl-F': findNew,
 			'Cmd-F': findNew,
-			'Ctrl-G': () => {
-				findNext(cm, true);
-			},
-			'Cmd-G': () => {
-				findNext(cm, true);
-			},
-			'Shift-Ctrl-G': () => {
-				findNext(cm, false);
-			},
-			'Shift-Cmd-G': () => {
-				findNext(cm, false);
-			}
+			'Ctrl-G': 'findForward',
+			'Cmd-G': 'findForward',
+			'Shift-Ctrl-G': 'findBackward',
+			'Shift-Cmd-G': 'findBackward'
 		});
 	});
 
