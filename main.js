@@ -413,13 +413,13 @@
 
 	let dialog, field;
 	const portletLabel = {
-		en: 'Highlight',
+		en: ' Highlight',
 		'zh-hans': '高亮设置',
 		'zh-hant': '突顯設定'
 	};
 	mw.messages.set('wphl-portlet', portletLabel[i18nLang]);
 	$(mw.util.addPortletLink(
-		'p-cactions', '#', `Wikiplus ${msg('portlet')}`, 'Wikiplus-highlight-addons'
+		'p-cactions', '#', `Wikiplus${msg('portlet')}`, 'Wikiplus-highlight-addons'
 	)).click(async (e) => {
 		e.preventDefault();
 		if (!dialog) {
