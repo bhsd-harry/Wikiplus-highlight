@@ -31,6 +31,7 @@
 	const CDN = '//cdn.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.35.0',
 		WMGH_CDN = 'gh/wikimedia/mediawiki-extensions-CodeMirror@REL1_37/resources/mode/mediawiki',
+		REPO_CDN = 'gh/bhsd-harry/Wikiplus-highlight@1.1',
 		USING_LOCAL = mw.loader.getState('ext.CodeMirror') !== null,
 
 		// Page configs
@@ -79,11 +80,16 @@
 		};
 
 	const ADDON_LIST = {
-		search: `${CM_CDN}/addon/search/searchcursor.min.js`,
+		search: [
+			`${CM_CDN}/addon/search/searchcursor.min.js`,
+			`${REPO_CDN}/search.min.js`
+		],
 		activeLine: `${CM_CDN}/addon/selection/active-line.min.js`,
 		markSelection: `${CM_CDN}/addon/selection/mark-selection.min.js`,
 		trailingspace: `${CM_CDN}/addon/edit/trailingspace.min.js`
 	};
+	const defaultAddons = ['search'];
+	let addons = mw.storage.getObject('Wikiplus-highlight-addons') ?? defaultAddons;
 
 	let cm;
 
@@ -119,16 +125,16 @@
 		if (!window.CodeMirror) {
 			scripts.push(MODE_LIST.lib);
 		}
-		if (!window.CodeMirror?.prototype?.getSearchCursor) {
-			addonScript.push(ADDON_LIST.search);
+		if (!window.CodeMirror?.prototype?.getSearchCursor && addons.includes('search')) {
+			addonScript.push(...ADDON_LIST.search);
 		}
-		if (!window.CodeMirror?.optionHandlers?.styleActiveLine) {
+		if (!window.CodeMirror?.optionHandlers?.styleActiveLine && addons.includes('activeLine')) {
 			addonScript.push(ADDON_LIST.activeLine);
 		}
-		if (!window.CodeMirror?.optionHandlers?.styleSelectedText) {
+		if (!window.CodeMirror?.optionHandlers?.styleSelectedText && addons.includes('search')) {
 			addonScript.push(ADDON_LIST.markSelection);
 		}
-		if (!window.CodeMirror?.optionHandlers?.showTrailingSpace) {
+		if (!window.CodeMirror?.optionHandlers?.showTrailingSpace && addons.includes('trailingspace')) {
 			addonScript.push(ADDON_LIST.trailingspace);
 		}
 		if (type === 'widget') {
@@ -287,9 +293,9 @@
 			mode,
 			mwConfig,
 			json: setting || contentmodel === 'json',
-			styleActiveLine: true,
-			styleSelectedText: true,
-			showTrailingSpace: true
+			styleActiveLine: addons.includes('activeLine'),
+			styleSelectedText: addons.includes('search'),
+			showTrailingSpace: addons.includes('trailingspace')
 		}, mode === 'mediawiki'
 			? {}
 			: {
@@ -342,9 +348,12 @@
 	 */
 	mw.loader.addStyleTag(
 		'#Wikiplus-Quickedit+.CodeMirror,#Wikiplus-Setting-Input+.CodeMirror{border:1px solid #c8ccd1;line-height:1.3;clear:both}'
-		+ '.skin-minerva #Wikiplus-Quickedit+.CodeMirror{font-size:16px}'
-		+ 'div.Wikiplus-InterBox{z-index:100}'
+		+ 'div.Wikiplus-InterBox{font-size:14px;z-index:100}'
+		+ '.skin-minerva .Wikiplus-InterBox{font-size:16px}'
 		+ '.cm-trailingspace{text-decoration:underline wavy red}'
+		+ '#Wikiplus-highlight-dialog>.oo-ui-messageDialog-title{margin-bottom:0.28571429em}'
+		+ '#Wikiplus-highlight-dialog .oo-ui-flaggedElement-notice{font-weight:normal;margin:0}'
+		+ '#Wikiplus-highlight-dialog .oo-ui-flaggedElement-notice>.oo-ui-labelElement-label{margin-left:0}'
 	);
 
 	/**
@@ -371,4 +380,44 @@
 			}
 		}
 	};
+
+	let dialog, field;
+	$(mw.util.addPortletLink('p-cactions', '#', 'Wikiplus Highlight', 'Wikiplus-highlight-addons'))
+		.click(async (e) => {
+			e.preventDefault();
+			if (!dialog) {
+				await mw.loader.using('oojs-ui-windows');
+				// eslint-disable-next-line require-atomic-updates
+				dialog = new OO.ui.MessageDialog({id: 'Wikiplus-highlight-dialog'});
+				const windowManager = new OO.ui.WindowManager();
+				windowManager.$element.appendTo(document.body);
+				windowManager.addWindows([dialog]);
+				const widget = new OO.ui.CheckboxMultiselectInputWidget({
+					options: [
+						{data: 'search', label: 'Search'},
+						{data: 'activeLine', label: 'Show active line'},
+						{data: 'trailingspace', label: 'Show trailing spaces'}
+					]
+				});
+				widget.setValue(addons);
+				field = new OO.ui.FieldLayout(widget, {
+					label: 'Please select the addons you wish to load',
+					notices: ['Changes will apply when opening a new Wikiplus dialog.'],
+					align: 'top'
+				});
+			}
+			dialog.open({
+				title: 'Wikiplus Highlight Addons',
+				message: field.$element,
+				actions: [
+					{action: 'reject', label: mw.msg('ooui-dialog-message-reject')},
+					{action: 'accept', label: mw.msg('ooui-dialog-message-accept'), flags: 'progressive'}
+				]
+			}).closed.then(data => {
+				if (data?.action === 'accept') {
+					addons = field.getField().getValue();
+					mw.storage.setObject('Wikiplus-highlight-addons', addons);
+				}
+			});
+		});
 })();
