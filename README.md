@@ -1,6 +1,6 @@
 # Wikiplus-highlight
 
-**Wikiplus-highlight** 是由 Bhsd 编写的一款 [Wikiplus](https://github.com/Wikiplus/Wikiplus) 语法高亮插件，它主要基于 MediaWiki 内置的 JavaScript 模块和 CodeMirror 编写。
+**Wikiplus-highlight** 是由 Bhsd 编写的一款 [Wikiplus](https://github.com/Wikiplus/Wikiplus) 语法高亮插件，它主要基于 MediaWiki 内置的 [JavaScript 模块](https://www.mediawiki.org/wiki/ResourceLoader/Core_modules)和 [CodeMirror](https://codemirror.net/) 编写。
 
 ## 使用方法
 
@@ -16,13 +16,13 @@ mw.loader.load('//cdn.jsdelivr.net/gh/bhsd-harry/Wikiplus-highlight@stable/main.
 
 ### 搜索
 
-这个插件会向 Wikiplus 编辑区添加一个【搜索】按钮以及以下快捷键：
+这个插件会向 Wikiplus 编辑区添加一个【搜索】按钮及以下快捷键：
 
 - Ctrl(Cmd)-F: 打开搜索框
 - Ctrl(Cmd)-G: 搜索下一处
 - Shift-Ctrl(Cmd)-G: 搜索上一处
 
-搜索可以使用字符串或形如 `/re/` 或 `/re/i` 的正则表达式。使用正则表达式时，当前仅接受 `i` 修饰符。
+搜索可以使用字符串，也可以使用形如 `/re/` 或 `/re/i` 的正则表达式。正则表达式仅接受可选的 `i` 修饰符，暂不接受其他修饰符。
 
 ## Supported languages
 
