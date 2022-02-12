@@ -78,6 +78,10 @@
 			xml: `${CM_CDN}/mode/xml/xml.min.js`
 		};
 
+	const ADDON_LIST = {
+		search: `${CM_CDN}/addon/search/searchcursor.js`
+	};
+
 	let cm;
 
 	if (!USING_LOCAL) {
@@ -107,9 +111,12 @@
 	 */
 	const initMode = (type) => {
 		let scripts = [],
-			luaScript = [];
+			externalScript = [];
 		if (!window.CodeMirror) {
-			scripts = scripts.concat(MODE_LIST.lib);
+			scripts.push(MODE_LIST.lib);
+		}
+		if (!window.CodeMirror?.prototype?.getSearchCursor) {
+			(USING_LOCAL ? externalScript : scripts).push(ADDON_LIST.search);
 		}
 		if (type === 'widget') {
 			['css', 'javascript', 'mediawiki', 'htmlmixed', 'xml'].forEach(lang => {
@@ -122,12 +129,12 @@
 				mw.loader.load(`${CDN}/${WMGH_CDN}/mediawiki.min.css`, 'text/css');
 			}
 			if (type === 'lua') {
-				luaScript = [MODE_LIST.lua];
+				externalScript = [MODE_LIST.lua];
 			} else {
 				scripts = scripts.concat(MODE_LIST[type]);
 			}
 		}
-		return Promise.all([getScript(scripts, USING_LOCAL), getScript(luaScript, false)]);
+		return Promise.all([getScript(scripts, USING_LOCAL), getScript(externalScript, false)]);
 	};
 
 	/**
@@ -277,14 +284,18 @@
 		cm.setSize(null, height);
 		cm.refresh();
 		if (!setting) {
-			cm.addKeyMap($.extend({
-				'Ctrl-S': () => {
+			const submit = () => {
 					$('#Wikiplus-Quickedit-Submit').triggerHandler('click');
 				},
-				'Shift-Ctrl-S': () => {
+				submitMinor = () => {
 					$('#Wikiplus-Quickedit-MinorEdit').click();
 					$('#Wikiplus-Quickedit-Submit').triggerHandler('click');
-				}
+				};
+			cm.addKeyMap($.extend({
+				'Ctrl-S': submit,
+				'Cmd-S': submit,
+				'Shift-Ctrl-S': submitMinor,
+				'Shift-Cmd-S': submitMinor
 			}, Wikiplus.getSetting('esc_to_exit_quickedit')
 				? {
 					Esc() {
