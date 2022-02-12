@@ -380,7 +380,7 @@
 		+ 'div.Wikiplus-InterBox{font-size:14px;z-index:100}'
 		+ '.skin-minerva .Wikiplus-InterBox{font-size:16px}'
 		+ '.cm-trailingspace{text-decoration:underline wavy red}'
-		+ '#Wikiplus-highlight-dialog>.oo-ui-messageDialog-title{margin-bottom:0.28571429em}'
+		+ '#Wikiplus-highlight-dialog .oo-ui-messageDialog-title{margin-bottom:0.28571429em}'
 		+ '#Wikiplus-highlight-dialog .oo-ui-flaggedElement-notice{font-weight:normal;margin:0}'
 		+ '#Wikiplus-highlight-dialog .oo-ui-flaggedElement-notice>.oo-ui-labelElement-label{margin-left:0}'
 		+ '#Wikiplus-highlight-dialog .oo-ui-image-notice{display:none}'
