@@ -79,7 +79,10 @@
 		};
 
 	const ADDON_LIST = {
-		search: `${CM_CDN}/addon/search/searchcursor.js`
+		search: `${CM_CDN}/addon/search/searchcursor.min.js`,
+		activeLine: `${CM_CDN}/addon/selection/active-line.min.js`,
+		markSelection: `${CM_CDN}/addon/selection/mark-selection.min.js`,
+		trailingspace: `${CM_CDN}/addon/edit/trailingspace.min.js`
 	};
 
 	let cm;
@@ -112,11 +115,21 @@
 	const initMode = (type) => {
 		let scripts = [],
 			externalScript = [];
+		const addonScript = USING_LOCAL ? externalScript : scripts;
 		if (!window.CodeMirror) {
 			scripts.push(MODE_LIST.lib);
 		}
 		if (!window.CodeMirror?.prototype?.getSearchCursor) {
-			(USING_LOCAL ? externalScript : scripts).push(ADDON_LIST.search);
+			addonScript.push(ADDON_LIST.search);
+		}
+		if (!window.CodeMirror?.optionHandlers?.styleActiveLine) {
+			addonScript.push(ADDON_LIST.activeLine);
+		}
+		if (!window.CodeMirror?.optionHandlers?.styleSelectedText) {
+			addonScript.push(ADDON_LIST.markSelection);
+		}
+		if (!window.CodeMirror?.optionHandlers?.showTrailingSpace) {
+			addonScript.push(ADDON_LIST.trailingspace);
 		}
 		if (type === 'widget') {
 			['css', 'javascript', 'mediawiki', 'htmlmixed', 'xml'].forEach(lang => {
@@ -273,7 +286,10 @@
 			lineWrapping: true,
 			mode,
 			mwConfig,
-			json: setting || contentmodel === 'json'
+			json: setting || contentmodel === 'json',
+			styleActiveLine: true,
+			styleSelectedText: true,
+			showTrailingSpace: true
 		}, mode === 'mediawiki'
 			? {}
 			: {
@@ -328,6 +344,7 @@
 		'#Wikiplus-Quickedit+.CodeMirror,#Wikiplus-Setting-Input+.CodeMirror{border:1px solid #c8ccd1;line-height:1.3;clear:both}'
 		+ '.skin-minerva #Wikiplus-Quickedit+.CodeMirror{font-size:16px}'
 		+ 'div.Wikiplus-InterBox{z-index:100}'
+		+ '.cm-trailingspace{text-decoration:underline wavy red}'
 	);
 
 	/**
