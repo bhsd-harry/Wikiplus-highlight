@@ -419,7 +419,7 @@
 	};
 	mw.messages.set('wphl-portlet', portletLabel[i18nLang]);
 	$(mw.util.addPortletLink(
-		'p-cactions', '#', msg('portlet'), 'Wikiplus-highlight-addons'
+		'p-cactions', '#', `Wikiplus ${msg('portlet')}`, 'Wikiplus-highlight-addons'
 	)).click(async (e) => {
 		e.preventDefault();
 		if (!dialog) {
