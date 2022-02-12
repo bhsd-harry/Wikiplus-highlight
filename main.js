@@ -43,7 +43,8 @@
 			wgPageContentModel: contentmodel,
 			wgServerName: server,
 			wgScriptPath: scriptPath,
-			wgUserLanguage: userLang
+			wgUserLanguage: userLang,
+			skin
 		} = mw.config.values,
 
 		// Local settings cache
@@ -423,13 +424,17 @@
 
 	let dialog, field;
 	const portletLabel = {
-		en: ' Highlight',
-		'zh-hans': '高亮设置',
-		'zh-hant': '突顯設定'
-	};
+			en: ' Highlight',
+			'zh-hans': '高亮设置',
+			'zh-hant': '突顯設定'
+		},
+		portletContainer = {
+			minerva: 'page-actions-overflow',
+			citizen: 'p-actions'
+		};
 	mw.messages.set('wphl-portlet', portletLabel[i18nLang]);
-	$(mw.util.addPortletLink(
-		'p-cactions', '#', `Wikiplus${msg('portlet')}`, 'Wikiplus-highlight-addons'
+	const $portlet = $(mw.util.addPortletLink(
+		portletContainer[skin] ?? 'p-cactions', '#', `Wikiplus${msg('portlet')}`
 	)).click(async (e) => {
 		e.preventDefault();
 		if (!dialog) {
@@ -471,4 +476,7 @@
 			}
 		});
 	});
+	if (skin === 'minerva') {
+		$portlet.find('a').addClass('mw-ui-icon-minerva-settings');
+	}
 })();
