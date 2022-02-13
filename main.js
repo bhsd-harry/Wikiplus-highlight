@@ -144,7 +144,7 @@
 	 * 加载渲染器
 	 * @param {string} type
 	 */
-	const initMode = (type) => {
+	const initMode = async (type) => {
 		let scripts = [];
 		const externalScript = [],
 			addonScript = [];
@@ -182,11 +182,22 @@
 				scripts = scripts.concat(MODE_LIST[type]);
 			}
 		}
-		return Promise.all([
-			getScript(scripts, USING_LOCAL), // CodeMirror modes
-			getScript(externalScript), // CodeMirror Lua mode when using local lib, always external
-			getScript(addonScript) // CodeMirror addons, always external
-		]);
+		if (window.CodeMirror) {
+			await Promise.all([
+				getScript(scripts, USING_LOCAL), // CodeMirror modes
+				getScript(externalScript), // external Lua mode when using local lib
+				getScript(addonScript) // external addons
+			]);
+		} else if (USING_LOCAL) {
+			await getScript(scripts, true); // local CodeMirror lib and modes
+			await Promise.all([
+				getScript(externalScript), // external Lua mode
+				getScript(addonScript) // external addons
+			]);
+		} else {
+			await getScript(addonScript); // external CodeMirror lib and addons
+			await getScript(scripts); // external modes, including Lua
+		}
 	};
 
 	/**
