@@ -4,7 +4,7 @@
  * @author 机智的小鱼君 <https://github.com/Dragon-Fish>
  */
 (() => {
-	const version = '1.6';
+	const version = '1.7';
 
 	mw.storage = $.extend({
 		getObject(key) {
