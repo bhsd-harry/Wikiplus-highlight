@@ -364,6 +364,8 @@
 		));
 		cm.setSize(null, height);
 		cm.refresh();
+		cm.getWrapperElement().id = 'Wikiplus-CodeMirror';
+		$('#Wikiplus-Quickedit-Jump').children('a').attr('href', '#Wikiplus-CodeMirror');
 		if (!setting) {
 			const submit = () => {
 					$('#Wikiplus-Quickedit-Submit').triggerHandler('click');
