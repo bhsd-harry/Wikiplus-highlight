@@ -4,6 +4,7 @@
 	"wphl-addon-search": "搜尋",
 	"wphl-addon-active-line": "突出顯示游標所在行",
 	"wphl-addon-trailingspace": "顯示尾隨空格",
+	"wphl-addon-matchbrackets": "突出顯示匹配和未匹配的括弧",
 	"wphl-addon-label": "請選擇您希望載入的外掛程式",
 	"wphl-addon-notice": "更改將於打開新的Wikiplus編輯區時生效。",
 	"wphl-addon-title": "Wikiplus突顯外掛程式",

@@ -88,7 +88,8 @@
 		search: `${REPO_CDN}/search.min.js`,
 		activeLine: `${CM_CDN}/addon/selection/active-line.min.js`,
 		markSelection: `${CM_CDN}/addon/selection/mark-selection.min.js`,
-		trailingspace: `${CM_CDN}/addon/edit/trailingspace.min.js`
+		trailingspace: `${CM_CDN}/addon/edit/trailingspace.min.js`,
+		matchBrackets: `${CM_CDN}/addon/edit/matchbrackets.min.js`
 	};
 	const defaultAddons = ['search'];
 	let addons = mw.storage.getObject('Wikiplus-highlight-addons') ?? defaultAddons;
@@ -165,6 +166,9 @@
 		}
 		if (!window.CodeMirror?.optionHandlers?.showTrailingSpace && addons.includes('trailingspace')) {
 			addonScript.push(ADDON_LIST.trailingspace);
+		}
+		if (!window.CodeMirror?.optionHandlers?.matchBrackets && addons.includes('matchBrackets')) {
+			addonScript.push(ADDON_LIST.matchBrackets);
 		}
 		if (type === 'widget') {
 			['css', 'javascript', 'mediawiki', 'htmlmixed', 'xml'].forEach(lang => {
@@ -346,7 +350,11 @@
 			json: setting || contentmodel === 'json',
 			styleActiveLine: addons.includes('activeLine'),
 			styleSelectedText: addons.includes('search'),
-			showTrailingSpace: addons.includes('trailingspace')
+			showTrailingSpace: addons.includes('trailingspace'),
+			matchBrackets: addons.includes('matchBrackets') && (mode === 'mediawiki'
+				? {bracketRegex: /[{}[\]]/}
+				: true
+			)
 		}, mode === 'mediawiki'
 			? {}
 			: {
@@ -402,6 +410,8 @@
 		+ 'div.Wikiplus-InterBox{font-size:14px;z-index:100}'
 		+ '.skin-minerva .Wikiplus-InterBox{font-size:16px}'
 		+ '.cm-trailingspace{text-decoration:underline wavy red}'
+		+ 'div.CodeMirror span.CodeMirror-matchingbracket{background-color:#aaffa8}'
+		+ 'div.CodeMirror span.CodeMirror-nonmatchingbracket{background-color:#fade74}'
 		+ '#Wikiplus-highlight-dialog .oo-ui-messageDialog-title{margin-bottom:0.28571429em}'
 		+ '#Wikiplus-highlight-dialog .oo-ui-flaggedElement-notice{font-weight:normal;margin:0}'
 		+ '#Wikiplus-highlight-dialog .oo-ui-flaggedElement-notice>.oo-ui-labelElement-label{margin-left:0}'
@@ -463,7 +473,8 @@
 				options: [
 					{data: 'search', label: msg('addon-search')},
 					{data: 'activeLine', label: msg('addon-active-line')},
-					{data: 'trailingspace', label: msg('addon-trailingspace')}
+					{data: 'trailingspace', label: msg('addon-trailingspace')},
+					{data: 'matchBrackets', label: msg('addon-matchbrackets')}
 				]
 			});
 			widget.setValue(addons);

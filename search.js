@@ -145,6 +145,6 @@
 		+ '#Wikiplus-Quickedit-Search-Div{margin:7px 0 5px;}'
 		+ '#Wikiplus-Quickedit-Search-Close{font-size:20px;margin:7px;vertical-align:middle;cursor:pointer;}'
 		+ '#Wikiplus-Quickedit-Search{width:50%;}'
-		+ '.cm-search{background-color:#ffc0cb53;}'
+		+ '.cm-search{background-color:#ffc0cb83;}'
 	);
 })();

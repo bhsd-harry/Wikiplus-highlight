@@ -4,6 +4,7 @@
 	"wphl-addon-search": "Search",
 	"wphl-addon-active-line": "Show active line",
 	"wphl-addon-trailingspace": "Show trailing spaces",
+	"wphl-addon-matchbrackets": "Highlight matching/nonmatching brackets",
 	"wphl-addon-label": "Please select the addons you wish to load",
 	"wphl-addon-notice": "Changes will apply when opening a new Wikiplus dialog.",
 	"wphl-addon-title": "Wikiplus Highlight Addons",
