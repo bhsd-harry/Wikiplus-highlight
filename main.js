@@ -103,6 +103,10 @@
 		I18N_CDN = `${CDN}/${REPO_CDN}/i18n/${i18nLang}.json`;
 	let i18nReady = false,
 		i18n = mw.storage.getObject('Wikiplus-highlight-i18n');
+
+	/**
+	 * 加载 I18N
+	 */
 	const setI18N = async () => {
 		if (i18nReady) {
 			return;
@@ -150,6 +154,12 @@
 		let scripts = [];
 		const externalScript = [],
 			addonScript = [];
+		if (['mediawiki', 'widget'].includes(type) && !USING_LOCAL && !window.CodeMirror?.modes?.mediawiki) {
+			mw.loader.load(`${CDN}/${WMGH_CDN}/mediawiki.min.css`, 'text/css');
+		}
+		if (type === 'mediawiki' && SITE_SETTINGS?.config?.tags?.html) {
+			type = 'html'; // eslint-disable-line no-param-reassign
+		}
 		if (!window.CodeMirror) {
 			(USING_LOCAL ? scripts : addonScript).push(MODE_LIST.lib);
 		}
@@ -171,16 +181,13 @@
 		if (!window.CodeMirror?.optionHandlers?.matchBrackets && addons.includes('matchBrackets')) {
 			addonScript.push(ADDON_LIST.matchBrackets);
 		}
-		if (type === 'widget') {
+		if (['widget', 'html'].includes(type)) {
 			['css', 'javascript', 'mediawiki', 'htmlmixed', 'xml'].forEach(lang => {
 				if (!window.CodeMirror?.modes?.[lang]) {
 					scripts = scripts.concat(MODE_LIST[lang]);
 				}
 			});
 		} else if (!window.CodeMirror?.modes?.[type]) {
-			if (['mediawiki', 'widget'].includes(type) && !USING_LOCAL) {
-				mw.loader.load(`${CDN}/${WMGH_CDN}/mediawiki.min.css`, 'text/css');
-			}
 			if (type === 'lua') {
 				(USING_LOCAL ? externalScript : scripts).push(MODE_LIST.lua);
 			} else {
@@ -220,6 +227,7 @@
 	/**
 	 * 加载codemirror的mediawiki模块需要的设置数据
 	 * @param {string} type
+	 * @param {Promise} initModePromise
 	 */
 	const getMwConfig = async (type, initModePromise) => {
 		if (!['mediawiki', 'widget'].includes(type)) {
@@ -328,14 +336,10 @@
 			setI18N()
 		]);
 
-		// 储存初始高度
-		const height = $target.height();
-
-		if (cm) {
-			cm.toTextArea();
-		}
-
-		if (mode === 'widget' && !CodeMirror.mimeModes.widget) {
+		if (mode === 'mediawiki' && mwConfig.tags.html) {
+			mwConfig.tagModes.html = 'htmlmixed';
+			await initMode('html');
+		} else if (mode === 'widget' && !CodeMirror.mimeModes.widget) {
 			CodeMirror.defineMIME('widget', {
 				name: 'htmlmixed',
 				tags: {
@@ -343,6 +347,14 @@
 				}
 			});
 		}
+
+		// 储存初始高度
+		const height = $target.height();
+
+		if (cm) {
+			cm.toTextArea();
+		}
+
 		const json = setting || contentmodel === 'json';
 		cm = CodeMirror.fromTextArea($target[0], $.extend({
 			lineNumbers: true,
