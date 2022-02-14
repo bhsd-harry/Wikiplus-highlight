@@ -2,6 +2,7 @@
  * @name Wikiplus-highlight Wikiplus编辑器的CodeMirror语法高亮扩展
  * @author Bhsd <https://github.com/bhsd-harry>
  * @author 机智的小鱼君 <https://github.com/Dragon-Fish>
+ * @license: GPL-3.0
  */
 (() => {
 	const version = '1.7';
@@ -342,16 +343,17 @@
 				}
 			});
 		}
+		const json = setting || contentmodel === 'json';
 		cm = CodeMirror.fromTextArea($target[0], $.extend({
 			lineNumbers: true,
 			lineWrapping: true,
 			mode,
 			mwConfig,
-			json: setting || contentmodel === 'json',
+			json,
 			styleActiveLine: addons.includes('activeLine'),
 			styleSelectedText: addons.includes('search'),
 			showTrailingSpace: addons.includes('trailingspace'),
-			matchBrackets: addons.includes('matchBrackets') && (mode === 'mediawiki'
+			matchBrackets: addons.includes('matchBrackets') && (mode === 'mediawiki' || json
 				? {bracketRegex: /[{}[\]]/}
 				: true
 			)
