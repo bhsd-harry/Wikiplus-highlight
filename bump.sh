@@ -4,3 +4,8 @@ for file in i18n/*
 do
 	sed -i '' -E "s/\"wphl-version\": \".+\"/\"wphl-version\": \"$1\"/" $file
 done
+git add -A
+git commit -m "chore: bump version to $1"
+git push
+git tag $1
+git push origin $1
