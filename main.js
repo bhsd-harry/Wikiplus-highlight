@@ -379,7 +379,7 @@
 				'Cmd-S': submit,
 				'Shift-Ctrl-S': submitMinor,
 				'Shift-Cmd-S': submitMinor
-			}, Wikiplus.getSetting('esc_to_exit_quickedit') === 'true'
+			}, Wikiplus.getSetting('esc_to_exit_quickedit')
 				? {
 					Esc() {
 						$('#Wikiplus-Quickedit-Back').click();
