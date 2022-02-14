@@ -86,6 +86,7 @@
 				to = cursor.to();
 			cm.setSelection(from, to);
 			cm.scrollIntoView({from, to});
+			onInput();
 		} else {
 			$search.css('background-color', 'pink').on('input', onInput);
 		}
