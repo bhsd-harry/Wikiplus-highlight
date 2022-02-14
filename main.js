@@ -5,7 +5,7 @@
  * @license: GPL-3.0
  */
 (() => {
-	const version = '1.7';
+	const version = '1.8';
 
 	mw.storage = $.extend({
 		getObject(key) {
