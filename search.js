@@ -8,12 +8,25 @@
 		}),
 		$searchClose = $('<span>', {
 			text: '×',
-			id: 'Wikiplus-Quickedit-Search-Close'
+			id: 'Wikiplus-Quickedit-Search-Close',
+			class: 'Wikiplus-Symbol-Btn'
+		}),
+		$searchNext = $('<span>', {
+			text: '▼',
+			id: 'Wikiplus-Quickedit-Search-Next',
+			class: 'Wikiplus-Symbol-Btn'
+		}),
+		$searchPrev = $('<span>', {
+			text: '▲',
+			id: 'Wikiplus-Quickedit-Search-Prev',
+			class: 'Wikiplus-Symbol-Btn'
 		}),
 		$searchContainer = $('<div>', {
 			id: 'Wikiplus-Quickedit-Search-Div',
 			html: [
 				$search,
+				$searchNext,
+				$searchPrev,
 				$searchClose
 			]
 		}),
@@ -123,6 +136,12 @@
 		$searchClose.click(() => {
 			reset(cm);
 		});
+		$searchNext.click(() => {
+			findNext(cm, true);
+		});
+		$searchPrev.click(() => {
+			findNext(cm, false);
+		});
 		$search.val('').keydown(e => {
 			if (e.key === 'Enter') {
 				findNext(cm, true);
@@ -144,7 +163,7 @@
 	mw.loader.addStyleTag(
 		'.Wikiplus-Btn{line-height:1.4}'
 		+ '#Wikiplus-Quickedit-Search-Div{margin:7px 0 5px;}'
-		+ '#Wikiplus-Quickedit-Search-Close{font-size:20px;margin:7px;vertical-align:middle;cursor:pointer;}'
+		+ '.Wikiplus-Symbol-Btn{font-size:20px;margin:7px;vertical-align:middle;cursor:pointer;}'
 		+ '#Wikiplus-Quickedit-Search{width:50%;}'
 		+ '.cm-search{background-color:#ffc0cb83;}'
 	);
