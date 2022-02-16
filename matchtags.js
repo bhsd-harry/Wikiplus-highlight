@@ -1,178 +1,308 @@
-const defaults = {highlightNonMatching: true, maxHighlightLen: 1000, maxScanLineLength: 3000,
-		maxScanLines: 100, delay: 100
-	},
-	voidTags = ['br', 'wbr', 'hr', 'img'],
-	cmPos = CodeMirror.Pos,
-	analyzeTag = function(token, line) {
-		const type = token.type || '',
-			match = type.match(/mw-(?:html|ext)-(\S+)/);
-		return { line, start: token.start, end: token.end,
-			name: match ? match[1] : token.string.toLowerCase().trim(),
-			type: type.includes('mw-htmltag-') ? 'html' : 'ext'
-		};
-	},
-	getTag = function(cm, pos) {
-		const style1 = cm.getTokenTypeAt(pos),
-			style2 = cm.getTokenTypeAt(cmPos(pos.line, pos.ch + 1)),
-			re = /(^| )mw-(html|ext)tag-(name|attribute)($| )/;
-		if (!re.test(style1) && !re.test(style2)) {
-			return null;
+/*
+ * CodeMirror, copyright (c) by Marijn Haverbeke and others
+ * Distributed under an MIT license: https://codemirror.net/LICENSE
+ * Modified for MediaWiki by Bhsd <https://github.com/bhsd-harry>
+ */
+
+(() => {
+	'use strict';
+
+	const {Pos, cmpPos} = CodeMirror;
+
+	const tagStart = /<(\/?)([A-Z_a-z]\w*)/g,
+		voidTags = ['br', 'wbr', 'hr', 'img'];
+
+	class Iter {
+		constructor(cm, pos) {
+			const {line, ch} = pos,
+				{state: {matchTags: {maxScanLines = 1000}}} = cm;
+			this.line = line;
+			this.ch = ch;
+			this.cm = cm;
+			this.text = cm.getLine(line);
+			this.min = Math.max(line - maxScanLines + 1, cm.firstLine());
+			this.max = Math.min(line + maxScanLines - 1, cm.lastLine());
 		}
-		if (re.test(style1)) {
-			return analyzeTag(cm.getTokenAt(pos), pos.line);
+
+		isTag() {
+			const type = this.cm.getTokenTypeAt(Pos(this.line, this.ch));
+			return /mw-(?:html|ext)tag/.test(type);
 		}
-		return analyzeTag(cm.getTokenAt(cmPos(pos.line, pos.ch + 1)), pos.line);
-	},
-	isTagBracket = function(token, type, name) {
-		return RegExp(`mw-${type}tag-bracket`).test(token.type)
-				&& RegExp(`mw-${type}-${name}`).test(token.type);
-	},
-	findWholeTag = function(cm, tag) {
-		const {line} = tag,
-			lineTokens = cm.getLineTokens(line),
-			index = lineTokens.findIndex((ele) => {
-				return ele.start === tag.start;
-			}),
-			left = lineTokens.slice(0, index).reverse().find((ele) => {
-				return isTagBracket(ele, tag.type, tag.name)
-					&& ['<', '</'].includes(ele.string.trim());
-			}),
-			right = lineTokens.slice(index + 1).find((ele) => {
-				return isTagBracket(ele, tag.type, tag.name)
-					&& ['>', '/>'].includes(ele.string.trim());
-			});
-		if (!left) {
-			return null;
+
+		bracketAt(ch) {
+			const type = this.cm.getTokenTypeAt(Pos(this.line, ch + 1));
+			return /mw-(?:html|ext)tag-bracket/.test(type);
 		}
-		const dir = left.string.trim() === '</' ? -1 : 1;
-		if (!right) {
-			return { dir: voidTags.includes(tag.name) ? 0 : dir, start: cmPos(line, left.start),
-				end: cmPos(line, cm.getLine(line).length) };
-		}
-		if (right.string.trim() === '/>' || voidTags.includes(tag.name)) {
-			return {dir: 0, start: cmPos(line, left.start), end: cmPos(line, right.end)};
-		}
-		return {dir, start: cmPos(line, left.start), end: cmPos(line, right.end)};
-	},
-	hasTag = function(token, type, name) {
-		return (token.type || '').includes(`mw-${type}tag-name`) && token.string.trim() === name;
-	},
-	scanForTag = function(cm, where, dir, type, name) {
-		const config = cm.state.matchTags,
-			maxScanLen = config.maxScanLineLength,
-			{maxScanLines} = config,
-			stack = [],
-			lineEnd = dir > 0
-				? Math.min(where.line + maxScanLines, cm.lineCount())
-				: Math.max(-1, where.line - maxScanLines);
-		let lineNo;
-		for (lineNo = where.line; lineNo !== lineEnd; lineNo += dir) {
-			const line = cm.getLine(lineNo);
-			if (!line || line.length > maxScanLen) {
-				continue;
+
+		// Jump to the start of the next line
+		nextLine() {
+			if (this.line >= this.max) {
+				return;
 			}
-			let pos = dir > 0 ? 0 : line.length;
-			if (lineNo === where.line) {
-				pos = where.ch;
+			this.ch = 0;
+			this.text = this.cm.getLine(++this.line);
+			return true;
+		}
+
+		// Jump to the end of the previous line
+		prevLine() {
+			if (this.line <= this.min) {
+				return;
 			}
-			const lineTokens = cm.getLineTokens(lineNo).filter((ele) => { // jshint ignore: line
-				return (dir > 0 ? ele.start >= pos : ele.end <= pos) && hasTag(ele, type, name);
-			});
-			if (lineTokens.length === 0) {
-				continue;
-			}
-			if (dir < 0) {
-				lineTokens.reverse();
-			}
-			for (let i = 0; i < lineTokens.length; i++) {
-				const tag = findWholeTag(cm, {
-					line: lineNo, start: lineTokens[i].start, end: lineTokens[i].end, name, type
-				});
-				if (!tag || tag.dir === 0) {
+			this.text = this.cm.getLine(--this.line);
+			this.ch = this.text.length;
+			return true;
+		}
+
+		// Jump to the letter after a '>' towards the line end
+		toTagEnd() {
+			for (;;) {
+				const gt = this.text.indexOf('>', this.ch);
+				if (gt === -1) {
+					return;
+				}
+				if (!this.bracketAt(gt)) {
+					this.ch = gt + 1;
 					continue;
 				}
-				if (tag.dir === dir) {
-					stack.push(tag);
-				} else if (stack.length === 0) {
-					return tag;
-				} else {
-					stack.pop();
+				const lastSlash = this.text.lastIndexOf('/', gt);
+				const selfClose = lastSlash > -1 && !/\S/.test(this.text.slice(lastSlash + 1, gt));
+				this.ch = gt + 1;
+				return selfClose ? 'selfClose' : 'regular';
+			}
+		}
+
+		// Jump to a '<' towards the line start
+		toTagStart() {
+			for (;;) {
+				const lt = this.ch ? this.text.lastIndexOf('<', this.ch - 1) : -1;
+				if (lt === -1) {
+					return;
+				}
+				if (!this.bracketAt(lt)) {
+					this.ch = lt;
+					continue;
+				}
+				tagStart.lastIndex = lt;
+				this.ch = lt;
+				const match = tagStart.exec(this.text);
+				if (match && match.index === lt) {
+					return match;
 				}
 			}
 		}
-		return lineNo === (dir > 0 ? cm.lineCount() : -1) ? false : null;
-	},
-	markTag = function(cm, autoclear) {
-		if (cm.somethingSelected()) {
-			return;
-		}
-		const tagName = getTag(cm, cm.getCursor());
-		if (!tagName) {
-			return;
-		}
-		const tag = findWholeTag(cm, tagName),
-			marks = [],
-			config = cm.state.matchTags;
-		if (!tag) {
-			return;
-		}
-		const {dir} = tag,
-			match = dir ? scanForTag(cm, dir > 0 ? tag.end : tag.start, dir, tagName.type, tagName.name) : true;
-		if ((match || config.highlightNonMatching)
-				&& cm.getLine(tag.start.line).length <= config.maxHighlightLen) {
-			const style = match ? 'cm-matchingtag' : 'cm-nonmatchingtag';
-			marks.push(cm.markText(tag.start, tag.end, {className: style}));
-			if (typeof match === 'object' && cm.getLine(match.start.line).length <= config.maxHighlightLen) {
-				marks.push(cm.markText(match.start, match.end, {className: 'cm-matchingtag'}));
+
+		// Jump to the start of the last line, or the letter after a ${tagStart}
+		toNextTag() {
+			for (;;) {
+				tagStart.lastIndex = this.ch;
+				const found = tagStart.exec(this.text);
+				if (!found) {
+					if (this.nextLine()) {
+						continue;
+					} else {
+						return;
+					}
+				}
+				if (!this.bracketAt(found.index)) {
+					this.ch = found.index + found[0].length;
+					continue;
+				}
+				this.ch = found.index + found[0].length;
+				return found;
 			}
 		}
-		if (marks.length) {
-			const clear = function() {
-				cm.operation(() => {
-					marks.forEach((mark) => {
-						mark.clear();
-					});
-				});
-			};
-			if (autoclear) {
-				setTimeout(clear, 2000);
-			} else {
-				return clear;
+
+		// Jump to the end of the first line, or a non-bracket '>', or the letter after a tag bracket '>'
+		toPrevTag() {
+			for (;;) {
+				const gt = this.ch ? this.text.lastIndexOf('>', this.ch - 1) : -1;
+				if (gt === -1) {
+					if (this.prevLine()) {
+						continue;
+					} else {
+						return;
+					}
+				}
+				if (!this.bracketAt(gt)) {
+					this.ch = gt;
+					continue;
+				}
+				const lastSlash = this.text.lastIndexOf('/', gt);
+				const selfClose = lastSlash > -1 && !/\S/.test(this.text.slice(lastSlash + 1, gt));
+				this.ch = gt + 1;
+				return selfClose ? 'selfClose' : 'regular';
 			}
 		}
-	},
-	scheduleHighlight = function(cm) {
-		const state = cm.state.matchTags;
-		clearTimeout(state.timeout);
-		state.timeout = setTimeout(() => {
-			doMatchTags(cm);
-		}, state.delay);
-	},
-	doMatchTags = function(cm) {
-		cm.operation(() => {
-			if (cm.state.matchTags.currentlyHighlighted) {
-				cm.state.matchTags.currentlyHighlighted();
-				cm.state.matchTags.currentlyHighlighted = null;
+
+		findMatchingClose(tag) {
+			const stack = [];
+			for (;;) {
+				const next = this.toNextTag();
+				if (!next) {
+					return;
+				}
+				const start = this.ch - next[0].length,
+					end = this.toTagEnd(),
+					tagName = next[2].toLowerCase();
+				if (!end) {
+					return;
+				}
+				if (end === 'selfClose' || voidTags.includes(tagName)) {
+					continue;
+				}
+				if (next[1]) { // closing tag
+					let i = stack.length - 1;
+					for (; i >= 0; --i) {
+						if (stack[i] === tagName) {
+							stack.length = i;
+							break;
+						}
+					}
+					if (i < 0 && (!tag || tag === tagName)) {
+						return {
+							tag: tagName,
+							from: Pos(this.line, start),
+							to: Pos(this.line, this.ch)
+						};
+					}
+				} else { // opening tag
+					stack.push(tagName);
+				}
 			}
-			cm.state.matchTags.currentlyHighlighted = markTag(cm, false);
-		});
-	},
-	clearHighlighted = function(cm) {
-		if (cm.state.matchTags && cm.state.matchTags.currentlyHighlighted) {
-			cm.state.matchTags.currentlyHighlighted();
-			cm.state.matchTags.currentlyHighlighted = null;
 		}
+
+		findMatchingOpen(tag) {
+			const stack = [];
+			for (;;) {
+				const prev = this.toPrevTag();
+				if (!prev) {
+					return;
+				}
+				const end = this.ch,
+					start = this.toTagStart();
+				if (!start) {
+					return;
+				}
+				const tagName = start[2].toLowerCase();
+				if (prev === 'selfClose' || voidTags.includes(tagName)) {
+					continue;
+				}
+				if (start[1]) { // closing tag
+					stack.push(tagName);
+				} else { // opening tag
+					let i = stack.length - 1;
+					for (; i >= 0; --i) {
+						if (stack[i] === tagName) {
+							stack.length = i;
+							break;
+						}
+					}
+					if (i < 0 && (!tag || tag === tagName)) {
+						return {
+							tag: tagName,
+							from: Pos(this.line, this.ch),
+							to: Pos(this.line, end)
+						};
+					}
+				}
+			}
+		}
+	}
+
+	CodeMirror.defineExtension('findMatchingTag', function(pos) {
+		let iter = new Iter(this, pos);
+		if (!iter.isTag()) {
+			return;
+		}
+		const end = iter.toTagEnd(),
+			to = end && Pos(iter.line, iter.ch);
+		const start = end && iter.toTagStart();
+		if (!start || cmpPos(iter, pos) > 0) {
+			return;
+		}
+		const tag = start[2].toLowerCase(),
+			here = {from: Pos(iter.line, iter.ch), to, tag};
+		if (end === 'selfClose' || voidTags.includes(tag)) {
+			return {open: here, close: null, at: 'self'};
+		}
+
+		if (start[1]) { // closing tag
+			return {open: iter.findMatchingOpen(tag), close: here, at: 'close'};
+		} // opening tag
+		iter = new Iter(this, to);
+		return {open: here, close: iter.findMatchingClose(tag), at: 'open'};
+	});
+
+	CodeMirror.defineExtension('findEnclosingTag', function(pos, tag) {
+		const iter = new Iter(this, pos);
+		const open = iter.findMatchingOpen(tag);
+		if (!open) {
+			return;
+		}
+		const forward = new Iter(this, pos);
+		const close = forward.findMatchingClose(open.tag);
+		if (close) {
+			return {open, close};
+		}
+	});
+
+	// Used by addon/edit/closetag.js
+	CodeMirror.scanForClosingTag = function(cm, pos, name) {
+		const iter = new Iter(cm, pos);
+		return iter.findMatchingClose(name);
 	};
-CodeMirror.defineExtension('highlightTag', function() {
-	markTag(this, true);
-});
-CodeMirror.defineOption('matchTags', false, (cm, val, old) => {
-	if (old && old !== CodeMirror.Init) {
-		cm.off('cursorActivity', scheduleHighlight);
-		clearHighlighted(cm);
+
+	CodeMirror.defineOption('matchTags', false, (cm, val, old) => {
+		if (old && old !== CodeMirror.Init) {
+			cm.off('cursorActivity', doMatchTags);
+			clear(cm);
+		}
+		if (val) {
+			cm.state.matchTags = typeof val === 'object' ? val : {};
+			cm.on('cursorActivity', doMatchTags);
+			doMatchTags(cm);
+		}
+	});
+
+	function clear(cm) {
+		if (cm.state.tagHit) {
+			cm.state.tagHit.clear();
+		}
+		if (cm.state.tagOther) {
+			cm.state.tagOther.clear();
+		}
+		cm.state.tagHit = null;
+		cm.state.tagOther = null;
 	}
-	if (val) {
-		cm.state.matchTags = $.extend({}, defaults, typeof val === 'object' ? val : {});
-		cm.on('cursorActivity', scheduleHighlight);
+
+	function doMatchTags(cm) {
+		cm.operation(() => {
+			clear(cm);
+			if (cm.somethingSelected()) {
+				return;
+			}
+			const match = cm.findMatchingTag(cm.getCursor());
+			if (!match) {
+				return;
+			}
+			if (match.at === 'self') {
+				cm.state.tagHit = cm.markText(match.open.from, match.open.to, {className: 'cm-matchingtag'});
+				return;
+			}
+			const hit = match.at === 'open' ? match.open : match.close,
+				other = match.at === 'close' ? match.open : match.close;
+			if (hit) {
+				cm.state.tagHit = cm.markText(hit.from, hit.to, {className: `cm-${other ? '' : 'non'}matchingtag`});
+			}
+			if (other) {
+				cm.state.tagOther = cm.markText(other.from, other.to, {className: 'cm-matchingtag'});
+			}
+		});
 	}
-});
+
+	mw.loader.addStyleTag(
+		'.cm-matchingtag{background-color:#c9ffc8}'
+		+ '.cm-nonmatchingtag{background-color:#fff0a8}'
+	);
+})();

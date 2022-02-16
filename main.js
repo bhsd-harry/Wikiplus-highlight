@@ -4,7 +4,10 @@
  * @author 机智的小鱼君 <https://github.com/Dragon-Fish>
  * @license: GPL-3.0
  */
+
 (() => {
+	'use strict';
+
 	const version = '1.8';
 
 	mw.storage = $.extend({
@@ -90,7 +93,8 @@
 		activeLine: `${CM_CDN}/addon/selection/active-line.min.js`,
 		markSelection: `${CM_CDN}/addon/selection/mark-selection.min.js`,
 		trailingspace: `${CM_CDN}/addon/edit/trailingspace.min.js`,
-		matchBrackets: `${CM_CDN}/addon/edit/matchbrackets.min.js`
+		matchBrackets: `${CM_CDN}/addon/edit/matchbrackets.min.js`,
+		matchTags: `${REPO_CDN}/matchtags.min.js`
 	};
 	const defaultAddons = ['search'];
 	let addons = mw.storage.getObject('Wikiplus-highlight-addons') ?? defaultAddons;
@@ -180,6 +184,9 @@
 		}
 		if (!window.CodeMirror?.optionHandlers?.matchBrackets && addons.includes('matchBrackets')) {
 			addonScript.push(ADDON_LIST.matchBrackets);
+		}
+		if (!window.CodeMirror?.optionHandlers?.matchTags && addons.includes('matchTags')) {
+			addonScript.push(ADDON_LIST.matchTags);
 		}
 		if (['widget', 'html'].includes(type)) {
 			['css', 'javascript', 'mediawiki', 'htmlmixed', 'xml'].forEach(lang => {
@@ -368,7 +375,8 @@
 			matchBrackets: addons.includes('matchBrackets') && (mode === 'mediawiki' || json
 				? {bracketRegex: /[{}[\]]/}
 				: true
-			)
+			),
+			matchTags: addons.includes('matchBrackets')
 		}, mode === 'mediawiki'
 			? {}
 			: {
@@ -490,7 +498,8 @@
 					{data: 'search', label: msg('addon-search')},
 					{data: 'activeLine', label: msg('addon-active-line')},
 					{data: 'trailingspace', label: msg('addon-trailingspace')},
-					{data: 'matchBrackets', label: msg('addon-matchbrackets')}
+					{data: 'matchBrackets', label: msg('addon-matchbrackets')},
+					{data: 'matchTags', label: msg('addon-matchtags')}
 				]
 			});
 			widget.setValue(addons);

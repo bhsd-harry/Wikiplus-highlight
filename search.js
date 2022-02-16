@@ -1,4 +1,11 @@
+/**
+ * @author Bhsd <https://github.com/bhsd-harry>
+ * @license: GPL-3.0
+ */
+
 (() => {
+	'use strict';
+
 	const msg = (key) => mw.msg(`wphl-${key}`);
 
 	// Prepare elements
