@@ -26,12 +26,12 @@
 
 		isTag() {
 			const type = this.cm.getTokenTypeAt(Pos(this.line, this.ch));
-			return /mw-(?:html|ext)tag/.test(type);
+			return /\b(?:mw-(?:html|ext)tag|tag\b)/.test(type);
 		}
 
 		bracketAt(ch) {
 			const type = this.cm.getTokenTypeAt(Pos(this.line, ch + 1));
-			return /mw-(?:html|ext)tag-bracket/.test(type);
+			return /\b(?:mw-(?:html|ext)tag-)?bracket\b/.test(type);
 		}
 
 		// Jump to the start of the next line

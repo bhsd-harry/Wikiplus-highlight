@@ -376,7 +376,7 @@
 				? {bracketRegex: /[{}[\]]/}
 				: true
 			),
-			matchTags: addons.includes('matchBrackets')
+			matchTags: addons.includes('matchBrackets') && ['mediawiki', 'widget'].includes(mode)
 		}, mode === 'mediawiki'
 			? {}
 			: {
