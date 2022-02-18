@@ -5,7 +5,7 @@
  * @license: GPL-3.0
  */
 
-(() => {
+(async () => {
 	'use strict';
 
 	const version = '2.1';
@@ -313,7 +313,7 @@
 	const getPageMode = async () => {
 		if ([274, 828].includes(ns) && !page.endsWith('/doc')) {
 			const pageMode = ns === 274 ? 'Widget' : 'Lua';
-			await mw.loader.using('oojs-ui-windows');
+			await mw.loader.using(['oojs-ui-windows', 'oojs-ui.styles.icons-content']);
 			const bool = await OO.ui.confirm(msg('contentmodel'), {
 				actions: [
 					{label: pageMode},
@@ -411,6 +411,8 @@
 		mw.hook('wiki-codemirror').fire(cm);
 	};
 
+	await mw.loader.using('mediawiki.util');
+
 	/**
 	 * 监视 Wikiplus 编辑框
 	 */
@@ -436,8 +438,6 @@
 		+ 'div.CodeMirror span.CodeMirror-nonmatchingbracket{box-shadow:0 0 0 2px #eace64}'
 		+ '#Wikiplus-highlight-dialog .oo-ui-messageDialog-title{margin-bottom:0.28571429em}'
 		+ '#Wikiplus-highlight-dialog .oo-ui-flaggedElement-notice{font-weight:normal;margin:0}'
-		+ '#Wikiplus-highlight-dialog .oo-ui-flaggedElement-notice>.oo-ui-labelElement-label{margin-left:0}'
-		+ '#Wikiplus-highlight-dialog .oo-ui-image-notice{display:none}'
 	);
 
 	/**
@@ -482,7 +482,7 @@
 		e.preventDefault();
 		if (!dialog) {
 			await Promise.all([
-				mw.loader.using('oojs-ui-windows'),
+				mw.loader.using(['oojs-ui-windows', 'oojs-ui.styles.icons-content']),
 				setI18N()
 			]);
 			i18nReady = true;
