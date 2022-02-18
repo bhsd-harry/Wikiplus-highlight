@@ -509,7 +509,9 @@
 		}
 		dialog.open({
 			title: msg('addon-title'),
-			message: field.$element,
+			message: field.$element.add(
+				$('<p>', {html: msg('feedback')})
+			),
 			actions: [
 				{action: 'reject', label: mw.msg('ooui-dialog-message-reject')},
 				{action: 'accept', label: mw.msg('ooui-dialog-message-accept'), flags: 'progressive'}

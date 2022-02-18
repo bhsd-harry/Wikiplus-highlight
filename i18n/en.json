@@ -10,5 +10,6 @@
 	"wphl-addon-notice": "Changes will apply when opening a new Wikiplus dialog.",
 	"wphl-addon-title": "Wikiplus Highlight Addons",
 	"wphl-search-placeholder": "Search using a string or a regex pattern",
-	"wphl-contentmodel": "Please choose the content model:"
+	"wphl-contentmodel": "Please choose the content model:",
+	"wphl-feedback": "Bug reports or suggestions are welcome at <a href=\"https://github.com/bhsd-harry/Wikiplus-highlight/issues\" target=\"_blank\">GitHub</a> ."
 }
