@@ -36,7 +36,7 @@
 	// Constants
 	const CDN = '//cdn.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.65.1',
-		WMGH_CDN = 'gh/wikimedia/mediawiki-extensions-CodeMirror@REL1_37/resources/mode/mediawiki',
+		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.0',
 		REPO_CDN = `gh/bhsd-harry/Wikiplus-highlight@${version}`,
 		USING_LOCAL = mw.loader.getState('ext.CodeMirror') !== null,
 
@@ -70,10 +70,7 @@
 			css: 'ext.CodeMirror.lib.mode.css',
 			javascript: 'ext.CodeMirror.lib.mode.javascript',
 			lua: `${CM_CDN}/mode/lua/lua.min.js`,
-			mediawiki: [
-				'ext.CodeMirror.mode.mediawiki',
-				'ext.CodeMirror.data'
-			],
+			mediawiki: 'ext.CodeMirror.data',
 			htmlmixed: 'ext.CodeMirror.lib.mode.htmlmixed',
 			xml: []
 		}
@@ -82,7 +79,7 @@
 			css: `${CM_CDN}/mode/css/css.min.js`,
 			javascript: `${CM_CDN}/mode/javascript/javascript.min.js`,
 			lua: `${CM_CDN}/mode/lua/lua.min.js`,
-			mediawiki: `${WMGH_CDN}/mediawiki.min.js`,
+			mediawiki: [],
 			htmlmixed: `${CM_CDN}/mode/htmlmixed/htmlmixed.min.js`,
 			xml: `${CM_CDN}/mode/xml/xml.min.js`
 		};
@@ -158,8 +155,9 @@
 		let scripts = [];
 		const externalScript = [],
 			addonScript = [];
-		if (['mediawiki', 'widget'].includes(type) && !USING_LOCAL && !window.CodeMirror?.modes?.mediawiki) {
-			mw.loader.load(`${CDN}/${WMGH_CDN}/mediawiki.min.css`, 'text/css');
+		if (['mediawiki', 'widget'].includes(type) && !window.CodeMirror?.modes?.mediawiki) {
+			mw.loader.load(`${CDN}/${MW_CDN}/mediawiki.min.css`, 'text/css');
+			(USING_LOCAL ? externalScript : scripts).push(`${MW_CDN}/mediawiki.min.js`);
 		}
 		if (type === 'mediawiki' && SITE_SETTINGS?.config?.tags?.html) {
 			type = 'html'; // eslint-disable-line no-param-reassign
