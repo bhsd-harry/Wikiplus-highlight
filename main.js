@@ -8,7 +8,7 @@
 (async () => {
 	'use strict';
 
-	const version = '2.1';
+	const version = '2.2';
 
 	const storage = typeof mw.storage?.getObject === 'function'
 		? mw.storage
