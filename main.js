@@ -272,7 +272,8 @@
 			);
 		config.tagModes = {
 			pre: 'mw-tag-pre',
-			nowiki: 'mw-tag-nowiki'
+			nowiki: 'mw-tag-nowiki',
+			ref: 'text/mediawiki'
 		};
 		config.tags = Object.fromEntries(
 			extensiontags.map(tag => [tag.slice(1, -1), true])
