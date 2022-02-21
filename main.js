@@ -10,28 +10,30 @@
 
 	const version = '2.1';
 
-	mw.storage = $.extend({
-		getObject(key) {
-			const json = localStorage.getItem(key);
-			if (json === false) {
-				return false;
+	const storage = typeof mw.storage?.getObject === 'function'
+		? mw.storage
+		: {
+			getObject(key) {
+				const json = localStorage.getItem(key);
+				if (json === false) {
+					return false;
+				}
+				try {
+					return JSON.parse(json);
+				} catch {
+					return null;
+				}
+			},
+			setObject(key, value) {
+				let json;
+				try {
+					json = JSON.stringify(value);
+					return localStorage.setItem(key, json);
+				} catch {
+					return false;
+				}
 			}
-			try {
-				return JSON.parse(json);
-			} catch {
-				return null;
-			}
-		},
-		setObject(key, value) {
-			let json;
-			try {
-				json = JSON.stringify(value);
-				return localStorage.setItem(key, json);
-			} catch {
-				return false;
-			}
-		}
-	}, mw.storage);
+		};
 
 	// Constants
 	const CDN = '//cdn.jsdelivr.net',
@@ -52,7 +54,7 @@
 		} = mw.config.values,
 
 		// Local settings cache
-		ALL_SETTINGS_CACHE = mw.storage.getObject('InPageEditMwConfig') ?? {},
+		ALL_SETTINGS_CACHE = storage.getObject('InPageEditMwConfig') ?? {},
 		SITE_ID = `${server}${scriptPath}`,
 		SITE_SETTINGS = ALL_SETTINGS_CACHE[SITE_ID];
 
@@ -94,7 +96,7 @@
 		matchTags: `${REPO_CDN}/matchtags.min.js`
 	};
 	const defaultAddons = ['search'];
-	let addons = mw.storage.getObject('Wikiplus-highlight-addons') ?? defaultAddons;
+	let addons = storage.getObject('Wikiplus-highlight-addons') ?? defaultAddons;
 
 	const i18nLanguages = {
 			zh: 'zh-hans', 'zh-hans': 'zh-hans', 'zh-cn': 'zh-hans', 'zh-my': 'zh-hans', 'zh-sg': 'zh-hans',
@@ -102,7 +104,7 @@
 		},
 		i18nLang = i18nLanguages[userLang] ?? 'en',
 		I18N_CDN = `${CDN}/${REPO_CDN}/i18n/${i18nLang}.json`;
-	let i18n = mw.storage.getObject('Wikiplus-highlight-i18n');
+	let i18n = storage.getObject('Wikiplus-highlight-i18n');
 
 	/**
 	 * 加载 I18N
@@ -113,7 +115,7 @@
 				dataType: 'json',
 				cache: true
 			});
-			mw.storage.setObject('Wikiplus-highlight-i18n', i18n);
+			storage.setObject('Wikiplus-highlight-i18n', i18n);
 		}
 		mw.messages.set(i18n);
 	};
@@ -221,7 +223,7 @@
 			config,
 			time: Date.now()
 		};
-		mw.storage.setObject('InPageEditMwConfig', ALL_SETTINGS_CACHE);
+		storage.setObject('InPageEditMwConfig', ALL_SETTINGS_CACHE);
 	};
 
 	/**
@@ -506,7 +508,7 @@
 		}).closed.then(data => {
 			if (data?.action === 'accept') {
 				addons = field.getField().getValue();
-				mw.storage.setObject('Wikiplus-highlight-addons', addons);
+				storage.setObject('Wikiplus-highlight-addons', addons);
 			}
 		});
 	});
