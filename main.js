@@ -102,16 +102,12 @@
 		},
 		i18nLang = i18nLanguages[userLang] ?? 'en',
 		I18N_CDN = `${CDN}/${REPO_CDN}/i18n/${i18nLang}.json`;
-	let i18nReady = false,
-		i18n = mw.storage.getObject('Wikiplus-highlight-i18n');
+	let i18n = mw.storage.getObject('Wikiplus-highlight-i18n');
 
 	/**
 	 * 加载 I18N
 	 */
 	const setI18N = async () => {
-		if (i18nReady) {
-			return;
-		}
 		if (i18n?.['wphl-version'] !== version || i18n?.['wphl-lang'] !== i18nLang) {
 			i18n = await $.ajax(`${I18N_CDN}`, { // eslint-disable-line require-atomic-updates
 				dataType: 'json',
@@ -120,7 +116,6 @@
 			mw.storage.setObject('Wikiplus-highlight-i18n', i18n);
 		}
 		mw.messages.set(i18n);
-		i18nReady = true; // eslint-disable-line require-atomic-updates
 	};
 	const msg = (key) => mw.msg(`wphl-${key}`);
 
@@ -337,8 +332,7 @@
 		const initModePromise = initMode(mode);
 		const [mwConfig] = await Promise.all([
 			getMwConfig(mode, initModePromise),
-			initModePromise,
-			setI18N()
+			initModePromise
 		]);
 
 		if (mode === 'mediawiki' && mwConfig.tags.html) {
@@ -411,7 +405,10 @@
 		mw.hook('wiki-codemirror').fire(cm);
 	};
 
-	await mw.loader.using('mediawiki.util');
+	await Promise.all([
+		mw.loader.using('mediawiki.util'),
+		setI18N()
+	]);
 
 	/**
 	 * 监视 Wikiplus 编辑框
@@ -466,26 +463,16 @@
 	};
 
 	let dialog, field;
-	const portletLabel = {
-			en: ' Highlight',
-			'zh-hans': '高亮设置',
-			'zh-hant': '突顯設定'
-		},
-		portletContainer = {
-			minerva: 'page-actions-overflow',
-			citizen: 'p-actions'
-		};
-	mw.messages.set('wphl-portlet', portletLabel[i18nLang]);
+	const portletContainer = {
+		minerva: 'page-actions-overflow',
+		citizen: 'p-actions'
+	};
 	const $portlet = $(mw.util.addPortletLink(
-		portletContainer[skin] ?? 'p-cactions', '#', `Wikiplus${msg('portlet')}`
+		portletContainer[skin] ?? 'p-cactions', '#', msg('portlet'), 'wphl-settings'
 	)).click(async (e) => {
 		e.preventDefault();
 		if (!dialog) {
-			await Promise.all([
-				mw.loader.using(['oojs-ui-windows', 'oojs-ui.styles.icons-content']),
-				setI18N()
-			]);
-			i18nReady = true;
+			await mw.loader.using(['oojs-ui-windows', 'oojs-ui.styles.icons-content']);
 			// eslint-disable-next-line require-atomic-updates
 			dialog = new OO.ui.MessageDialog({id: 'Wikiplus-highlight-dialog'});
 			const windowManager = new OO.ui.WindowManager();

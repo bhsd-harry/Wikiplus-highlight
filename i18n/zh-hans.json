@@ -11,5 +11,6 @@
 	"wphl-addon-title": "Wikiplus高亮插件",
 	"wphl-search-placeholder": "使用字符串或正则表达式搜索",
 	"wphl-contentmodel": "请选择内容模型：",
-	"wphl-feedback": "欢迎将错误报告或是改进建议提交到 <a href=\"https://github.com/bhsd-harry/Wikiplus-highlight/issues\" target=\"_blank\">GitHub</a> ！"
+	"wphl-feedback": "欢迎将错误报告或是改进建议提交到 <a href=\"https://github.com/bhsd-harry/Wikiplus-highlight/issues\" target=\"_blank\">GitHub</a> ！",
+	"wphl-portlet": "Wikiplus高亮设置"
 }
