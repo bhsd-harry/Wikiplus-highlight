@@ -9,7 +9,7 @@
 在*个人 JS 页*添加以下代码：
 
 ```javascript
-mw.loader.load('//cdn.jsdelivr.net/gh/bhsd-harry/Wikiplus-highlight@2.2/main.min.js');
+mw.loader.load('//cdn.jsdelivr.net/gh/bhsd-harry/Wikiplus-highlight@2.3/main.min.js');
 ```
 
 ### 稳定版本
