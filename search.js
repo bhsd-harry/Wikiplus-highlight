@@ -42,7 +42,7 @@
 			text: msg('addon-search')
 		});
 
-	const escapeRegExp = mw.util.escapeRegExp ?? mw.RegExp.escape;
+	const escapeRegExp = mw.util.escapeRegExp || mw.RegExp.escape; // @type {(function|undefined)}
 	const overlay = {token: () => {}};
 
 	/**

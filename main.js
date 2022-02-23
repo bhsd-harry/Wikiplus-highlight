@@ -10,7 +10,8 @@
 
 	const version = '2.2';
 
-	const storage = typeof mw.storage?.getObject === 'function'
+	// @type {(Object.<string, function>|undefined)}
+	const storage = typeof mw.storage === 'object' && typeof mw.storage.getObject === 'function'
 		? mw.storage
 		: {
 			getObject(key) {
@@ -20,7 +21,7 @@
 				}
 				try {
 					return JSON.parse(json);
-				} catch {
+				} catch (e) {
 					return null;
 				}
 			},
@@ -29,11 +30,19 @@
 				try {
 					json = JSON.stringify(value);
 					return localStorage.setItem(key, json);
-				} catch {
+				} catch (e) {
 					return false;
 				}
 			}
 		};
+	// @type {(function|undefined)}
+	const fromEntries = Object.fromEntries || ((entries) => {
+		const obj = {};
+		for (const [key, value] of entries) {
+			obj[key] = value;
+		}
+		return obj;
+	});
 
 	// Constants
 	const CDN = '//cdn.jsdelivr.net',
@@ -54,9 +63,9 @@
 		} = mw.config.values,
 
 		// Local settings cache
-		ALL_SETTINGS_CACHE = storage.getObject('InPageEditMwConfig') ?? {},
+		ALL_SETTINGS_CACHE = storage.getObject('InPageEditMwConfig') || {}, // @type {?Object.<string, Object>}
 		SITE_ID = `${server}${scriptPath}`,
-		SITE_SETTINGS = ALL_SETTINGS_CACHE[SITE_ID];
+		SITE_SETTINGS = ALL_SETTINGS_CACHE[SITE_ID] || {}; // @type {(Object|undefined)}
 
 	const CONTENTMODEL = {
 		css: 'css',
@@ -96,21 +105,21 @@
 		matchTags: `${REPO_CDN}/matchtags.min.js`
 	};
 	const defaultAddons = ['search'];
-	let addons = storage.getObject('Wikiplus-highlight-addons') ?? defaultAddons;
+	let addons = storage.getObject('Wikiplus-highlight-addons') || defaultAddons; // @type {?Array.<string>}
 
 	const i18nLanguages = {
 			zh: 'zh-hans', 'zh-hans': 'zh-hans', 'zh-cn': 'zh-hans', 'zh-my': 'zh-hans', 'zh-sg': 'zh-hans',
 			'zh-hant': 'zh-hant', 'zh-tw': 'zh-hant', 'zh-hk': 'zh-hant', 'zh-mo': 'zh-hant'
 		},
-		i18nLang = i18nLanguages[userLang] ?? 'en',
+		i18nLang = i18nLanguages[userLang] || 'en', // @type {(string|undefined)}
 		I18N_CDN = `${CDN}/${REPO_CDN}/i18n/${i18nLang}.json`;
-	let i18n = storage.getObject('Wikiplus-highlight-i18n');
+	let i18n = storage.getObject('Wikiplus-highlight-i18n') || {}; // @type {?Object.<string, string>}
 
 	/**
 	 * 加载 I18N
 	 */
 	const setI18N = async () => {
-		if (i18n?.['wphl-version'] !== version || i18n?.['wphl-lang'] !== i18nLang) {
+		if (i18n['wphl-version'] !== version || i18n['wphl-lang'] !== i18nLang) {
 			i18n = await $.ajax(`${I18N_CDN}`, { // eslint-disable-line require-atomic-updates
 				dataType: 'json',
 				cache: true
@@ -130,7 +139,7 @@
 	/**
 	 * 下载脚本
 	 * @param {string[]} urls 脚本路径
-	 * @param {boolean} local 是否从本地下载
+	 * @param {boolean=} local 是否从本地下载
 	 */
 	const getScript = (urls, local) => {
 		if (urls.length === 0) {
@@ -152,44 +161,53 @@
 		let scripts = [];
 		const externalScript = [],
 			addonScript = [];
-		if (['mediawiki', 'widget'].includes(type) && !window.CodeMirror?.modes?.mediawiki) {
+		// @type {(function|Object.<string, Object>)}
+		const cmClass = typeof window.CodeMirror === 'function'
+			? window.CodeMirror
+			: {
+				modes: {},
+				prototype: {},
+				commands: {},
+				optionHandlers: {}
+			};
+		if (['mediawiki', 'widget'].includes(type) && !cmClass.modes.mediawiki) {
 			mw.loader.load(`${CDN}/${MW_CDN}/mediawiki.min.css`, 'text/css');
 			(USING_LOCAL ? externalScript : scripts).push(`${MW_CDN}/mediawiki.min.js`);
 		}
-		if (type === 'mediawiki' && SITE_SETTINGS?.config?.tags?.html) {
+		if (type === 'mediawiki' && typeof SITE_SETTINGS.config === 'object' && SITE_SETTINGS.config.tags.html) {
 			type = 'html'; // eslint-disable-line no-param-reassign
 		}
 		if (!window.CodeMirror) {
 			(USING_LOCAL ? scripts : addonScript).push(MODE_LIST.lib);
 		}
-		if (!window.CodeMirror?.prototype?.getSearchCursor && addons.includes('search')) {
+		if (!cmClass.prototype.getSearchCursor && addons.includes('search')) {
 			addonScript.push(ADDON_LIST.searchcursor);
 		}
-		if (!window.CodeMirror?.commands?.findForward && addons.includes('search')) {
+		if (!cmClass.commands.findForward && addons.includes('search')) {
 			addonScript.push(ADDON_LIST.search);
 		}
-		if (!window.CodeMirror?.optionHandlers?.styleActiveLine && addons.includes('activeLine')) {
+		if (!cmClass.optionHandlers.styleActiveLine && addons.includes('activeLine')) {
 			addonScript.push(ADDON_LIST.activeLine);
 		}
-		if (!window.CodeMirror?.optionHandlers?.styleSelectedText && addons.includes('search')) {
+		if (!cmClass.optionHandlers.styleSelectedText && addons.includes('search')) {
 			addonScript.push(ADDON_LIST.markSelection);
 		}
-		if (!window.CodeMirror?.optionHandlers?.showTrailingSpace && addons.includes('trailingspace')) {
+		if (!cmClass.optionHandlers.showTrailingSpace && addons.includes('trailingspace')) {
 			addonScript.push(ADDON_LIST.trailingspace);
 		}
-		if (!window.CodeMirror?.optionHandlers?.matchBrackets && addons.includes('matchBrackets')) {
+		if (!cmClass.optionHandlers.matchBrackets && addons.includes('matchBrackets')) {
 			addonScript.push(ADDON_LIST.matchBrackets);
 		}
-		if (!window.CodeMirror?.optionHandlers?.matchTags && addons.includes('matchTags')) {
+		if (!cmClass.optionHandlers.matchTags && addons.includes('matchTags')) {
 			addonScript.push(ADDON_LIST.matchTags);
 		}
 		if (['widget', 'html'].includes(type)) {
 			['css', 'javascript', 'mediawiki', 'htmlmixed', 'xml'].forEach(lang => {
-				if (!window.CodeMirror?.modes?.[lang]) {
+				if (!cmClass.modes[lang]) {
 					scripts = scripts.concat(MODE_LIST[lang]);
 				}
 			});
-		} else if (!window.CodeMirror?.modes?.[type]) {
+		} else if (!cmClass.modes[type]) {
 			if (type === 'lua') {
 				(USING_LOCAL ? externalScript : scripts).push(MODE_LIST.lua);
 			} else {
@@ -216,7 +234,7 @@
 
 	/**
 	 * 更新缓存的设置数据
-	 * @param {object} config
+	 * @param {Object} config
 	 */
 	const updateCachedConfig = (config) => {
 		ALL_SETTINGS_CACHE[SITE_ID] = {
@@ -252,7 +270,7 @@
 			return config;
 		}
 
-		if (SITE_SETTINGS?.time > Date.now() - 86400 * 1000 * 30) {
+		if (SITE_SETTINGS.time > Date.now() - 86400 * 1000 * 30) {
 			({config} = SITE_SETTINGS);
 			mw.config.set('extCodeMirrorConfig', config);
 			return config;
@@ -267,7 +285,7 @@
 			formatversion: 2
 		});
 		const getAliases = (words) => words.flatMap(({aliases}) => aliases),
-			getConfig = (aliases) => Object.fromEntries(
+			getConfig = (aliases) => fromEntries(
 				aliases.map(alias => [alias.replace(/:$/, ''), true])
 			);
 		config.tagModes = {
@@ -275,7 +293,7 @@
 			nowiki: 'mw-tag-nowiki',
 			ref: 'text/mediawiki'
 		};
-		config.tags = Object.fromEntries(
+		config.tags = fromEntries(
 			extensiontags.map(tag => [tag.slice(1, -1), true])
 		);
 		const realMagicwords = new Set([...functionhooks, ...variables]),
@@ -417,7 +435,7 @@
 	 * 监视 Wikiplus 编辑框
 	 */
 	const observer = new MutationObserver(records => {
-		const $editArea = $(records.flatMap(({addedNodes}) => Array.from(addedNodes)))
+		const $editArea = $(records.flatMap(({addedNodes}) => [...addedNodes]))
 			.find('#Wikiplus-Quickedit, #Wikiplus-Setting-Input');
 		if ($editArea.length === 0) {
 			return;
@@ -450,7 +468,7 @@
 		set = function(elem, value) {
 			elem.value = value;
 		}
-	} = $.valHooks.textarea ?? {};
+	} = $.valHooks.textarea || {}; // @type {(Object.<string, function>|undefined)}
 	const isWikiplus = (elem) => ['Wikiplus-Quickedit', 'Wikiplus-Setting-Input'].includes(elem.id);
 	$.valHooks.textarea = {
 		get(elem) {
@@ -471,7 +489,7 @@
 		citizen: 'p-actions'
 	};
 	const $portlet = $(mw.util.addPortletLink(
-		portletContainer[skin] ?? 'p-cactions', '#', msg('portlet'), 'wphl-settings'
+		portletContainer[skin] || 'p-cactions', '#', msg('portlet'), 'wphl-settings'
 	)).click(async (e) => {
 		e.preventDefault();
 		if (!dialog) {
@@ -507,7 +525,7 @@
 				{action: 'accept', label: mw.msg('ooui-dialog-message-accept'), flags: 'progressive'}
 			]
 		}).closed.then(data => {
-			if (data?.action === 'accept') {
+			if (typeof data === 'object' && data.action === 'accept') {
 				addons = field.getField().getValue();
 				storage.setObject('Wikiplus-highlight-addons', addons);
 			}
