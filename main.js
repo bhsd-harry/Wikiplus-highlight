@@ -47,7 +47,7 @@
 	// Constants
 	const CDN = '//cdn.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.65.1',
-		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.0',
+		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.5',
 		REPO_CDN = `gh/bhsd-harry/Wikiplus-highlight@${version}`,
 		USING_LOCAL = mw.loader.getState('ext.CodeMirror') !== null,
 
