@@ -2,7 +2,7 @@
  * @name Wikiplus-highlight Wikiplus编辑器的CodeMirror语法高亮扩展
  * @author Bhsd <https://github.com/bhsd-harry>
  * @author 机智的小鱼君 <https://github.com/Dragon-Fish>
- * @license: GPL-3.0
+ * @license GPL-3.0
  */
 
 (async () => {
@@ -65,7 +65,8 @@
 		// Local settings cache
 		ALL_SETTINGS_CACHE = storage.getObject('InPageEditMwConfig') || {}, // @type {?Object.<string, Object>}
 		SITE_ID = `${server}${scriptPath}`,
-		SITE_SETTINGS = ALL_SETTINGS_CACHE[SITE_ID] || {}; // @type {(Object|undefined)}
+		SITE_SETTINGS = ALL_SETTINGS_CACHE[SITE_ID] || {}, // @type {(Object|undefined)}
+		unexpired = SITE_SETTINGS.time > Date.now() - 86400 * 1000 * 30;
 
 	const CONTENTMODEL = {
 		css: 'css',
@@ -81,7 +82,7 @@
 			css: 'ext.CodeMirror.lib.mode.css',
 			javascript: 'ext.CodeMirror.lib.mode.javascript',
 			lua: `${CM_CDN}/mode/lua/lua.min.js`,
-			mediawiki: 'ext.CodeMirror.data',
+			mediawiki: unexpired ? [] : 'ext.CodeMirror.data',
 			htmlmixed: 'ext.CodeMirror.lib.mode.htmlmixed',
 			xml: []
 		}
@@ -254,70 +255,81 @@
 			return;
 		}
 
-		if (USING_LOCAL) {
+		if (USING_LOCAL && !unexpired) { // 只在localStorage过期时才会重新加载 ext.CodeMirror.data
 			await initModePromise;
 		}
-		let config = mw.config.get('extCodeMirrorConfig');
-		if (config) {
-			$.extend(config.functionSynonyms[0], {
-				msg: true,
-				raw: true,
-				msgnw: true,
-				subst: true,
-				safesubst: true
-			});
-			updateCachedConfig(config);
-			return config;
-		}
 
-		if (SITE_SETTINGS.time > Date.now() - 86400 * 1000 * 30) {
+		let config = mw.config.get('extCodeMirrorConfig');
+		if (!config && unexpired) {
 			({config} = SITE_SETTINGS);
 			mw.config.set('extCodeMirrorConfig', config);
+		}
+		if (config && config.redirect && config.img) { // 情形1：config已更新，可能来自localStorage
 			return config;
 		}
 
-		config = {};
+		/**
+		 * 以下情形均需要发送API请求
+		 * 情形2：localStorage未过期但不包含新设置
+		 * 情形3：新加载的 ext.CodeMirror.data
+		 * 情形4：config === null
+		 */
 		const {
 			query: {magicwords, extensiontags, functionhooks, variables}
 		} = await new mw.Api().get({
 			meta: 'siteinfo',
-			siprop: 'magicwords|extensiontags|functionhooks|variables',
+			siprop: config ? 'magicwords' : 'magicwords|extensiontags|functionhooks|variables',
 			formatversion: 2
 		});
-		const getAliases = (words) => words.flatMap(({aliases}) => aliases),
+		const otherMagicwords = ['msg', 'raw', 'msgnw', 'subst', 'safesubst'],
+			getAliases = (words) => words.flatMap(({aliases}) => aliases),
 			getConfig = (aliases) => fromEntries(
 				aliases.map(alias => [alias.replace(/:$/, ''), true])
 			);
-		config.tagModes = {
-			pre: 'mw-tag-pre',
-			nowiki: 'mw-tag-nowiki',
-			ref: 'text/mediawiki'
-		};
-		config.tags = fromEntries(
-			extensiontags.map(tag => [tag.slice(1, -1), true])
-		);
-		const realMagicwords = new Set([...functionhooks, ...variables]),
-			allMagicwords = magicwords.filter(({name, aliases}) =>
-				aliases.some(alias => /^__.+__$/.test(alias)) || realMagicwords.has(name)
-			),
-			sensitive = getAliases(
-				allMagicwords.filter(word => word['case-sensitive'])
-			),
-			insensitive = [
-				...getAliases(
+		if (!config) { // 旧版设置
+			config = {
+				tagModes: {
+					pre: 'mw-tag-pre',
+					nowiki: 'mw-tag-nowiki',
+					ref: 'text/mediawiki'
+				},
+				tags: fromEntries(
+					extensiontags.map(tag => [tag.slice(1, -1), true])
+				),
+				urlProtocols: mw.config.get('wgUrlProtocols')
+			};
+			const realMagicwords = new Set([...functionhooks, ...variables, ...otherMagicwords]),
+				allMagicwords = magicwords.filter(({name, aliases}) =>
+					aliases.some(alias => /^__.+__$/.test(alias)) || realMagicwords.has(name)
+				),
+				sensitive = getAliases(
+					allMagicwords.filter(word => word['case-sensitive'])
+				),
+				insensitive = getAliases(
 					allMagicwords.filter(word => !word['case-sensitive'])
-				).map(alias => alias.toLowerCase()),
-				'msg', 'raw', 'msgnw', 'subst', 'safesubst'
+				).map(alias => alias.toLowerCase());
+			config.doubleUnderscore = [
+				getConfig(insensitive.filter(alias => /^__.+__$/.test(alias))),
+				getConfig(sensitive.filter(alias => /^__.+__$/.test(alias)))
 			];
-		config.doubleUnderscore = [
-			getConfig(insensitive.filter(alias => /^__.+__$/.test(alias))),
-			getConfig(sensitive.filter(alias => /^__.+__$/.test(alias)))
-		];
-		config.functionSynonyms = [
-			getConfig(insensitive.filter(alias => !/^__.+__|^#$/.test(alias))),
-			getConfig(sensitive.filter(alias => !/^__.+__|^#$/.test(alias)))
-		];
-		config.urlProtocols = mw.config.get('wgUrlProtocols');
+			config.functionSynonyms = [
+				getConfig(insensitive.filter(alias => !/^__.+__|^#$/.test(alias))),
+				getConfig(sensitive.filter(alias => !/^__.+__|^#$/.test(alias)))
+			];
+		} else {
+			const {functionSynonyms: [insensitive]} = config;
+			if (!insensitive.subst) {
+				getAliases(
+					magicwords.filter(({name}) => otherMagicwords.includes(name))
+				).forEach(alias => {
+					insensitive[alias.replace(/:$/, '')] = true;
+				});
+			}
+		}
+		config.redirect = magicwords.find(({name}) => name === 'redirect').aliases;
+		config.img = getConfig(
+			getAliases(magicwords.filter(({name}) => name.startsWith('img_')))
+		);
 		mw.config.set('extCodeMirrorConfig', config);
 		updateCachedConfig(config);
 		return config;
