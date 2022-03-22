@@ -20,7 +20,7 @@ mw.loader.load('//cdn.jsdelivr.net/gh/bhsd-harry/Wikiplus-highlight@2.3/main.min
 mw.loader.load('//cdn.jsdelivr.net/gh/bhsd-harry/Wikiplus-highlight@stable/main.min.js');
 ```
 
-由于CDN的缓存机制，稳定版本的更新大约会滞后一周。
+由于 CDN 的缓存机制，稳定版本的更新大约会滞后一周。
 
 ## 更多插件
 
