@@ -108,8 +108,49 @@
 	const defaultAddons = ['search'],
 		contextmenuStyle = mw.loader.addStyleTag('#Wikiplus-CodeMirror .cm-mw-template-name{cursor:pointer}');
 	contextmenuStyle.disabled = true;
-	let addons = storage.getObject('Wikiplus-highlight-addons') || defaultAddons, // @type {?Array.<string>}
-		i18n = storage.getObject('Wikiplus-highlight-i18n') || {}; // @type {?Object.<string, string>}
+	let addons = storage.getObject('Wikiplus-highlight-addons') || defaultAddons, // @type {?string[]}
+		i18n = storage.getObject('Wikiplus-highlight-i18n'); // @type {?Object.<string, string>}
+
+	/**
+	 * 解析版本号
+	 * @param {string} str 版本字符串
+	 * @returns {number[]}
+	 */
+	const getVersion = (str) => str.split('.').map(s => Number(s));
+	/**
+	 * 比较版本号
+	 * @param {string} a
+	 * @param {string} b
+	 * @returns {boolean}
+	 */
+	const cmpVersion = (a, b) => {
+		const [a0, a1, a2 = 0] = getVersion(a),
+			[b0, b1, b2 = 0] = getVersion(b);
+		return a0 < b0 || a0 === b0 && a1 < b1 || a0 === b0 && a1 === b1 && a2 < b2;
+	};
+	/**
+	 * 获取I18N消息
+	 * @param {string} key 消息键
+	 * @param {string[]} args
+	 * @returns {string}
+	 */
+	const msg = (key, ...args) => mw.msg(`wphl-${key}`, ...args);
+	/**
+	 * 下载脚本
+	 * @param {string[]} args
+	 * @return {function: promise}
+	 */
+	const notify = (...args) => () => {
+		mw.notify($('<p>', {html: msg(...args)}), {type: 'success', autoHideSeconds: 'long'});
+	};
+
+	let welcome; // @type {function}
+	if (!i18n) {
+		i18n = {};
+		welcome = notify('welcome');
+	} else if (cmpVersion(i18n['wphl-version'], version)) {
+		welcome = notify('welcome-upgrade', version);
+	}
 	const i18nLanguages = {
 			zh: 'zh-hans', 'zh-hans': 'zh-hans', 'zh-cn': 'zh-hans', 'zh-my': 'zh-hans', 'zh-sg': 'zh-hans',
 			'zh-hant': 'zh-hant', 'zh-tw': 'zh-hant', 'zh-hk': 'zh-hant', 'zh-mo': 'zh-hant',
@@ -131,7 +172,6 @@
 		}
 		mw.messages.set(i18n);
 	};
-	const msg = (key) => mw.msg(`wphl-${key}`);
 
 	let cm;
 
@@ -586,4 +626,10 @@
 	if (skin === 'minerva') {
 		$portlet.find('a').addClass('mw-ui-icon-minerva-settings');
 	}
+
+	await welcome();
+	$('#wphl-settings-notify').click(e => {
+		e.preventDefault();
+		$('#wphl-settings').triggerHandler('click');
+	});
 })();
