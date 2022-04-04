@@ -409,7 +409,7 @@
 			? {}
 			: {
 				indentUnit: 4,
-				indentWithTabs: true,
+				indentWithTabs: !addons.includes('indentWithSpace'),
 			},
 		));
 		cm.setSize(null, height);
@@ -433,7 +433,8 @@
 					open(mw.util.getUrl(`Template:${text}`), '_blank');
 				}
 				return false;
-			}).on('contextmenu',
+			}).on(
+				'contextmenu',
 				'.cm-mw-parserfunction-name + .cm-mw-parserfunction-delimiter + .cm-mw-parserfunction',
 				function() {
 					const parserFunction = this.previousSibling.previousSibling.textContent.trim().toLowerCase();
@@ -555,9 +556,10 @@
 					{data: 'matchBrackets', label: msg('addon-matchbrackets')},
 					{data: 'matchTags', label: msg('addon-matchtags')},
 					{data: 'contextmenu', label: msg('addon-contextmenu')},
+					{data: 'indentWithSpace', label: msg('addon-indentwithspace')},
 				],
+				value: addons,
 			});
-			widget.setValue(addons);
 			field = new OO.ui.FieldLayout(widget, {
 				label: msg('addon-label'),
 				notices: [msg('addon-notice')],
@@ -573,6 +575,7 @@
 				{action: 'reject', label: mw.msg('ooui-dialog-message-reject')},
 				{action: 'accept', label: mw.msg('ooui-dialog-message-accept'), flags: 'progressive'},
 			],
+			size: i18nLang === 'en' ? 'medium' : 'small',
 		}).closed.then(data => {
 			if (typeof data === 'object' && data.action === 'accept') {
 				addons = field.getField().getValue();
