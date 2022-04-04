@@ -163,7 +163,7 @@
 						return {
 							tag: tagName,
 							from: Pos(this.line, start),
-							to: Pos(this.line, this.ch)
+							to: Pos(this.line, this.ch),
 						};
 					}
 				} else { // opening tag
@@ -202,7 +202,7 @@
 						return {
 							tag: tagName,
 							from: Pos(this.line, this.ch),
-							to: Pos(this.line, end)
+							to: Pos(this.line, end),
 						};
 					}
 				}
@@ -303,6 +303,6 @@
 
 	mw.loader.addStyleTag(
 		'.cm-matchingtag{background-color:#c9ffc8}'
-		+ '.cm-nonmatchingtag{background-color:#fff0a8}'
+		+ '.cm-nonmatchingtag{background-color:#fff0a8}',
 	);
 })();

@@ -11,22 +11,22 @@
 	// Prepare elements
 	const $search = $('<input>', {
 			id: 'Wikiplus-Quickedit-Search',
-			placeholder: msg('search-placeholder')
+			placeholder: msg('search-placeholder'),
 		}),
 		$searchClose = $('<span>', {
 			text: '×',
 			id: 'Wikiplus-Quickedit-Search-Close',
-			class: 'Wikiplus-Symbol-Btn'
+			class: 'Wikiplus-Symbol-Btn',
 		}),
 		$searchNext = $('<span>', {
 			text: '▼',
 			id: 'Wikiplus-Quickedit-Search-Next',
-			class: 'Wikiplus-Symbol-Btn'
+			class: 'Wikiplus-Symbol-Btn',
 		}),
 		$searchPrev = $('<span>', {
 			text: '▲',
 			id: 'Wikiplus-Quickedit-Search-Prev',
-			class: 'Wikiplus-Symbol-Btn'
+			class: 'Wikiplus-Symbol-Btn',
 		}),
 		$searchContainer = $('<div>', {
 			id: 'Wikiplus-Quickedit-Search-Div',
@@ -34,12 +34,12 @@
 				$search,
 				$searchNext,
 				$searchPrev,
-				$searchClose
-			]
+				$searchClose,
+			],
 		}),
 		$searchBtn = $('<span>', {
 			class: 'Wikiplus-Btn',
-			text: msg('addon-search')
+			text: msg('addon-search'),
 		});
 
 	const escapeRegExp = mw.util.escapeRegExp || mw.RegExp.escape; // @type {(function|undefined)}
@@ -163,7 +163,7 @@
 			'Ctrl-G': 'findForward',
 			'Cmd-G': 'findForward',
 			'Shift-Ctrl-G': 'findBackward',
-			'Shift-Cmd-G': 'findBackward'
+			'Shift-Cmd-G': 'findBackward',
 		});
 	});
 
@@ -172,6 +172,6 @@
 		+ '#Wikiplus-Quickedit-Search-Div{margin:7px 0 5px;}'
 		+ '.Wikiplus-Symbol-Btn{font-size:20px;margin:7px;vertical-align:middle;cursor:pointer;}'
 		+ '#Wikiplus-Quickedit-Search{width:50%;}'
-		+ '.cm-search{background-color:#ffc0cb83;}'
+		+ '.cm-search{background-color:#ffc0cb83;}',
 	);
 })();

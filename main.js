@@ -33,7 +33,7 @@
 				} catch (e) {
 					return false;
 				}
-			}
+			},
 		};
 	// @type {(function|undefined)}
 	const fromEntries = Object.fromEntries || ((entries) => {
@@ -59,7 +59,7 @@
 			wgServerName: server,
 			wgScriptPath: scriptPath,
 			wgUserLanguage: userLang,
-			skin
+			skin,
 		} = mw.config.values,
 
 		// Local settings cache
@@ -73,7 +73,7 @@
 		'sanitized-css': 'css',
 		javascript: 'javascript',
 		json: 'javascript',
-		wikitext: 'mediawiki'
+		wikitext: 'mediawiki',
 	};
 
 	const MODE_LIST = USING_LOCAL
@@ -84,7 +84,7 @@
 			lua: `${CM_CDN}/mode/lua/lua.min.js`,
 			mediawiki: unexpired ? [] : 'ext.CodeMirror.data',
 			htmlmixed: 'ext.CodeMirror.lib.mode.htmlmixed',
-			xml: []
+			xml: [],
 		}
 		: {
 			lib: `${CM_CDN}/lib/codemirror.min.js`,
@@ -93,7 +93,7 @@
 			lua: `${CM_CDN}/mode/lua/lua.min.js`,
 			mediawiki: [],
 			htmlmixed: `${CM_CDN}/mode/htmlmixed/htmlmixed.min.js`,
-			xml: `${CM_CDN}/mode/xml/xml.min.js`
+			xml: `${CM_CDN}/mode/xml/xml.min.js`,
 		};
 
 	const ADDON_LIST = {
@@ -103,27 +103,29 @@
 		markSelection: `${CM_CDN}/addon/selection/mark-selection.min.js`,
 		trailingspace: `${CM_CDN}/addon/edit/trailingspace.min.js`,
 		matchBrackets: `${CM_CDN}/addon/edit/matchbrackets.min.js`,
-		matchTags: `${REPO_CDN}/matchtags.min.js`
+		matchTags: `${REPO_CDN}/matchtags.min.js`,
 	};
-	const defaultAddons = ['search'];
-	let addons = storage.getObject('Wikiplus-highlight-addons') || defaultAddons; // @type {?Array.<string>}
-
+	const defaultAddons = ['search'],
+		contextmenuStyle = mw.loader.addStyleTag('#Wikiplus-CodeMirror .cm-mw-template-name{cursor:pointer}');
+	contextmenuStyle.disabled = true;
+	let addons = storage.getObject('Wikiplus-highlight-addons') || defaultAddons, // @type {?Array.<string>}
+		i18n = storage.getObject('Wikiplus-highlight-i18n') || {}; // @type {?Object.<string, string>}
 	const i18nLanguages = {
 			zh: 'zh-hans', 'zh-hans': 'zh-hans', 'zh-cn': 'zh-hans', 'zh-my': 'zh-hans', 'zh-sg': 'zh-hans',
-			'zh-hant': 'zh-hant', 'zh-tw': 'zh-hant', 'zh-hk': 'zh-hant', 'zh-mo': 'zh-hant'
+			'zh-hant': 'zh-hant', 'zh-tw': 'zh-hant', 'zh-hk': 'zh-hant', 'zh-mo': 'zh-hant',
 		},
 		i18nLang = i18nLanguages[userLang] || 'en', // @type {(string|undefined)}
-		I18N_CDN = `${CDN}/${REPO_CDN}/i18n/${i18nLang}.json`;
-	let i18n = storage.getObject('Wikiplus-highlight-i18n') || {}; // @type {?Object.<string, string>}
+		I18N_CDN = `${CDN}/${REPO_CDN}/i18n/${i18nLang}.json`,
+		isLatest = i18n['wphl-version'] === version;
 
 	/**
 	 * 加载 I18N
 	 */
 	const setI18N = async () => {
-		if (i18n['wphl-version'] !== version || i18n['wphl-lang'] !== i18nLang) {
+		if (!isLatest || i18n['wphl-lang'] !== i18nLang) {
 			i18n = await $.ajax(`${I18N_CDN}`, { // eslint-disable-line require-atomic-updates
 				dataType: 'json',
-				cache: true
+				cache: true,
 			});
 			storage.setObject('Wikiplus-highlight-i18n', i18n);
 		}
@@ -150,7 +152,7 @@
 			? mw.loader.using(urls)
 			: $.ajax(`${CDN}/${urls.length > 1 ? 'combine/' : ''}${urls.join()}`, {
 				dataType: 'script',
-				cache: true
+				cache: true,
 			});
 	};
 
@@ -169,7 +171,7 @@
 				modes: {},
 				prototype: {},
 				commands: {},
-				optionHandlers: {}
+				optionHandlers: {},
 			};
 		if (['mediawiki', 'widget'].includes(type) && !cmClass.modes.mediawiki) {
 			mw.loader.load(`${CDN}/${MW_CDN}/mediawiki.min.css`, 'text/css');
@@ -219,13 +221,13 @@
 			await Promise.all([
 				getScript(scripts, USING_LOCAL), // CodeMirror modes
 				getScript(externalScript), // external Lua mode when using local lib
-				getScript(addonScript) // external addons
+				getScript(addonScript), // external addons
 			]);
 		} else if (USING_LOCAL) {
 			await getScript(scripts, true); // local CodeMirror lib and modes
 			await Promise.all([
 				getScript(externalScript), // external Lua mode
-				getScript(addonScript) // external addons
+				getScript(addonScript), // external addons
 			]);
 		} else {
 			await getScript(addonScript); // external CodeMirror lib and addons
@@ -240,7 +242,7 @@
 	const updateCachedConfig = (config) => {
 		ALL_SETTINGS_CACHE[SITE_ID] = {
 			config,
-			time: Date.now()
+			time: Date.now(),
 		};
 		storage.setObject('InPageEditMwConfig', ALL_SETTINGS_CACHE);
 	};
@@ -260,7 +262,7 @@
 		}
 
 		let config = mw.config.get('extCodeMirrorConfig');
-		if (!config && unexpired) {
+		if (!config && unexpired && isLatest) {
 			({config} = SITE_SETTINGS);
 			mw.config.set('extCodeMirrorConfig', config);
 		}
@@ -275,60 +277,60 @@
 		 * 情形4：config === null
 		 */
 		const {
-			query: {magicwords, extensiontags, functionhooks, variables}
+			query: {magicwords, extensiontags, functionhooks, variables},
 		} = await new mw.Api().get({
 			meta: 'siteinfo',
 			siprop: config ? 'magicwords' : 'magicwords|extensiontags|functionhooks|variables',
-			formatversion: 2
+			formatversion: 2,
 		});
 		const otherMagicwords = ['msg', 'raw', 'msgnw', 'subst', 'safesubst'],
-			getAliases = (words) => words.flatMap(({aliases}) => aliases),
+			getAliases = (words) => words.flatMap(({aliases, name}) => aliases.map(alias => ({alias, name}))),
 			getConfig = (aliases) => fromEntries(
-				aliases.map(alias => [alias.replace(/:$/, ''), true])
+				aliases.map(({alias, name}) => [alias.replace(/:$/, ''), name]),
 			);
 		if (!config) { // 旧版设置
 			config = {
 				tagModes: {
 					pre: 'mw-tag-pre',
 					nowiki: 'mw-tag-nowiki',
-					ref: 'text/mediawiki'
+					ref: 'text/mediawiki',
 				},
 				tags: fromEntries(
-					extensiontags.map(tag => [tag.slice(1, -1), true])
+					extensiontags.map(tag => [tag.slice(1, -1), true]),
 				),
-				urlProtocols: mw.config.get('wgUrlProtocols')
+				urlProtocols: mw.config.get('wgUrlProtocols'),
 			};
 			const realMagicwords = new Set([...functionhooks, ...variables, ...otherMagicwords]),
 				allMagicwords = magicwords.filter(({name, aliases}) =>
-					aliases.some(alias => /^__.+__$/.test(alias)) || realMagicwords.has(name)
+					aliases.some(alias => /^__.+__$/.test(alias)) || realMagicwords.has(name),
 				),
 				sensitive = getAliases(
-					allMagicwords.filter(word => word['case-sensitive'])
+					allMagicwords.filter(word => word['case-sensitive']),
 				),
 				insensitive = getAliases(
-					allMagicwords.filter(word => !word['case-sensitive'])
-				).map(alias => alias.toLowerCase());
+					allMagicwords.filter(word => !word['case-sensitive']),
+				).map(({alias, name}) => ({alias: alias.toLowerCase(), name}));
 			config.doubleUnderscore = [
-				getConfig(insensitive.filter(alias => /^__.+__$/.test(alias))),
-				getConfig(sensitive.filter(alias => /^__.+__$/.test(alias)))
+				getConfig(insensitive.filter(({alias}) => /^__.+__$/.test(alias))),
+				getConfig(sensitive.filter(({alias}) => /^__.+__$/.test(alias))),
 			];
 			config.functionSynonyms = [
-				getConfig(insensitive.filter(alias => !/^__.+__|^#$/.test(alias))),
-				getConfig(sensitive.filter(alias => !/^__.+__|^#$/.test(alias)))
+				getConfig(insensitive.filter(({alias}) => !/^__.+__|^#$/.test(alias))),
+				getConfig(sensitive.filter(({alias}) => !/^__.+__|^#$/.test(alias))),
 			];
 		} else {
 			const {functionSynonyms: [insensitive]} = config;
 			if (!insensitive.subst) {
 				getAliases(
-					magicwords.filter(({name}) => otherMagicwords.includes(name))
-				).forEach(alias => {
-					insensitive[alias.replace(/:$/, '')] = true;
+					magicwords.filter(({name}) => otherMagicwords.includes(name)),
+				).forEach(({alias, name}) => {
+					insensitive[alias.replace(/:$/, '')] = name;
 				});
 			}
 		}
 		config.redirect = magicwords.find(({name}) => name === 'redirect').aliases;
 		config.img = getConfig(
-			getAliases(magicwords.filter(({name}) => name.startsWith('img_')))
+			getAliases(magicwords.filter(({name}) => name.startsWith('img_'))),
 		);
 		mw.config.set('extCodeMirrorConfig', config);
 		updateCachedConfig(config);
@@ -345,8 +347,8 @@
 			const bool = await OO.ui.confirm(msg('contentmodel'), {
 				actions: [
 					{label: pageMode},
-					{label: 'Wikitext', action: 'accept'}
-				]
+					{label: 'Wikitext', action: 'accept'},
+				],
 			});
 			return bool ? 'mediawiki' : pageMode.toLowerCase();
 		} else if (page.endsWith('/doc')) {
@@ -365,7 +367,7 @@
 		const initModePromise = initMode(mode);
 		const [mwConfig] = await Promise.all([
 			getMwConfig(mode, initModePromise),
-			initModePromise
+			initModePromise,
 		]);
 
 		if (mode === 'mediawiki' && mwConfig.tags.html) {
@@ -375,8 +377,8 @@
 			CodeMirror.defineMIME('widget', {
 				name: 'htmlmixed',
 				tags: {
-					noinclude: [[null, null, 'mediawiki']]
-				}
+					noinclude: [[null, null, 'mediawiki']],
+				},
 			});
 		}
 
@@ -389,6 +391,7 @@
 
 		const json = setting || contentmodel === 'json';
 		cm = CodeMirror.fromTextArea($target[0], $.extend({
+			inputStyle: 'contenteditable',
 			lineNumbers: true,
 			lineWrapping: true,
 			mode,
@@ -401,17 +404,50 @@
 				? {bracketRegex: /[{}[\]]/}
 				: true
 			),
-			matchTags: addons.includes('matchBrackets') && ['mediawiki', 'widget'].includes(mode)
+			matchTags: addons.includes('matchBrackets') && ['mediawiki', 'widget'].includes(mode),
 		}, mode === 'mediawiki'
 			? {}
 			: {
 				indentUnit: 4,
-				indentWithTabs: true
-			}
+				indentWithTabs: true,
+			},
 		));
 		cm.setSize(null, height);
 		cm.refresh();
-		cm.getWrapperElement().id = 'Wikiplus-CodeMirror';
+		const wrapper = cm.getWrapperElement();
+		wrapper.id = 'Wikiplus-CodeMirror';
+		if (['mediawiki', 'widget'].includes(mode) && addons.includes('contextmenu')) {
+			contextmenuStyle.disabled = false;
+			const {functionSynonyms: [synonyms]} = mw.config.get('extCodeMirrorConfig'),
+				getSysnonyms = (name) => Object.keys(synonyms).filter(key => synonyms[key] === name)
+					.map(key => key.startsWith('#') ? key : `#${key}`),
+				invoke = getSysnonyms('invoke'),
+				widget = getSysnonyms('widget');
+			await mw.loader.using('mediawiki.Title');
+			$(wrapper).on('contextmenu', '.cm-mw-template-name', function() {
+				const text = this.textContent.replace(/\u200e/g, '').trim(),
+					title = new mw.Title(text);
+				if (title.namespace !== 0 || text.startsWith(':')) {
+					open(title.getUrl(), '_blank');
+				} else {
+					open(mw.util.getUrl(`Template:${text}`), '_blank');
+				}
+				return false;
+			}).on('contextmenu',
+				'.cm-mw-parserfunction-name + .cm-mw-parserfunction-delimiter + .cm-mw-parserfunction',
+				function() {
+					const parserFunction = this.previousSibling.previousSibling.textContent.trim().toLowerCase();
+					if (invoke.includes(parserFunction)) {
+						open(mw.util.getUrl(`Module:${this.textContent}`), '_blank');
+					} else if (widget.includes(parserFunction)) {
+						open(mw.util.getUrl(`Widget:${this.textContent}`, {action: 'edit'}), '_blank');
+					}
+					return false;
+				},
+			);
+		} else {
+			contextmenuStyle.disabled = true;
+		}
 		$('#Wikiplus-Quickedit-Jump').children('a').attr('href', '#Wikiplus-CodeMirror');
 		if (!setting) {
 			const submit = () => {
@@ -425,14 +461,14 @@
 				'Ctrl-S': submit,
 				'Cmd-S': submit,
 				'Shift-Ctrl-S': submitMinor,
-				'Shift-Cmd-S': submitMinor
+				'Shift-Cmd-S': submitMinor,
 			}, Wikiplus.getSetting('esc_to_exit_quickedit')
 				? {
 					Esc() {
 						$('#Wikiplus-Quickedit-Back').click();
-					}
+					},
 				}
-				: {}
+				: {},
 			));
 		}
 		mw.hook('wiki-codemirror').fire(cm);
@@ -440,7 +476,7 @@
 
 	await Promise.all([
 		mw.loader.using('mediawiki.util'),
-		setI18N()
+		setI18N(),
 	]);
 
 	/**
@@ -467,7 +503,7 @@
 		+ 'div.CodeMirror span.CodeMirror-matchingbracket{box-shadow:0 0 0 2px #9aef98}'
 		+ 'div.CodeMirror span.CodeMirror-nonmatchingbracket{box-shadow:0 0 0 2px #eace64}'
 		+ '#Wikiplus-highlight-dialog .oo-ui-messageDialog-title{margin-bottom:0.28571429em}'
-		+ '#Wikiplus-highlight-dialog .oo-ui-flaggedElement-notice{font-weight:normal;margin:0}'
+		+ '#Wikiplus-highlight-dialog .oo-ui-flaggedElement-notice{font-weight:normal;margin:0}',
 	);
 
 	/**
@@ -479,7 +515,7 @@
 		},
 		set = function(elem, value) {
 			elem.value = value;
-		}
+		},
 	} = $.valHooks.textarea || {}; // @type {(Object.<string, function>|undefined)}
 	const isWikiplus = (elem) => ['Wikiplus-Quickedit', 'Wikiplus-Setting-Input'].includes(elem.id);
 	$.valHooks.textarea = {
@@ -492,16 +528,16 @@
 			} else {
 				set(elem, value);
 			}
-		}
+		},
 	};
 
 	let dialog, field;
 	const portletContainer = {
 		minerva: 'page-actions-overflow',
-		citizen: 'p-actions'
+		citizen: 'p-actions',
 	};
 	const $portlet = $(mw.util.addPortletLink(
-		portletContainer[skin] || 'p-cactions', '#', msg('portlet'), 'wphl-settings'
+		portletContainer[skin] || 'p-cactions', '#', msg('portlet'), 'wphl-settings',
 	)).click(async (e) => {
 		e.preventDefault();
 		if (!dialog) {
@@ -517,25 +553,26 @@
 					{data: 'activeLine', label: msg('addon-active-line')},
 					{data: 'trailingspace', label: msg('addon-trailingspace')},
 					{data: 'matchBrackets', label: msg('addon-matchbrackets')},
-					{data: 'matchTags', label: msg('addon-matchtags')}
-				]
+					{data: 'matchTags', label: msg('addon-matchtags')},
+					{data: 'contextmenu', label: msg('addon-contextmenu')},
+				],
 			});
 			widget.setValue(addons);
 			field = new OO.ui.FieldLayout(widget, {
 				label: msg('addon-label'),
 				notices: [msg('addon-notice')],
-				align: 'top'
+				align: 'top',
 			});
 		}
 		dialog.open({
 			title: msg('addon-title'),
 			message: field.$element.add(
-				$('<p>', {html: msg('feedback')})
+				$('<p>', {html: msg('feedback')}),
 			),
 			actions: [
 				{action: 'reject', label: mw.msg('ooui-dialog-message-reject')},
-				{action: 'accept', label: mw.msg('ooui-dialog-message-accept'), flags: 'progressive'}
-			]
+				{action: 'accept', label: mw.msg('ooui-dialog-message-accept'), flags: 'progressive'},
+			],
 		}).closed.then(data => {
 			if (typeof data === 'object' && data.action === 'accept') {
 				addons = field.getField().getValue();
