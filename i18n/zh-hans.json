@@ -15,6 +15,6 @@
 	"wphl-contentmodel": "请选择内容模型：",
 	"wphl-feedback": "欢迎将错误报告或是改进建议提交到 <a href=\"https://github.com/bhsd-harry/Wikiplus-highlight/issues\" target=\"_blank\">GitHub</a> ！",
 	"wphl-portlet": "Wikiplus高亮设置",
-	"wphl-welcome": "欢迎使用 <b>Wikiplus-highlight</b>！<br>您可以点击<a id=\"wphl-settings-notify\" href=\"#\">这里</a>更改本地设置。",
-	"wphl-welcome-upgrade": "<b>Wikiplus-highlight</b> 已升级到 $1。<br>您可能需要点击<a id=\"wphl-settings-notify\" href=\"#\">这里</a>查看并更新本地设置。"
+	"wphl-welcome": "欢迎使用 <b>Wikiplus-highlight</b>！<br>您可以点击 <a id=\"wphl-settings-notify\" href=\"#\">这里</a> 更改本地设置。",
+	"wphl-welcome-upgrade": "<b>Wikiplus-highlight</b> 已升级到 $1。<br>您可能需要点击 <a id=\"wphl-settings-notify\" href=\"#\">这里</a> 查看并更新本地设置。"
 }
