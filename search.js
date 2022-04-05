@@ -6,7 +6,7 @@
 (() => {
 	'use strict';
 
-	const msg = (key) => mw.msg(`wphl-${key}`);
+	const msg = key => mw.msg(`wphl-${key}`);
 
 	// Prepare elements
 	const $search = $('<input>', {
@@ -48,12 +48,12 @@
 	/**
 	 * 根据搜索字符串生成高亮
 	 */
-	const token = (str) => {
+	const token = str => {
 		let initial;
 		if (typeof str === 'string') {
 			initial = RegExp(`[^${escapeRegExp(str[0])}]`, 'i');
 		}
-		return (stream) => {
+		return stream => {
 			if (stream.match(str, true, true)) {
 				return 'search';
 			}
@@ -120,16 +120,16 @@
 	};
 
 	// click event handler of $searchClose
-	const reset = (cm) => {
+	const reset = cm => {
 		cm.removeOverlay(overlay);
 		$searchContainer.hide();
 		lastPtn = '';
 	};
 
-	CodeMirror.commands.findForward = (doc) => {
+	CodeMirror.commands.findForward = doc => {
 		findNext(doc, true);
 	};
-	CodeMirror.commands.findBackward = (doc) => {
+	CodeMirror.commands.findBackward = doc => {
 		findNext(doc, false);
 	};
 

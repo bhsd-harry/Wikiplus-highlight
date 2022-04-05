@@ -8,6 +8,7 @@
 	"wphl-addon-matchtags": "突出顯示匹配和未匹配的標籤",
 	"wphl-addon-contextmenu": "右鍵點擊可打開模板或模組頁面",
 	"wphl-addon-indentwithspace": "代碼縮排使用空格而非Tab",
+	"wphl-addon-indent": "縮排",
 	"wphl-addon-label": "請選擇您希望載入的外掛程式",
 	"wphl-addon-notice": "更改將於打開新的Wikiplus編輯區時生效。",
 	"wphl-addon-title": "Wikiplus突顯外掛程式",

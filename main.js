@@ -8,7 +8,7 @@
 (async () => {
 	'use strict';
 
-	const version = '2.5.1';
+	const version = '2.5';
 
 	/**
 	 * polyfill for mw.storage
@@ -44,7 +44,7 @@
 	 * @param {Array.<[string, any]>} entries
 	 * @returns {Object}
 	 */
-	const fromEntries = Object.fromEntries || ((entries) => {
+	const fromEntries = Object.fromEntries || (entries => {
 		const obj = {};
 		for (const [key, value] of entries) {
 			obj[key] = value;
@@ -57,7 +57,7 @@
 	 * @param {string} str 版本字符串
 	 * @returns {number[]}
 	 */
-	const getVersion = (str) => str.split('.').map(s => Number(s));
+	const getVersion = str => str.split('.').map(s => Number(s));
 	/**
 	 * 比较版本号
 	 * @param {string} a
@@ -65,9 +65,9 @@
 	 * @returns {boolean} a的版本号是否小于b的版本号
 	 */
 	const cmpVersion = (a, b) => {
-		const [a0, a1, a2 = 0] = getVersion(a),
-			[b0, b1, b2 = 0] = getVersion(b);
-		return a0 < b0 || a0 === b0 && a1 < b1 || a0 === b0 && a1 === b1 && a2 < b2;
+		const [a0, a1] = getVersion(a),
+			[b0, b1] = getVersion(b);
+		return a0 < b0 || a0 === b0 && a1 < b1;
 	};
 	/**
 	 * 获取I18N消息
@@ -152,8 +152,10 @@
 		matchTags: `${REPO_CDN}/matchtags.min.js`,
 	};
 
-	const defaultAddons = ['search'];
-	let addons = storage.getObject('Wikiplus-highlight-addons') || defaultAddons; // @type {?string[]}
+	const defaultAddons = ['search'],
+		defaultIndent = '4';
+	let addons = storage.getObject('Wikiplus-highlight-addons') || defaultAddons, // @type {?string[]}
+		indent = storage.getObject('Wikiplus-highlight-indent') || defaultIndent; // @type {string}
 
 	// 用于contextMenu插件
 	const contextmenuStyle = document.getElementById('wphl-contextmenu') // @type {?HTMLStyleElement}
@@ -224,7 +226,7 @@
 	 * @param {string} type
 	 * @returns {promise}
 	 */
-	const initMode = async (type) => {
+	const initMode = async type => {
 		let scripts = [];
 		const externalScript = [],
 			addonScript = [],
@@ -315,7 +317,7 @@
 	 * 更新缓存的设置数据
 	 * @param {Object} config
 	 */
-	const updateCachedConfig = (config) => {
+	const updateCachedConfig = config => {
 		ALL_SETTINGS_CACHE[SITE_ID] = {
 			config,
 			time: Date.now(),
@@ -370,12 +372,12 @@
 		 * @property <string> name
 		 * @returns {Object.<('alias'|'name'), string>[]}
 		 */
-		const getAliases = (words) => words.flatMap(({aliases, name}) => aliases.map(alias => ({alias, name})));
+		const getAliases = words => words.flatMap(({aliases, name}) => aliases.map(alias => ({alias, name})));
 		/**
 		 * @param {Object.<('alias'|'name'), string>[]} aliases
 		 * @returns {Object.<string, string>}
 		 */
-		const getConfig = (aliases) => fromEntries(
+		const getConfig = aliases => fromEntries(
 			aliases.map(({alias, name}) => [alias.replace(/:$/, ''), name]),
 		);
 
@@ -500,7 +502,7 @@
 		}, mode === 'mediawiki'
 			? {}
 			: {
-				indentUnit: 4,
+				indentUnit: addons.includes('indentWithSpace') ? indent : defaultIndent,
 				indentWithTabs: !addons.includes('indentWithSpace'),
 			},
 		));
@@ -516,7 +518,7 @@
 			 * @param {string} name
 			 * @returns {string[]}
 			 */
-			const getSysnonyms = (name) => Object.keys(synonyms).filter(key => synonyms[key] === name)
+			const getSysnonyms = name => Object.keys(synonyms).filter(key => synonyms[key] === name)
 				.map(key => key.startsWith('#') ? key : `#${key}`);
 			const invoke = getSysnonyms('invoke'),
 				widget = getSysnonyms('widget');
@@ -609,7 +611,7 @@
 			elem.value = value;
 		},
 	} = $.valHooks.textarea || {}; // @type {?Object.<string, function>}
-	const isWikiplus = (elem) => ['Wikiplus-Quickedit', 'Wikiplus-Setting-Input'].includes(elem.id);
+	const isWikiplus = elem => ['Wikiplus-Quickedit', 'Wikiplus-Setting-Input'].includes(elem.id);
 	$.valHooks.textarea = {
 		get(elem) {
 			return isWikiplus(elem) && cm ? cm.getValue() : get(elem);
@@ -626,14 +628,17 @@
 	await i18nPromise; // 以下内容依赖I18N
 
 	// 设置对话框
-	let dialog, field;
+	let dialog, widget, indentWidget, field, indentField;
+	const toggleIndent = (value = addons) => {
+		indentField.toggle(value.includes('indentWithSpace'));
+	};
 	const portletContainer = {
 		minerva: 'page-actions-overflow',
 		citizen: 'p-actions',
 	};
 	const $portlet = $(mw.util.addPortletLink(
 		portletContainer[skin] || 'p-cactions', '#', msg('portlet'), 'wphl-settings',
-	)).click(async (e) => {
+	)).click(async e => {
 		e.preventDefault();
 		if (!dialog) {
 			await mw.loader.using(['oojs-ui-windows', 'oojs-ui.styles.icons-content']);
@@ -642,7 +647,7 @@
 			const windowManager = new OO.ui.WindowManager();
 			windowManager.$element.appendTo(document.body);
 			windowManager.addWindows([dialog]);
-			const widget = new OO.ui.CheckboxMultiselectInputWidget({
+			widget = new OO.ui.CheckboxMultiselectInputWidget({
 				options: [
 					{data: 'search', label: msg('addon-search')},
 					{data: 'activeLine', label: msg('addon-active-line')},
@@ -653,16 +658,19 @@
 					{data: 'indentWithSpace', label: msg('addon-indentwithspace')},
 				],
 				value: addons,
-			});
+			}).on('change', toggleIndent);
+			indentWidget = new OO.ui.NumberInputWidget({min: 0, value: indent});
 			field = new OO.ui.FieldLayout(widget, {
 				label: msg('addon-label'),
 				notices: [msg('addon-notice')],
 				align: 'top',
 			});
+			indentField = new OO.ui.FieldLayout(indentWidget, {label: msg('addon-indent')});
+			toggleIndent();
 		}
 		dialog.open({
 			title: msg('addon-title'),
-			message: field.$element.add(
+			message: field.$element.add(indentField.$element).add(
 				$('<p>', {html: msg('feedback')}),
 			),
 			actions: [
@@ -670,10 +678,14 @@
 				{action: 'accept', label: mw.msg('ooui-dialog-message-accept'), flags: 'progressive'},
 			],
 			size: i18nLang === 'en' ? 'medium' : 'small',
-		}).closed.then(data => {
+		}).closing.then(data => {
+			field.$element.detach();
+			indentField.$element.detach();
 			if (typeof data === 'object' && data.action === 'accept') {
-				addons = field.getField().getValue();
+				addons = widget.getValue();
+				indent = indentWidget.getValue();
 				storage.setObject('Wikiplus-highlight-addons', addons);
+				storage.setObject('Wikiplus-highlight-indent', indent);
 			}
 		});
 	});
