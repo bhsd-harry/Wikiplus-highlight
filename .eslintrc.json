@@ -157,7 +157,10 @@
 		"func-call-spacing": 2,
 		"indent": [
 			2,
-			"tab"
+			"tab",
+			{
+				"SwitchCase": 1
+			}
 		],
 		"key-spacing": 2,
 		"keyword-spacing": 2,
