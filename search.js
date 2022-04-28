@@ -133,6 +133,12 @@
 		findNext(doc, false);
 	};
 
+	const {name} = $.client.profile(),
+		focus = name === 'safari'
+			? cm => {
+				cm.focus();
+			}
+			: () => {};
 	mw.hook('wiki-codemirror').add(cm => {
 		const $textarea = $(cm.getWrapperElement()).prev('#Wikiplus-Quickedit');
 		if ($textarea.length === 0) {
@@ -145,13 +151,17 @@
 		});
 		$searchNext.click(() => {
 			findNext(cm, true);
+			focus(cm);
 		});
 		$searchPrev.click(() => {
 			findNext(cm, false);
+			focus(cm);
 		});
 		$search.val('').keydown(e => {
 			if (e.key === 'Enter') {
+				e.preventDefault();
 				findNext(cm, true);
+				focus(cm);
 			} else if (e.key === 'Escape') {
 				e.stopPropagation();
 				reset(cm);
