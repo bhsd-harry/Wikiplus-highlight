@@ -8,7 +8,7 @@
 (async () => {
 	'use strict';
 
-	const version = '2.7';
+	const version = '2.7.1';
 
 	/**
 	 * polyfill for mw.storage
@@ -91,8 +91,8 @@
 	const majorVersion = getVersion(version).slice(0, 2).join('.');
 
 	// 路径
-	const CDN = '//cdn.jsdelivr.net',
-		CM_CDN = 'npm/codemirror@5.65.1',
+	const CDN = '//fastly.jsdelivr.net',
+		CM_CDN = 'npm/codemirror@5.65.3',
 		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.0',
 		REPO_CDN = `gh/bhsd-harry/Wikiplus-highlight@${majorVersion}`;
 
