@@ -9,7 +9,7 @@
 在*个人 JS 页*添加以下代码：
 
 ```javascript
-mw.loader.load('//cdn.jsdelivr.net/gh/bhsd-harry/Wikiplus-highlight@2.7.1/main.min.js');
+mw.loader.load('//cdn.jsdelivr.net/npm/wikiplus-highlight@2.7.2/main.min.js');
 ```
 
 ### 稳定版本
@@ -17,7 +17,7 @@ mw.loader.load('//cdn.jsdelivr.net/gh/bhsd-harry/Wikiplus-highlight@2.7.1/main.m
 在*个人 JS 页*添加以下代码：
 
 ```javascript
-mw.loader.load('//cdn.jsdelivr.net/gh/bhsd-harry/Wikiplus-highlight@stable/main.min.js');
+mw.loader.load('//cdn.jsdelivr.net/npm/wikiplus-highlight/main.min.js');
 ```
 
 由于 CDN 的缓存机制，稳定版本的更新大约会滞后一周。
