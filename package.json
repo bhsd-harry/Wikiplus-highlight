@@ -1,0 +1,24 @@
+{
+  "name": "wikiplus-highlight",
+  "version": "2.7.1",
+  "description": "A plugin for the MediaWiki front-end add-on \"Wikiplus\"",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo 'Error: no test specified' && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bhsd-harry/Wikiplus-highlight.git"
+  },
+  "keywords": [
+    "mediawiki",
+    "mediawiki-gadget",
+    "wikiplus"
+  ],
+  "author": "Bhsd",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/bhsd-harry/Wikiplus-highlight/issues"
+  },
+  "homepage": "https://github.com/bhsd-harry/Wikiplus-highlight#readme"
+}
