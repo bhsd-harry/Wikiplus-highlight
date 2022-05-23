@@ -1,8 +1,6 @@
 #!/usr/local/bin/bash
 sed -i '' -E "s/version = '.+'/version = '$1'/" main.js
-uglifyjs main.js -c -m --comments --source-map -o dist/main.min.js
-echo -n "
-//# sourceMappingURL=https://unpkg.com/wikiplus-highlight@$1/dist/main.min.js.map" >> dist/main.min.js
+uglifyjs main.js -c -m --comments --source-map 'url=main.min.js.map,root="../"' -o dist/main.min.js
 sed -i '' -E "s/\"version\": \".+\"/\"version\": \"$1\"/" package.json
 perl -pi -e "s|wikiplus-highlight@\d+\..+?(['/])|wikiplus-highlight\@$1\$1|" README.md
 for file in i18n/*
