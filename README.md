@@ -18,7 +18,7 @@ mw.loader.load('//cdn.jsdelivr.net/npm/wikiplus-highlight@2.7.2');
 或
 
 ```javascript
-mw.loader.load('//unpkg.com/wikiplus-highlight@2.7.2/dist/main.min.js');
+mw.loader.load('//unpkg.com/wikiplus-highlight@2.7.3/dist/main.min.js');
 ```
 
 ### 稳定版本
