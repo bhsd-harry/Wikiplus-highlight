@@ -17,6 +17,9 @@
 		"Wikiplus": "readonly",
 		"OO": "readonly"
 	},
+	"ignorePatterns": [
+		"*.min.js"
+	],
 	"rules": {
 		"array-callback-return": [
 			2,
