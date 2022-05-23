@@ -20,5 +20,9 @@
   "bugs": {
     "url": "https://github.com/bhsd-harry/Wikiplus-highlight/issues"
   },
-  "homepage": "https://github.com/bhsd-harry/Wikiplus-highlight#readme"
+  "homepage": "https://github.com/bhsd-harry/Wikiplus-highlight#readme",
+  "devDependencies": {
+    "eslint": "^8.8.0",
+    "uglify-js": "^3.15.5"
+  }
 }
