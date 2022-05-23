@@ -216,7 +216,7 @@
 	};
 
 	// 以下进入CodeMirror相关内容
-	let /** @type {Object<string, function>} */ cm;
+	let /** @type {CodeMirror.Editor} */ cm;
 
 	/**
 	 * 根据文本的高亮模式加载依赖项
@@ -229,7 +229,7 @@
 			loaded = typeof window.CodeMirror === 'function';
 
 		/** 代替CodeMirror的局部变量 */
-		const CM = loaded
+		const /** @type {CodeMirror} */ CM = loaded
 			? window.CodeMirror
 			: {
 				modes: {},
@@ -356,7 +356,7 @@
 
 		/**
 		 * @typedef {object} query
-		 * @property {{name: string, aliases: string[]}[]} magicwords
+		 * @property {{name: string, aliases: string[], 'case-sensitive': boolean}[]} magicwords
 		 * @property {string[]} extensiontags
 		 * @property {string[]} functionhooks
 		 * @property {string[]} variables
@@ -377,8 +377,14 @@
 		});
 		const otherMagicwords = ['msg', 'raw', 'msgnw', 'subst', 'safesubst'];
 
-		/** @param {{aliases: string[], name: string}[]} words */
-		const getAliases = words => words.flatMap(({aliases, name}) => aliases.map(alias => ({alias, name})));
+		/**
+		 * @param {{aliases: string[], name: string}[]} words
+		 * @returns {{alias: string, name: string}[]}
+		 */
+		const getAliases = words => words.flatMap(
+			/** @param {{aliases: string[], name: string}} */
+			({aliases, name}) => aliases.map(alias => ({alias, name})),
+		);
 		/**
 		 * @param {{alias: string, name: string}[]} aliases
 		 * @returns {Object<string, string>}
@@ -400,8 +406,9 @@
 				urlProtocols: mw.config.get('wgUrlProtocols'),
 			};
 			const realMagicwords = new Set([...functionhooks, ...variables, ...otherMagicwords]),
-				allMagicwords = magicwords.filter(({name, aliases}) =>
-					aliases.some(alias => /^__.+__$/.test(alias)) || realMagicwords.has(name),
+				allMagicwords = magicwords.filter(
+					/** @returns {boolean} */
+					({name, aliases}) => aliases.some(alias => /^__.+__$/.test(alias)) || realMagicwords.has(name),
 				),
 				sensitive = getAliases(
 					allMagicwords.filter(word => word['case-sensitive']),
@@ -421,15 +428,15 @@
 			const {functionSynonyms: [insensitive]} = config;
 			if (!insensitive.subst) {
 				getAliases(
-					magicwords.filter(({name}) => otherMagicwords.includes(name)),
+					magicwords.filter(/** @return {boolean} */ ({name}) => otherMagicwords.includes(name)),
 				).forEach(({alias, name}) => {
 					insensitive[alias.replace(/:$/, '')] = name;
 				});
 			}
 		}
-		config.redirect = magicwords.find(({name}) => name === 'redirect').aliases;
+		config.redirect = magicwords.find(/** @param {{name: string}} */ ({name}) => name === 'redirect').aliases;
 		config.img = getConfig(
-			getAliases(magicwords.filter(({name}) => name.startsWith('img_'))),
+			getAliases(magicwords.filter(/** @returns {boolean} */ ({name}) => name.startsWith('img_'))),
 		);
 		mw.config.set('extCodeMirrorConfig', config);
 		updateCachedConfig(config);
@@ -513,7 +520,7 @@
 		cm.setSize(null, height);
 		cm.refresh();
 
-		const /** @type {HTMLDivElement} */ wrapper = cm.getWrapperElement();
+		const wrapper = cm.getWrapperElement();
 		wrapper.id = 'Wikiplus-CodeMirror';
 		if (['mediawiki', 'widget'].includes(mode) && addons.includes('contextmenu')) {
 			contextmenuStyle.disabled = false;
@@ -582,8 +589,13 @@
 
 	// 监视 Wikiplus 编辑框
 	const observer = new MutationObserver(records => {
-		const $editArea = $(records.flatMap(({addedNodes}) => [...addedNodes]))
-			.find('#Wikiplus-Quickedit, #Wikiplus-Setting-Input');
+		const $editArea = $(records.flatMap(
+			/**
+			 * @param {{addedNodes: NodeList}}
+			 * @returns {Node[]}
+			 */
+			({addedNodes}) => [...addedNodes],
+		)).find('#Wikiplus-Quickedit, #Wikiplus-Setting-Input');
 		if ($editArea.length === 0) {
 			return;
 		}

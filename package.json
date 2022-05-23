@@ -20,8 +20,5 @@
   "bugs": {
     "url": "https://github.com/bhsd-harry/Wikiplus-highlight/issues"
   },
-  "homepage": "https://github.com/bhsd-harry/Wikiplus-highlight#readme",
-  "dependencies": {
-    "jquery": "^3.2.1"
-  }
+  "homepage": "https://github.com/bhsd-harry/Wikiplus-highlight#readme"
 }

@@ -77,7 +77,10 @@
 	// keyboard event handler of $search
 	let /** @type {string|RegExp} */ lastPtn,
 		/** @type {Object<string, function(): number>} */ cursor;
-	/** @param {boolean} dir */
+	/**
+	 * @param {CodeMirror.Editor} cm
+	 * @param {boolean} dir
+	 */
 	const findNext = (cm, dir) => {
 		let /** @type {string|RegExp} */ ptn = $search.val();
 		if (!ptn) {
@@ -102,8 +105,8 @@
 			if (dir) {
 				cursor = cm.getSearchCursor(ptn, {line: 0, ch: 0}, {caseFold: true});
 			} else {
-				const /** @type {number} */ lastLine = cm.lastLine(),
-					/** @type {number} */ lastCh = cm.getLine(lastLine).length;
+				const lastLine = cm.lastLine(),
+					lastCh = cm.getLine(lastLine).length;
 				cursor = cm.getSearchCursor(ptn, {line: lastLine, ch: lastCh}, {caseFold: true});
 			}
 			result = cursor[method]();
@@ -126,28 +129,32 @@
 			.scrollIntoView({behavior: 'smooth'});
 	};
 
-	// click event handler of $searchClose
+	/**
+	 * click event handler of $searchClose
+	 * @param {CodeMirror.Editor} cm
+	 */
 	const reset = cm => {
 		cm.removeOverlay(overlay);
 		$searchContainer.hide();
 		lastPtn = '';
 	};
 
+	/** @param {CodeMirror.Editor} doc */
 	CodeMirror.commands.findForward = doc => {
 		findNext(doc, true);
 	};
+	/** @param {CodeMirror.Editor} doc */
 	CodeMirror.commands.findBackward = doc => {
 		findNext(doc, false);
 	};
 
 	const /** @type {{name: string}} */ {name} = $.client.profile(),
 		focus = name === 'safari'
-			? cm => {
+			? /** @param {CodeMirror.Editor} cm */ cm => {
 				cm.focus();
 			}
 			: () => {};
-	mw.hook('wiki-codemirror').add(cm => {
-		/** @type {JQuery<HTMLTextAreaElement>} */
+	mw.hook('wiki-codemirror').add(/** @param {CodeMirror.Editor} cm */ cm => {
 		const $textarea = $(cm.getWrapperElement()).prev('#Wikiplus-Quickedit');
 		if ($textarea.length === 0) {
 			return;
