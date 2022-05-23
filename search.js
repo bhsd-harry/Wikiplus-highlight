@@ -6,6 +6,10 @@
 (() => {
 	'use strict';
 
+	/**
+	 * @param {string} key
+	 * @returns {string}
+	 */
 	const msg = key => mw.msg(`wphl-${key}`);
 
 	// Prepare elements
@@ -42,14 +46,15 @@
 			text: msg('addon-search'),
 		});
 
-	const escapeRegExp = mw.util.escapeRegExp || mw.RegExp.escape; // @type {(function|undefined)}
+	const /** @type {function(string): string} */ escapeRegExp = mw.util.escapeRegExp || mw.RegExp.escape;
 	const overlay = {token: () => {}};
 
 	/**
 	 * 根据搜索字符串生成高亮
+	 * @param {string|RegExp} str
 	 */
 	const token = str => {
-		let initial;
+		let /** @type {RegExp} */ initial;
 		if (typeof str === 'string') {
 			initial = RegExp(`[^${escapeRegExp(str[0])}]`, 'i');
 		}
@@ -70,9 +75,11 @@
 	};
 
 	// keyboard event handler of $search
-	let lastPtn, cursor;
+	let /** @type {string|RegExp} */ lastPtn,
+		/** @type {Object<string, function(): number>} */ cursor;
+	/** @param {boolean} dir */
 	const findNext = (cm, dir) => {
-		let ptn = $search.val();
+		let /** @type {string|RegExp} */ ptn = $search.val();
 		if (!ptn) {
 			return;
 		}
@@ -95,8 +102,8 @@
 			if (dir) {
 				cursor = cm.getSearchCursor(ptn, {line: 0, ch: 0}, {caseFold: true});
 			} else {
-				const lastLine = cm.lastLine(),
-					lastCh = cm.getLine(lastLine).length;
+				const /** @type {number} */ lastLine = cm.lastLine(),
+					/** @type {number} */ lastCh = cm.getLine(lastLine).length;
 				cursor = cm.getSearchCursor(ptn, {line: lastLine, ch: lastCh}, {caseFold: true});
 			}
 			result = cursor[method]();
@@ -133,13 +140,14 @@
 		findNext(doc, false);
 	};
 
-	const {name} = $.client.profile(),
+	const /** @type {{name: string}} */ {name} = $.client.profile(),
 		focus = name === 'safari'
 			? cm => {
 				cm.focus();
 			}
 			: () => {};
 	mw.hook('wiki-codemirror').add(cm => {
+		/** @type {JQuery<HTMLTextAreaElement>} */
 		const $textarea = $(cm.getWrapperElement()).prev('#Wikiplus-Quickedit');
 		if ($textarea.length === 0) {
 			return;

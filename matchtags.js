@@ -7,12 +7,44 @@
 (() => {
 	'use strict';
 
+	/**
+	 * @typedef {object} pos
+	 * @property {number} line
+	 * @property {number} ch
+	 */
+
+	/** @type {{Pos: function(number, number): pos, cmpPos: function(pos, pos): boolean}} */
 	const {Pos, cmpPos} = CodeMirror;
 
 	const tagStart = /<(\/?)([A-Z_a-z]\w*)/g,
 		voidTags = ['br', 'wbr', 'hr', 'img'];
 
+	/**
+	 * @typedef {object} range
+	 * @property {number} from
+	 * @property {number} to
+	 */
+	/**
+	 * @typedef {object} cm
+	 * @property {{matchTags: {maxScanLines: number}}} state
+	 * @property {function(number): string} getLine
+	 * @property {function(): number} firstLine
+	 * @property {function(): number} lastLine
+	 * @property {function(pos): string} getTokenTypeAt
+	 * @property {function(): void} on
+	 * @property {function(): void} off
+	 * @property {function(function): void} operation
+	 * @property {function(): boolean} somethingSelected
+	 * @property {function(pos): {open: range, close: range, at: string}} findMatchingTag
+	 * @property {function(): pos} getCursor
+	 * @property {function(number, number, any): any} markText
+	 */
+
 	class Iter {
+		/**
+		 * @param {cm} cm
+		 * @param {pos} pos
+		 */
 		constructor(cm, pos) {
 			const {line, ch} = pos,
 				{state: {matchTags: {maxScanLines = 1000}}} = cm;
@@ -29,6 +61,7 @@
 			return /\b(?:mw-(?:html|ext)tag|tag\b)/.test(type);
 		}
 
+		/** @param {number} ch */
 		bracketAt(ch) {
 			const type = this.cm.getTokenTypeAt(Pos(this.line, ch + 1));
 			return /\b(?:mw-(?:html|ext)tag-)?bracket\b/.test(type);
@@ -135,8 +168,9 @@
 			}
 		}
 
+		/** @param {string} tag */
 		findMatchingClose(tag) {
-			const stack = [];
+			const /** @type {string[]} */ stack = [];
 			for (;;) {
 				const next = this.toNextTag();
 				if (!next) {
@@ -172,8 +206,9 @@
 			}
 		}
 
+		/** @param {string} tag */
 		findMatchingOpen(tag) {
-			const stack = [];
+			const /** @type {string[]} */ stack = [];
 			for (;;) {
 				const prev = this.toPrevTag();
 				if (!prev) {
@@ -210,7 +245,7 @@
 		}
 	}
 
-	CodeMirror.defineExtension('findMatchingTag', function(pos) {
+	CodeMirror.defineExtension('findMatchingTag', /** @param {pos} pos */ function(pos) {
 		let iter = new Iter(this, pos);
 		if (!iter.isTag()) {
 			return;
@@ -234,26 +269,38 @@
 		return {open: here, close: iter.findMatchingClose(tag), at: 'open'};
 	});
 
-	CodeMirror.defineExtension('findEnclosingTag', function(pos, tag) {
-		const iter = new Iter(this, pos);
-		const open = iter.findMatchingOpen(tag);
-		if (!open) {
-			return;
-		}
-		const forward = new Iter(this, pos);
-		const close = forward.findMatchingClose(open.tag);
-		if (close) {
-			return {open, close};
-		}
-	});
+	CodeMirror.defineExtension(
+		'findEnclosingTag',
+		/**
+		 * @param {pos} pos
+		 * @param {string} tag
+		 */
+		function(pos, tag) {
+			const iter = new Iter(this, pos);
+			const open = iter.findMatchingOpen(tag);
+			if (!open) {
+				return;
+			}
+			const forward = new Iter(this, pos);
+			const close = forward.findMatchingClose(open.tag);
+			if (close) {
+				return {open, close};
+			}
+		},
+	);
 
-	// Used by addon/edit/closetag.js
+	/**
+	 * Used by addon/edit/closetag.js
+	 * @param {cm} cm
+	 * @param {pos} pos
+	 * @param {string} name
+	 */
 	CodeMirror.scanForClosingTag = function(cm, pos, name) {
 		const iter = new Iter(cm, pos);
 		return iter.findMatchingClose(name);
 	};
 
-	CodeMirror.defineOption('matchTags', false, (cm, val, old) => {
+	CodeMirror.defineOption('matchTags', false, /** @param {cm} cm */ (cm, val, old) => {
 		if (old && old !== CodeMirror.Init) {
 			cm.off('cursorActivity', doMatchTags);
 			clear(cm);
@@ -265,6 +312,7 @@
 		}
 	});
 
+	/** @param {cm} cm */
 	function clear(cm) {
 		if (cm.state.tagHit) {
 			cm.state.tagHit.clear();
@@ -276,6 +324,7 @@
 		cm.state.tagOther = null;
 	}
 
+	/** @param {cm} cm */
 	function doMatchTags(cm) {
 		cm.operation(() => {
 			clear(cm);

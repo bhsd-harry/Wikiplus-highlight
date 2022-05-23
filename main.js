@@ -12,7 +12,7 @@
 
 	/**
 	 * polyfill for mw.storage
-	 * @type {Object.<string, function>}
+	 * @type {{getObject: function(string): ?any, setObject: function(string, any): boolean}}
 	 */
 	const storage = typeof mw.storage === 'object' && typeof mw.storage.getObject === 'function'
 		? mw.storage
@@ -29,7 +29,7 @@
 				}
 			},
 			setObject(key, value) {
-				let json;
+				let /** @type {string} */ json;
 				try {
 					json = JSON.stringify(value);
 					return localStorage.setItem(key, json);
@@ -40,12 +40,10 @@
 		};
 	/**
 	 * polyfill for Object.fromEntries
-	 * @type {function}
-	 * @param {Array.<[string, any]>} entries
-	 * @returns {Object}
+	 * @type {function(Iterable<[string, any]>): object}
 	 */
 	const fromEntries = Object.fromEntries || (entries => {
-		const obj = {};
+		const /** @type {any} */ obj = {};
 		for (const [key, value] of entries) {
 			obj[key] = value;
 		}
@@ -55,14 +53,13 @@
 	/**
 	 * 解析版本号
 	 * @param {string} str 版本字符串
-	 * @returns {number[]}
 	 */
 	const getVersion = str => str.split('.').map(s => Number(s));
 	/**
 	 * 比较版本号
 	 * @param {string} a
 	 * @param {string} b
-	 * @returns {boolean} a的版本号是否小于b的版本号
+	 * @returns a的版本号是否小于b的版本号
 	 */
 	const cmpVersion = (a, b) => {
 		const [a0, a1] = getVersion(a),
@@ -79,10 +76,9 @@
 	/**
 	 * 提示消息
 	 * @param {string[]} args
-	 * @return {function: jQuery.<HTMLParagraphElement>}
 	 */
 	const notify = (...args) => () => {
-		const $p = $('<p>', {html: msg(...args)});
+		const /** @type {JQuery<HTMLParagraphElement>} */ $p = $('<p>', {html: msg(...args)});
 		mw.notify($p, {type: 'success', autoHideSeconds: 'long'});
 		return $p;
 	};
@@ -96,7 +92,10 @@
 		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.0',
 		REPO_CDN = `npm/wikiplus-highlight@${majorVersion}`;
 
-	// mw.config常数
+	/**
+	 * mw.config常数
+	 * @type {Object<string, string>}
+	 */
 	const {
 		wgPageName: page,
 		wgNamespaceNumber: ns,
@@ -109,12 +108,12 @@
 
 	// 和本地缓存有关的常数
 	const USING_LOCAL = mw.loader.getState('ext.CodeMirror') !== null,
-		ALL_SETTINGS_CACHE = storage.getObject('InPageEditMwConfig') || {}, // @type {?Object.<string, Object>}
+		ALL_SETTINGS_CACHE = storage.getObject('InPageEditMwConfig') || {},
 		SITE_ID = `${server}${scriptPath}`,
-		SITE_SETTINGS = ALL_SETTINGS_CACHE[SITE_ID] || {}, // @type {?Object}
+		SITE_SETTINGS = ALL_SETTINGS_CACHE[SITE_ID] || {},
 		EXPIRED = SITE_SETTINGS.time < Date.now() - 86400 * 1000 * 30;
 
-	const CONTENTMODEL = {
+	const /** @type {Object<string, string>} */ CONTENTMODEL = {
 		css: 'css',
 		'sanitized-css': 'css',
 		javascript: 'javascript',
@@ -122,6 +121,7 @@
 		wikitext: 'mediawiki',
 	};
 
+	/** @type {Object<string, string|[]>} */
 	const MODE_LIST = USING_LOCAL
 		? {
 			lib: 'ext.CodeMirror.lib',
@@ -154,17 +154,17 @@
 
 	const defaultAddons = ['search'],
 		defaultIndent = '4';
-	let addons = storage.getObject('Wikiplus-highlight-addons') || defaultAddons, // @type {?string[]}
-		indent = storage.getObject('Wikiplus-highlight-indent') || defaultIndent; // @type {string}
+	let /** @type {string[]} */ addons = storage.getObject('Wikiplus-highlight-addons') || defaultAddons,
+		/** @type {string} */ indent = storage.getObject('Wikiplus-highlight-indent') || defaultIndent;
 
 	// 用于contextMenu插件
-	const contextmenuStyle = document.getElementById('wphl-contextmenu') // @type {?HTMLStyleElement}
+	const /** @type {HTMLStyleElement} */ contextmenuStyle = document.getElementById('wphl-contextmenu')
 		|| mw.loader.addStyleTag('#Wikiplus-CodeMirror .cm-mw-template-name{cursor:pointer}');
 	contextmenuStyle.id = 'wphl-contextmenu';
 	contextmenuStyle.disabled = true;
 
-	let i18n = storage.getObject('Wikiplus-highlight-i18n'), // @type {?Object.<string, string>}
-		welcome; // @type {function: jQuery.<?HTMLParagraphElement>}
+	let /** @type {Object<string, string>} */ i18n = storage.getObject('Wikiplus-highlight-i18n'),
+		/** @type {function(): JQuery<HTMLParagraphElement>} */ welcome;
 	if (!i18n) { // 首次安装
 		i18n = {};
 		welcome = notify('welcome');
@@ -176,14 +176,11 @@
 			zh: 'zh-hans', 'zh-hans': 'zh-hans', 'zh-cn': 'zh-hans', 'zh-my': 'zh-hans', 'zh-sg': 'zh-hans',
 			'zh-hant': 'zh-hant', 'zh-tw': 'zh-hant', 'zh-hk': 'zh-hant', 'zh-mo': 'zh-hant',
 		},
-		i18nLang = i18nLanguages[userLang] || 'en', // @type {?string}
+		/** @type {string} */ i18nLang = i18nLanguages[userLang] || 'en',
 		I18N_CDN = `${CDN}/${REPO_CDN}/i18n/${i18nLang}.json`,
 		isLatest = i18n['wphl-version'] === majorVersion;
 
-	/**
-	 * 加载 I18N
-	 * @returns {promise}
-	 */
+	/** 加载 I18N */
 	const setI18N = async () => {
 		if (!isLatest || i18n['wphl-lang'] !== i18nLang) {
 			i18n = await $.ajax(`${I18N_CDN}`, { // eslint-disable-line require-atomic-updates
@@ -203,12 +200,12 @@
 	/**
 	 * 下载脚本
 	 * @param {string[]} urls 脚本路径
-	 * @param {boolean=false} local 是否从本地下载
-	 * @returns {promise}
+	 * @param {boolean} local 是否从本地下载
+	 * @returns {Promise<void>}
 	 */
 	const getScript = (urls, local) => {
 		if (urls.length === 0) {
-			return;
+			return Promise.resolve();
 		}
 		return local
 			? mw.loader.using(urls)
@@ -219,23 +216,19 @@
 	};
 
 	// 以下进入CodeMirror相关内容
-	let cm;
+	let /** @type {Object<string, function>} */ cm;
 
 	/**
 	 * 根据文本的高亮模式加载依赖项
 	 * @param {string} type
-	 * @returns {promise}
 	 */
 	const initMode = async type => {
-		let scripts = [];
-		const externalScript = [],
-			addonScript = [],
+		let /** @type {string[]} */ scripts = [];
+		const /** @type {string[]} */ externalScript = [],
+			/** @type {string[]} */ addonScript = [],
 			loaded = typeof window.CodeMirror === 'function';
 
-		/**
-		 * 代替CodeMirror的局部变量
-		 * @type {(function|Object.<string, Object>)}
-		 */
+		/** 代替CodeMirror的局部变量 */
 		const CM = loaded
 			? window.CodeMirror
 			: {
@@ -314,8 +307,19 @@
 	};
 
 	/**
+	 * @typedef {object} config
+	 * @property {Object<string, string>} tagModes
+	 * @property {Object<string, boolean>} tags
+	 * @property {string} urlProtocols
+	 * @property {[Object<string, string>, Object<string, string>]} doubleUnderscore
+	 * @property {[Object<string, string>, Object<string, string>]} functionSynonyms
+	 * @property {string[]} redirect
+	 * @property {Object<string, string>} img
+	 */
+
+	/**
 	 * 更新缓存的设置数据
-	 * @param {Object} config
+	 * @param {config} config
 	 */
 	const updateCachedConfig = config => {
 		ALL_SETTINGS_CACHE[SITE_ID] = {
@@ -328,8 +332,7 @@
 	/**
 	 * 加载CodeMirror的mediawiki模块需要的设置数据
 	 * @param {string} type
-	 * @param {promise} initModePromise 使用本地CodeMirror扩展时大部分数据来自ext.CodeMirror.data模块
-	 * @returns {promise}
+	 * @param {Promise<void>} initModePromise 使用本地CodeMirror扩展时大部分数据来自ext.CodeMirror.data模块
 	 */
 	const getMwConfig = async (type, initModePromise) => {
 		if (!['mediawiki', 'widget'].includes(type)) {
@@ -340,7 +343,7 @@
 			await initModePromise;
 		}
 
-		let config = mw.config.get('extCodeMirrorConfig');
+		let /** @type {config} */ config = mw.config.get('extCodeMirrorConfig');
 		if (!config && !EXPIRED && isLatest) {
 			({config} = SITE_SETTINGS);
 			mw.config.set('extCodeMirrorConfig', config);
@@ -352,12 +355,20 @@
 		}
 
 		/**
+		 * @typedef {object} query
+		 * @property {{name: string, aliases: string[]}[]} magicwords
+		 * @property {string[]} extensiontags
+		 * @property {string[]} functionhooks
+		 * @property {string[]} variables
+		 */
+
+		/**
 		 * 以下情形均需要发送API请求
 		 * 情形2：localStorage未过期但不包含新设置
 		 * 情形3：新加载的 ext.CodeMirror.data
 		 * 情形4：config === null
 		 */
-		const {
+		const /** @type {{query: query}} */ {
 			query: {magicwords, extensiontags, functionhooks, variables},
 		} = await new mw.Api().get({
 			meta: 'siteinfo',
@@ -366,22 +377,17 @@
 		});
 		const otherMagicwords = ['msg', 'raw', 'msgnw', 'subst', 'safesubst'];
 
-		/**
-		 * @param {Object[]} words
-		 * @property <string[]> aliases
-		 * @property <string> name
-		 * @returns {Object.<('alias'|'name'), string>[]}
-		 */
+		/** @param {{aliases: string[], name: string}[]} words */
 		const getAliases = words => words.flatMap(({aliases, name}) => aliases.map(alias => ({alias, name})));
 		/**
-		 * @param {Object.<('alias'|'name'), string>[]} aliases
-		 * @returns {Object.<string, string>}
+		 * @param {{alias: string, name: string}[]} aliases
+		 * @returns {Object<string, string>}
 		 */
 		const getConfig = aliases => fromEntries(
 			aliases.map(({alias, name}) => [alias.replace(/:$/, ''), name]),
 		);
 
-		if (!config) { // 情形4：config === null
+		if (!config) { // 情形4：config === null\
 			config = {
 				tagModes: {
 					pre: 'mw-tag-pre',
@@ -430,15 +436,12 @@
 		return config;
 	};
 
-	/**
-	 * 检查页面语言类型
-	 * @returns {promise}
-	 */
+	/** 检查页面语言类型 */
 	const getPageMode = async () => {
 		if ([274, 828].includes(ns) && !page.endsWith('/doc')) {
 			const pageMode = ns === 274 ? 'Widget' : 'Lua';
 			await mw.loader.using(['oojs-ui-windows', 'oojs-ui.styles.icons-content']);
-			const bool = await OO.ui.confirm(msg('contentmodel'), {
+			const /** @type {boolean} */ bool = await OO.ui.confirm(msg('contentmodel'), {
 				actions: [
 					{label: pageMode},
 					{label: 'Wikitext', action: 'accept'},
@@ -453,7 +456,7 @@
 
 	/**
 	 * 渲染编辑器
-	 * @param {jQuery.<HTMLTextAreaElement>} $target 目标编辑框
+	 * @param {JQuery<HTMLTextAreaElement>} $target 目标编辑框
 	 * @param {boolean} setting 是否是Wikiplus设置（使用json语法）
 	 */
 	const renderEditor = async ($target, setting) => {
@@ -484,7 +487,7 @@
 		}
 
 		const json = setting || contentmodel === 'json',
-			{name} = $.client.profile();
+			/** @type {{name: string}} */ {name} = $.client.profile();
 		cm = CodeMirror.fromTextArea($target[0], $.extend({
 			inputStyle: name === 'safari' ? 'textarea' : 'contenteditable',
 			lineNumbers: true,
@@ -510,24 +513,21 @@
 		cm.setSize(null, height);
 		cm.refresh();
 
-		const wrapper = cm.getWrapperElement();
+		const /** @type {HTMLDivElement} */ wrapper = cm.getWrapperElement();
 		wrapper.id = 'Wikiplus-CodeMirror';
 		if (['mediawiki', 'widget'].includes(mode) && addons.includes('contextmenu')) {
 			contextmenuStyle.disabled = false;
-			const {functionSynonyms: [synonyms]} = mw.config.get('extCodeMirrorConfig');
-			/**
-			 * @param {string} name
-			 * @returns {string[]}
-			 */
-			const getSysnonyms = name => Object.keys(synonyms).filter(key => synonyms[key] === name)
+			const /** @type {config} */ {functionSynonyms: [synonyms]} = mw.config.get('extCodeMirrorConfig');
+			/** @param {string} str */
+			const getSysnonyms = str => Object.keys(synonyms).filter(key => synonyms[key] === str)
 				.map(key => key.startsWith('#') ? key : `#${key}`);
 			const invoke = getSysnonyms('invoke'),
 				widget = getSysnonyms('widget');
 
 			await mw.loader.using('mediawiki.Title');
 			$(wrapper).on('contextmenu', '.cm-mw-template-name', function() {
-				const text = this.textContent.replace(/\u200e/g, '').trim(),
-					title = new mw.Title(text);
+				const /** @type {string} */ text = this.textContent.replace(/\u200e/g, '').trim(),
+					/** @type {{namespace: number, getUrl: function(): string}} */ title = new mw.Title(text);
 				if (title.namespace !== 0 || text.startsWith(':')) {
 					open(title.getUrl(), '_blank');
 				} else {
@@ -538,6 +538,7 @@
 				'contextmenu',
 				'.cm-mw-parserfunction-name + .cm-mw-parserfunction-delimiter + .cm-mw-parserfunction',
 				function() {
+					/** @type {string} */
 					const parserFunction = this.previousSibling.previousSibling.textContent.trim().toLowerCase();
 					if (invoke.includes(parserFunction)) {
 						open(mw.util.getUrl(`Module:${this.textContent}`), '_blank');
@@ -591,7 +592,7 @@
 	observer.observe(document.body, {childList: true});
 
 	// 添加样式
-	const wphlStyle = document.getElementById('wphl-style') || mw.loader.addStyleTag(
+	const /** @type {HTMLStyleElement} */ wphlStyle = document.getElementById('wphl-style') || mw.loader.addStyleTag(
 		'#Wikiplus-Quickedit+.CodeMirror,#Wikiplus-Setting-Input+.CodeMirror{border:1px solid #c8ccd1;line-height:1.3;clear:both}'
 		+ 'div.Wikiplus-InterBox{font-size:14px;z-index:100}'
 		+ '.skin-minerva .Wikiplus-InterBox{font-size:16px}'
@@ -603,7 +604,10 @@
 	);
 	wphlStyle.id = 'wphl-style';
 
-	// 对编辑框调用jQuery.val方法时从CodeMirror获取文本
+	/**
+	 * 对编辑框调用jQuery.val方法时从CodeMirror获取文本
+	 * @type {{get: function(HTMLTextAreaElement): string, set: function(HTMLTextAreaElement, string): void}}
+	 */
 	const {
 		get = function(elem) {
 			return elem.value;
@@ -611,7 +615,8 @@
 		set = function(elem, value) {
 			elem.value = value;
 		},
-	} = $.valHooks.textarea || {}; // @type {?Object.<string, function>}
+	} = $.valHooks.textarea || {};
+	/** @param {HTMLTextAreaElement} elem */
 	const isWikiplus = elem => ['Wikiplus-Quickedit', 'Wikiplus-Setting-Input'].includes(elem.id);
 	$.valHooks.textarea = {
 		get(elem) {
@@ -629,7 +634,11 @@
 	await i18nPromise; // 以下内容依赖I18N
 
 	// 设置对话框
-	let dialog, widget, indentWidget, field, indentField;
+	let /** @type {{open: function(any): {closing: Promise<{action: string}>}} */ dialog,
+		/** @type {{getValue: string[]}} */ widget,
+		/** @type {{getValue: string}} */ indentWidget,
+		/** @type {{$element: JQuery<HTMLDivElement>}} */ field,
+		/** @type {{$element: JQuery<HTMLDivElement>, toggle: function(boolean): void}} */ indentField;
 	const toggleIndent = (value = addons) => {
 		indentField.toggle(value.includes('indentWithSpace'));
 	};
@@ -637,7 +646,7 @@
 		minerva: 'page-actions-overflow',
 		citizen: 'p-actions',
 	};
-	const $portlet = $(mw.util.addPortletLink(
+	const /** @type {JQuery<HTMLLIElement} */ $portlet = $(mw.util.addPortletLink(
 		portletContainer[skin] || 'p-cactions', '#', msg('portlet'), 'wphl-settings',
 	)).click(async e => {
 		e.preventDefault();
@@ -645,6 +654,7 @@
 			await mw.loader.using(['oojs-ui-windows', 'oojs-ui.styles.icons-content']);
 			// eslint-disable-next-line require-atomic-updates
 			dialog = new OO.ui.MessageDialog({id: 'Wikiplus-highlight-dialog'});
+			/** @type {{$element: JQuery<HTMLDivElement>, addWindows: function(array): void}} */
 			const windowManager = new OO.ui.WindowManager();
 			windowManager.$element.appendTo(document.body);
 			windowManager.addWindows([dialog]);
