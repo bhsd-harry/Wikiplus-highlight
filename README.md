@@ -12,7 +12,7 @@
 在*个人 JS 页*添加以下代码：
 
 ```javascript
-mw.loader.load('//cdn.jsdelivr.net/npm/wikiplus-highlight@2.7.2');
+mw.loader.load('//cdn.jsdelivr.net/npm/wikiplus-highlight@2.7.3');
 ```
 
 或
