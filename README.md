@@ -1,5 +1,6 @@
 # Wikiplus-highlight
 [![jsdelivr hits](https://img.shields.io/jsdelivr/gh/hd/bhsd-harry/Wikiplus-highlight.svg)](https://github.com/bhsd-harry/Wikiplus-highlight)
+[![jsdelivr hits](https://img.shields.io/jsdelivr/npm/hd/wikiplus-highlight.svg)](https://www.npmjs.com/package/wikiplus-highlight)
 [![npm version](https://badge.fury.io/js/wikiplus-highlight.svg)](https://www.npmjs.com/package/wikiplus-highlight)
 [![npm downloads](https://img.shields.io/npm/dw/wikiplus-highlight.svg)](https://www.npmjs.com/package/wikiplus-highlight)
 
