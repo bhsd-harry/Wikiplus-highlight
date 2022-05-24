@@ -89,7 +89,7 @@
 	// 路径
 	const CDN = '//fastly.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.65.3',
-		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.0',
+		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.1',
 		REPO_CDN = `npm/wikiplus-highlight@${majorVersion}`;
 
 	/**
