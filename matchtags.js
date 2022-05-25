@@ -304,14 +304,15 @@
 			if (cm.somethingSelected()) {
 				return;
 			}
+
 			/**
-			 * @typedef {object} match
+			 * @typedef {object} matchingTag
 			 * @property {string} at
 			 * @property {{from: CodeMirror.Position, to: CodeMirror.Position}} open
 			 * @property {{from: CodeMirror.Position, to: CodeMirror.Position}} close
 			 */
-			/** @type {match}} */
-			const match = cm.findMatchingTag(cm.getCursor());
+
+			const /** @type {matchingTag}} */ match = cm.findMatchingTag(cm.getCursor());
 			if (!match) {
 				return;
 			}

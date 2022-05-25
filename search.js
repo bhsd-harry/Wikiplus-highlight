@@ -46,8 +46,8 @@
 			text: msg('addon-search'),
 		});
 
-	const /** @type {function(string): string} */ escapeRegExp = mw.util.escapeRegExp || mw.RegExp.escape;
-	const overlay = {token: () => {}};
+	const /** @type {(str: string) => string} */ escapeRegExp = mw.util.escapeRegExp || mw.RegExp.escape;
+	const /** @type {{token: (stream: CodeMirror.StringStream) => string}} */ overlay = {token: () => {}};
 
 	/**
 	 * 根据搜索字符串生成高亮
@@ -58,7 +58,7 @@
 		if (typeof str === 'string') {
 			initial = RegExp(`[^${escapeRegExp(str[0])}]`, 'i');
 		}
-		return stream => {
+		return /** @param {CodeMirror.StringStream} stream */ stream => {
 			if (stream.match(str, true, true)) {
 				return 'search';
 			}
@@ -74,9 +74,17 @@
 		$search.css('background-color', '').off('input', onInput);
 	};
 
+	/**
+	 * @typedef {object} SearchCursor
+	 * @property {() => boolean} findNext
+	 * @property {() => boolean} findPrevious
+	 * @property {() => CodeMirror.Position} from
+	 * @property {() => CodeMirror.Position} to
+	 */
+
 	// keyboard event handler of $search
 	let /** @type {string|RegExp} */ lastPtn,
-		/** @type {Object<string, function(): number>} */ cursor;
+		/** @type {SearchCursor} */ cursor;
 	/**
 	 * @param {CodeMirror.Editor} cm
 	 * @param {boolean} dir
