@@ -8,7 +8,7 @@
 (async () => {
 	'use strict';
 
-	const version = '2.7.6';
+	const version = '2.8';
 
 	/**
 	 * polyfill for mw.storage
