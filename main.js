@@ -89,7 +89,7 @@
 	// 路径
 	const CDN = '//fastly.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.65.3',
-		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.1',
+		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.3',
 		REPO_CDN = `npm/wikiplus-highlight@${majorVersion}`;
 
 	/**
@@ -161,6 +161,8 @@
 		trailingspace: `${CM_CDN}/addon/edit/trailingspace.min.js`,
 		matchBrackets: `${CM_CDN}/addon/edit/matchbrackets.min.js`,
 		matchTags: `${REPO_CDN}/matchtags.min.js`,
+		foldCode: `${CM_CDN}/addon/fold/foldcode.min.js`,
+		fold: `${REPO_CDN}/fold.min.js`,
 	};
 
 	const defaultAddons = ['search'],
@@ -287,6 +289,12 @@
 		}
 		if (!CM.optionHandlers.matchTags && addons.includes('matchTags')) {
 			addonScript.push(ADDON_LIST.matchTags);
+		}
+		if (!CM.prototype.foldCode && addons.includes('fold')) {
+			addonScript.push(ADDON_LIST.foldCode);
+		}
+		if (!CM.optionHandlers.fold && addons.includes('fold')) {
+			addonScript.push(ADDON_LIST.fold);
 		}
 		if (['widget', 'html'].includes(type)) {
 			['css', 'javascript', 'mediawiki', 'htmlmixed', 'xml'].forEach(lang => {

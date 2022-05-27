@@ -67,14 +67,11 @@
 				if (gt === -1) {
 					return;
 				}
+				this.ch = gt + 1;
 				if (!this.bracketAt(gt)) {
-					this.ch = gt + 1;
 					continue;
 				}
-				const lastSlash = this.text.lastIndexOf('/', gt);
-				const selfClose = lastSlash > -1 && !/\S/.test(this.text.slice(lastSlash + 1, gt));
-				this.ch = gt + 1;
-				return selfClose ? 'selfClose' : 'regular';
+				return this.text[gt - 1] === '/' ? 'selfClose' : 'regular';
 			}
 		}
 
