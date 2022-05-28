@@ -9,21 +9,31 @@
 	const {Pos, cmpPos} = CodeMirror;
 
 	/**
+	 * 只用于title属性的消息，不存在时fallback到键名
 	 * @param {string} key
 	 * @param {string|undefined} argKey
-	 * @returns {string}
 	 */
-	const msg = (key, argKey) => argKey === undefined ? mw.msg(`wphl-${key}`) : mw.msg(`wphl-${key}`, msg(argKey));
+	const msg = (key, argKey) => {
+		const fullKey = `wphl-${key}`,
+			/** @type {string} */ message = (argKey === undefined ? mw.msg(fullKey) : mw.msg(fullKey, msg(argKey)))
+				.replaceAll('&lt;', '<').replaceAll('&gt;', '>');
+		return message === `⧼${fullKey}⧽` ? key : message;
+	};
 
 	const braceRegex = /\bmw-template-bracket\b/,
-		$placeholder = $('<span>', {text: '\u22ef'}),
+		$placeholder = $('<span>', {text: '\u22ef', class: 'CodeMirror-widget-unfold'}),
+		$delimiter = $('<span>', {text: '|', class: 'cm-mw-template-delimiter'}),
 		$tt = $('<div>', {class: 'CodeMirror-tooltip', text: '\uff0d'}).click(function() {
 			/** @type {{cm: CodeMirror.Editor, from: CodeMirror.Position, to: CodeMirror.Position, type: string}} */
 			const {cm, from, to, type} = $(this).fadeOut('fast').data(),
-				$clonedPlaceholder = $placeholder.clone().attr('title', msg('unfold', `fold-${type}`)),
+				notTag = ['template', 'comment'].includes(type),
+				$clonedPlaceholder = $placeholder.clone()
+					.attr('title', msg('unfold', notTag ? `fold-${type}` : `<${type}>`)),
 				mark = cm.markText(from, to, {
-					replacedWith: $clonedPlaceholder[0],
-					selectLeft: false,
+					replacedWith: type === 'template'
+						? $('<span>', {html: [$delimiter.clone(), $clonedPlaceholder]})[0]
+						: $clonedPlaceholder[0],
+					selectLeft: type === 'template',
 					selectRight: false,
 					_isFold: true,
 				});
@@ -52,6 +62,7 @@
 	 * @param {CodeMirror.Editor} cm
 	 * @param {CodeMirror.Position} where
 	 * @param {1|-1} dir
+	 * @returns {CodeMirror.MarkerRange}
 	 */
 	function scanForDelimiterAndBracket(cm, where, dir) {
 		const maxScanLen = 10000,
@@ -60,7 +71,8 @@
 				? Math.min(cm.lastLine() + 1, where.line + maxScanLines)
 				: Math.max(cm.firstLine() - 1, where.line - maxScanLines);
 		let stack = 0,
-			/** @type {CodeMirror.Position|boolean} */ delimiter = dir < 0;
+			hasDelimiter = dir < 0,
+			/** @type {CodeMirror.Position} */ delimiter;
 		for (let {line} = where; line !== lineEnd; line += dir) {
 			const curLine = cm.getLine(line);
 			if (!curLine) {
@@ -77,12 +89,15 @@
 			}
 			for (; pos !== end; pos += dir) {
 				const ch = curLine.charAt(pos);
-				if (!(delimiter ? /[{}]/ : /[{}|]/).test(ch)) {
+				if (!hasDelimiter && /[^\s|]/.test(ch)) {
+					delimiter = Pos(line, pos + 1);
+				}
+				if (!(hasDelimiter ? /[{}]/ : /[{}|]/).test(ch)) {
 					continue;
 				}
 				const type = cm.getTokenTypeAt(Pos(line, pos + 1)) || '';
 				if (ch === '|' && stack === 0 && /\bmw-template-delimiter\b/.test(type)) {
-					delimiter = Pos(line, pos + 1);
+					hasDelimiter = true;
 				} else if (ch === '|' || !braceRegex.test(type)) {
 					continue;
 				} else if (dir > 0 && ch === '{' || dir < 0 && ch === '}') {
@@ -90,7 +105,7 @@
 				} else if (stack > 0) {
 					stack--;
 				} else {
-					return {delimiter, bracket: Pos(line, pos + (dir > 0 ? 0 : 1))};
+					return {from: hasDelimiter && delimiter, to: Pos(line, pos + (dir > 0 ? 0 : 1))};
 				}
 			}
 		}
@@ -107,14 +122,36 @@
 		if (!/\bmw-template\d*-ground\b/.test(type) || /\bmw-template-(?:bracket|name)\b/.test(type)) {
 			return;
 		}
-		const {bracket} = scanForDelimiterAndBracket(cm, cursor, -1);
+		const {to: bracket} = scanForDelimiterAndBracket(cm, cursor, -1);
 		if (!bracket) {
 			return;
 		}
-		const {delimiter: from, bracket: to} = scanForDelimiterAndBracket(cm, bracket, 1);
-		if (typeof from === 'object' && cmpPos(from, to) < 0) {
+		const {from, to} = scanForDelimiterAndBracket(cm, bracket, 1);
+		if (typeof from === 'object' && (from.line < to.line || from.ch < to.ch - 2)) {
 			return {from, to};
 		}
+	}
+
+	/**
+	 * @param {CodeMirror.Editor} cm
+	 * @param {CodeMirror.Position} cursor
+	 * @returns {CodeMirror.MarkerRange|undefined}
+	 */
+	function findEnclosingComment(cm, cursor) {
+		const {type, string, start, end} = cm.getTokenAt(cursor),
+			{ch} = cursor;
+		if (!/\bmw-comment\b/.test(type)
+			|| string.startsWith('<!--') && ch <= start + 4
+			|| string.endsWith('-->') && ch >= end - 3
+		) {
+			return;
+		}
+		const index = cm.indexFromPos(cursor),
+			text = cm.getValue(),
+			fromIndex = text.slice(0, index - 1).search(/<!--(?:(?!-->).)*$/s);
+		let toIndex = text.slice(index).indexOf('-->');
+		toIndex = toIndex === -1 ? text.length : toIndex + index;
+		return {from: cm.posFromIndex(fromIndex + 4), to: cm.posFromIndex(toIndex)};
 	}
 
 	/** @param {CodeMirror.Editor} cm */
@@ -127,32 +164,67 @@
 				return;
 			}
 			const cursor = cm.getCursor(),
-				template = findEnclosingTemplate(cm, cursor),
-				/** @type {{close: CodeMirror.MarkerRange, open: CodeMirror.MarkerRange}} */
-				tags = cm.findEnclosingTag(cursor);
+				comment = findEnclosingComment(cm, cursor);
 			let /** @type {CodeMirror.MarkerRange} */ range,
 				/** @type {string} */ type;
-			if (!template && !tags) {
-				hide(500, false);
-				return;
-			} else if (!tags || template && cmpPos(template.from, tags.open.to) > 0) {
-				range = template;
-				type = 'template';
+			if (comment) {
+				range = comment;
+				type = 'comment';
 			} else {
-				range = {from: tags.open.to, to: tags.close.from};
-				type = 'tag';
+				/**
+				 * @typedef {object} enclosingTag
+				 * @property {CodeMirror.Position} from
+				 * @property {CodeMirror.Position} to
+				 * @property {string} tag
+				 */
+				const template = findEnclosingTemplate(cm, cursor);
+				let /** @type {{close: enclosingTag, open: enclosingTag}} */ tags = cm.findEnclosingTag(cursor);
+				if (tags && cmpPos(tags.open.to, tags.close.from) === 0) {
+					tags = undefined;
+				}
+				if (!template && !tags) {
+					hide(500, false);
+					return;
+				} else if (!tags || template && cmpPos(template.from, tags.open.to) > 0) {
+					range = template;
+					type = 'template';
+				} else {
+					range = {from: tags.open.to, to: tags.close.from};
+					type = tags.open.tag;
+				}
 			}
 			const {top, left} = cm.charCoords(cursor, 'local'),
-				height = $tooltip.outerHeight();
-			$tooltip.attr('title', msg('fold', `fold-${type}`))
-				.toggleClass('cm-mw-htmltag-name', type === 'tag')
+				height = $tooltip.outerHeight(),
+				notTag = ['template', 'comment'].includes(type);
+			$tooltip.attr('title', msg('fold', notTag ? `fold-${type}` : `<${type}>`))
+				.toggleClass('cm-mw-htmltag-name', !notTag)
 				.toggleClass('cm-mw-template-name', type === 'template')
+				.toggleClass('cm-mw-comment', type === 'comment')
 				.css({top: top > height ? top - height : top + 17, left})
 				.data({...range, type})
 				.show();
 			hide(5000);
 		});
 	}
+
+	CodeMirror.defineExtension(
+		'scanForDelimiterAndBracket',
+		/**
+		 * @param {CodeMirror.Position} where
+		 * @param {1|-1} dir
+		 */
+		function(where, dir) {
+			return scanForDelimiterAndBracket(this, where || this.getCursor(), dir || 1);
+		},
+	);
+
+	CodeMirror.defineExtension('findEnclosingTemplate', /** @param {CodeMirror.Position} pos */ function(pos) {
+		return findEnclosingTemplate(this, pos || this.getCursor());
+	});
+
+	CodeMirror.defineExtension('findEnclosingComment', /** @param {CodeMirror.Position} pos */ function(pos) {
+		return findEnclosingComment(this, pos || this.getCursor());
+	});
 
 	CodeMirror.defineOption('fold', false, (cm, val, old) => {
 		if (old && old !== CodeMirror.Init) {
@@ -174,6 +246,6 @@
 		'.CodeMirror-sizer{overflow:visible}'
 		+ '.CodeMirror-tooltip{position:absolute;z-index:101;cursor:pointer;'
 		+ 'background-color:#ffd;border:1px solid;padding:0 1px;font-size:10pt;line-height:1.2}'
-		+ '.CodeMirror-widget{cursor:pointer;border:1px dotted}',
+		+ '.CodeMirror-widget-unfold{cursor:pointer;border:1px dotted}',
 	);
 })();

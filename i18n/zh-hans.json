@@ -17,7 +17,7 @@
 	"wphl-unfold": "点击以展开$1",
 	"wphl-fold": "点击以折叠$1",
 	"wphl-fold-template": "模板参数",
-	"wphl-fold-tag": "标签内部文本",
+	"wphl-fold-comment": "HTML注释",
 	"wphl-contentmodel": "请选择内容模型：",
 	"wphl-feedback": "欢迎将错误报告或是改进建议提交到 <a href=\"https://github.com/bhsd-harry/Wikiplus-highlight/issues\" target=\"_blank\">GitHub</a> ！",
 	"wphl-portlet": "Wikiplus高亮设置",

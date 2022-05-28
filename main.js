@@ -9,7 +9,7 @@
 	'use strict';
 
 	const version = '2.10',
-		newAddon = 1;
+		newAddon = 0;
 
 	/**
 	 * polyfill for mw.storage
@@ -90,7 +90,7 @@
 	// 路径
 	const CDN = '//fastly.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.65.3',
-		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.4',
+		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.5',
 		REPO_CDN = `npm/wikiplus-highlight@${majorVersion}`;
 
 	/**

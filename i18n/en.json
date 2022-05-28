@@ -17,7 +17,7 @@
 	"wphl-unfold": "Click here to unfold $1",
 	"wphl-fold": "Click here to fold $1",
 	"wphl-fold-template": "template arguments",
-	"wphl-fold-tag": "the tag's innerHTML",
+	"wphl-fold-comment": "HTML comment",
 	"wphl-contentmodel": "Please choose the content model:",
 	"wphl-feedback": "Bug reports or suggestions are welcome at <a href=\"https://github.com/bhsd-harry/Wikiplus-highlight/issues\" target=\"_blank\">GitHub</a> .",
 	"wphl-portlet": "Wikiplus Highlight",
