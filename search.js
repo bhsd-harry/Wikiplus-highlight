@@ -163,6 +163,9 @@
 			}
 			: () => {};
 	mw.hook('wiki-codemirror').add(/** @param {CodeMirror.Editor} cm */ cm => {
+		if (!cm.getOption('styleSelectedText')) {
+			return;
+		}
 		const $textarea = $(cm.getWrapperElement()).prev('#Wikiplus-Quickedit');
 		if ($textarea.length === 0) {
 			return;
