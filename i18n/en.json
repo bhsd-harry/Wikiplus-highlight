@@ -22,5 +22,6 @@
 	"wphl-feedback": "Bug reports or suggestions are welcome at <a href=\"https://github.com/bhsd-harry/Wikiplus-highlight/issues\" target=\"_blank\">GitHub</a> .",
 	"wphl-portlet": "Wikiplus Highlight",
 	"wphl-welcome": "Welcome to <b>Wikiplus-highlight</b>!<br>You can change your local settings <a id=\"wphl-settings-notify\" href=\"#\">here</a>.",
-	"wphl-welcome-upgrade": "<b>Wikiplus-highlight</b> has been upgraded to $1.<br>You may need to check and update your local settings <a id=\"wphl-settings-notify\" href=\"#\">here</a>."
+	"wphl-welcome-upgrade": "<b>Wikiplus-highlight</b> has been upgraded to $1.<br>You may need to check and update your local settings <a id=\"wphl-settings-notify\" href=\"#\">here</a>.",
+	"wphl-welcome-new-addon": "<b>Wikiplus-highlight</b> has been upgraded to $1.<br>This version introduces $2 new {{plural:$2|addon|addons}}.<br>You may need to check and update your local settings <a id=\"wphl-settings-notify\" href=\"#\">here</a>."
 }

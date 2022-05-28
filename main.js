@@ -8,7 +8,8 @@
 (async () => {
 	'use strict';
 
-	const version = '2.8';
+	const version = '2.8',
+		newAddon = 1;
 
 	/**
 	 * polyfill for mw.storage
@@ -79,7 +80,7 @@
 	 */
 	const notify = (...args) => () => {
 		const /** @type {JQuery<HTMLParagraphElement>} */ $p = $('<p>', {html: msg(...args)});
-		mw.notify($p, {type: 'success', autoHideSeconds: 'long'});
+		mw.notify($p, {type: 'success', autoHideSeconds: 'long', tag: 'wikiplus-highlight'});
 		return $p;
 	};
 
@@ -181,7 +182,7 @@
 		i18n = {};
 		welcome = notify('welcome');
 	} else if (cmpVersion(i18n['wphl-version'], version)) { // 更新版本
-		welcome = notify('welcome-upgrade', version);
+		welcome = notify(`welcome-${newAddon ? 'new-addon' : 'upgrade'}`, version, newAddon);
 	}
 
 	const /** @type {Object<string, string>} */ i18nLanguages = {
