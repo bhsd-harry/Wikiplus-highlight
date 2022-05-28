@@ -8,7 +8,7 @@
 (async () => {
 	'use strict';
 
-	const version = '2.9',
+	const version = '2.10',
 		newAddon = 1;
 
 	/**
