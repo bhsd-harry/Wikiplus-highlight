@@ -10,7 +10,8 @@
 	const {Pos, cmpPos} = CodeMirror;
 
 	const tagStart = /<(\/?)([A-Z_a-z]\w*)/g,
-		voidTags = ['br', 'wbr', 'hr', 'img'];
+		voidTags = ['br', 'wbr', 'hr', 'img'],
+		maxScanLines = 1000;
 
 	class Iter {
 		/**
@@ -18,9 +19,7 @@
 		 * @param {CodeMirror.Position} pos
 		 */
 		constructor(cm, pos) {
-			const {line, ch} = pos,
-				/** @type {{state: {matchTags: {maxScanLines: number}}}} */
-				{state: {matchTags: {maxScanLines = 1000}}} = cm;
+			const {line, ch} = pos;
 			this.line = line;
 			this.ch = ch;
 			this.cm = cm;
@@ -276,7 +275,6 @@
 			clear(cm);
 		}
 		if (val) {
-			cm.state.matchTags = typeof val === 'object' ? val : {};
 			cm.on('cursorActivity', doMatchTags);
 			doMatchTags(cm);
 		}
