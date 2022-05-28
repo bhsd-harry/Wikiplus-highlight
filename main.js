@@ -519,7 +519,7 @@
 				: true
 			),
 			matchTags: addons.includes('matchTags') && ['mediawiki', 'widget'].includes(mode),
-			fold: addons.includes('fold'),
+			fold: addons.includes('fold') && ['mediawiki', 'widget'].includes(mode),
 		}, mode === 'mediawiki'
 			? {}
 			: {
