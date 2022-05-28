@@ -305,8 +305,8 @@
 			/**
 			 * @typedef {object} matchingTag
 			 * @property {string} at
-			 * @property {{from: CodeMirror.Position, to: CodeMirror.Position}} open
-			 * @property {{from: CodeMirror.Position, to: CodeMirror.Position}} close
+			 * @property {CodeMirror.MarkerRange} open
+			 * @property {CodeMirror.MarkerRange} close
 			 */
 
 			const /** @type {matchingTag}} */ match = cm.findMatchingTag(cm.getCursor());

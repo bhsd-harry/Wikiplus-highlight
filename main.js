@@ -161,7 +161,6 @@
 		trailingspace: `${CM_CDN}/addon/edit/trailingspace.min.js`,
 		matchBrackets: `${CM_CDN}/addon/edit/matchbrackets.min.js`,
 		matchTags: `${REPO_CDN}/matchtags.min.js`,
-		foldCode: `${CM_CDN}/addon/fold/foldcode.min.js`,
 		fold: `${REPO_CDN}/fold.min.js`,
 	};
 
@@ -287,11 +286,8 @@
 		if (!CM.optionHandlers.matchBrackets && addons.includes('matchBrackets')) {
 			addonScript.push(ADDON_LIST.matchBrackets);
 		}
-		if (!CM.optionHandlers.matchTags && addons.includes('matchTags')) {
+		if (!CM.optionHandlers.matchTags && ['matchTags', 'fold'].some(addon => addons.includes(addon))) {
 			addonScript.push(ADDON_LIST.matchTags);
-		}
-		if (!CM.prototype.foldCode && addons.includes('fold')) {
-			addonScript.push(ADDON_LIST.foldCode);
 		}
 		if (!CM.optionHandlers.fold && addons.includes('fold')) {
 			addonScript.push(ADDON_LIST.fold);
@@ -521,7 +517,8 @@
 				? {bracketRegex: /[{}[\]]/}
 				: true
 			),
-			matchTags: addons.includes('matchBrackets') && ['mediawiki', 'widget'].includes(mode),
+			matchTags: addons.includes('matchTags') && ['mediawiki', 'widget'].includes(mode),
+			fold: addons.includes('fold'),
 		}, mode === 'mediawiki'
 			? {}
 			: {
@@ -701,6 +698,7 @@
 					{data: 'trailingspace', label: msg('addon-trailingspace')},
 					{data: 'matchBrackets', label: msg('addon-matchbrackets')},
 					{data: 'matchTags', label: msg('addon-matchtags')},
+					{data: 'fold', label: msg('addon-fold')},
 					{data: 'contextmenu', label: msg('addon-contextmenu')},
 					{data: 'indentWithSpace', label: msg('addon-indentwithspace')},
 				],

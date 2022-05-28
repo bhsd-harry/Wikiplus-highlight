@@ -1,6 +1,6 @@
 /**
  * @author Bhsd <https://github.com/bhsd-harry>
- * @license: GPL-3.0
+ * @license GPL-3.0
  */
 
 (() => {
