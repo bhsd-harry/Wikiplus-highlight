@@ -23,6 +23,7 @@
   "homepage": "https://github.com/bhsd-harry/Wikiplus-highlight#readme",
   "devDependencies": {
     "eslint": "^8.8.0",
+    "types-mediawiki": "^1.2.0",
     "uglify-js": "^3.15.5"
   }
 }

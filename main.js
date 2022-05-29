@@ -11,10 +11,7 @@
 	const version = '2.11',
 		newAddon = 0;
 
-	/**
-	 * polyfill for mw.storage
-	 * @type {{getObject: (key: string) => ?any, setObject: (key: string, value: any) => boolean}}
-	 */
+	/** @type {mw.storage} */
 	const storage = typeof mw.storage === 'object' && typeof mw.storage.getObject === 'function'
 		? mw.storage
 		: {
@@ -50,6 +47,13 @@
 		}
 		return obj;
 	});
+	/**
+	 * polyfill for Array.prototype.flat
+	 * @type {function(this: any[][]): any[]}
+	 */
+	const flat = Array.prototype.flat || function() {
+		return this.reduce((acc, cur) => acc.concat(cur), []);
+	};
 
 	/**
 	 * 解析版本号
@@ -71,7 +75,6 @@
 	 * 获取I18N消息
 	 * @param {string} key 消息键，省略'wphl-'前缀
 	 * @param {string[]} args
-	 * @returns {string}
 	 */
 	const msg = (key, ...args) => mw.msg(`wphl-${key}`, ...args);
 	/**
@@ -79,7 +82,7 @@
 	 * @param {string[]} args
 	 */
 	const notify = (...args) => () => {
-		const /** @type {JQuery<HTMLParagraphElement>} */ $p = $('<p>', {html: msg(...args)});
+		const $p = $('<p>', {html: msg(...args)});
 		mw.notify($p, {type: 'success', autoHideSeconds: 'long', tag: 'wikiplus-highlight'});
 		return $p;
 	};
@@ -93,10 +96,6 @@
 		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.5',
 		REPO_CDN = `gh/bhsd-harry/Wikiplus-highlight@${majorVersion}`;
 
-	/**
-	 * mw.config常数
-	 * @type {Object<string, string>}
-	 */
 	const {
 		wgPageName: page,
 		wgNamespaceNumber: ns,
@@ -106,17 +105,6 @@
 		wgUserLanguage: userLang,
 		skin,
 	} = mw.config.values;
-
-	/**
-	 * @typedef {object} mwConfig
-	 * @property {Object<string, string>} tagModes
-	 * @property {Object<string, boolean>} tags
-	 * @property {string} urlProtocols
-	 * @property {[Object<string, string>, Object<string, string>]} doubleUnderscore
-	 * @property {[Object<string, string>, Object<string, string>]} functionSynonyms
-	 * @property {string[]} redirect
-	 * @property {Object<string, string>} img
-	 */
 
 	// 和本地缓存有关的常数
 	const USING_LOCAL = mw.loader.getState('ext.CodeMirror') !== null,
@@ -134,7 +122,7 @@
 		wikitext: 'mediawiki',
 	};
 
-	const /** @type {Object<string, string|[]>} */ MODE_LIST = USING_LOCAL
+	const MODE_LIST = USING_LOCAL
 		? {
 			lib: 'ext.CodeMirror.lib',
 			css: 'ext.CodeMirror.lib.mode.css',
@@ -171,13 +159,13 @@
 		/** @type {string} */ indent = storage.getObject('Wikiplus-highlight-indent') || defaultIndent;
 
 	// 用于contextMenu插件
-	const /** @type {HTMLStyleElement} */ contextmenuStyle = document.getElementById('wphl-contextmenu')
+	const contextmenuStyle = document.getElementById('wphl-contextmenu')
 		|| mw.loader.addStyleTag('#Wikiplus-CodeMirror .cm-mw-template-name{cursor:pointer}');
 	contextmenuStyle.id = 'wphl-contextmenu';
 	contextmenuStyle.disabled = true;
 
 	let /** @type {Object<string, string>} */ i18n = storage.getObject('Wikiplus-highlight-i18n'),
-		/** @type {() => JQuery<HTMLParagraphElement>} */ welcome;
+		/** @type {() => JQuery<HTMLElement>} */ welcome;
 	if (!i18n) { // 首次安装
 		i18n = {};
 		welcome = notify('welcome');
@@ -205,7 +193,7 @@
 		mw.messages.set(i18n);
 	};
 
-	const /** @type {Promise<[void, void]>} */ i18nPromise = Promise.all([ // 提前加载I18N
+	const i18nPromise = Promise.all([ // 提前加载I18N
 		mw.loader.using('mediawiki.util'),
 		setI18N(),
 	]);
@@ -214,7 +202,6 @@
 	 * 下载脚本
 	 * @param {string[]} urls 脚本路径
 	 * @param {boolean} local 是否从本地下载
-	 * @returns {Promise<void>}
 	 */
 	const getScript = (urls, local) => {
 		if (urls.length === 0) {
@@ -372,7 +359,7 @@
 			await initModePromise;
 		}
 
-		let /** @type {mwConfig} */ config = mw.config.get('extCodeMirrorConfig');
+		let config = mw.config.get('extCodeMirrorConfig');
 		if (!config && !EXPIRED && isLatest) {
 			({config} = SITE_SETTINGS);
 			if (config.tags.ref) { // fix a bug in InPageEdit-v2
@@ -394,7 +381,7 @@
 		 * @property {string[]} variables
 		 */
 
-		/**
+		/*
 		 * 以下情形均需要发送API请求
 		 * 情形2：localStorage未过期但不包含新设置
 		 * 情形3：新加载的 ext.CodeMirror.data
@@ -413,9 +400,8 @@
 		 * @param {{aliases: string[], name: string}[]} words
 		 * @returns {{alias: string, name: string}[]}
 		 */
-		const getAliases = words => words.flatMap(
-			/** @param {{aliases: string[], name: string}} */
-			({aliases, name}) => aliases.map(alias => ({alias, name})),
+		const getAliases = words => flat.call(
+			words.map(({aliases, name}) => aliases.map(alias => ({alias, name}))),
 		);
 		/**
 		 * @param {{alias: string, name: string}[]} aliases
@@ -437,10 +423,8 @@
 				),
 				urlProtocols: mw.config.get('wgUrlProtocols'),
 			};
-			/** @type {Set<string>} */
 			const realMagicwords = new Set([...functionhooks, ...variables, ...otherMagicwords]),
 				allMagicwords = magicwords.filter(
-					/** @returns {boolean} */
 					({name, aliases}) => aliases.some(alias => /^__.+__$/.test(alias)) || realMagicwords.has(name),
 				),
 				sensitive = getAliases(
@@ -461,15 +445,15 @@
 			const {functionSynonyms: [insensitive]} = config;
 			if (!insensitive.subst) {
 				getAliases(
-					magicwords.filter(/** @return {boolean} */ ({name}) => otherMagicwords.includes(name)),
+					magicwords.filter(({name}) => otherMagicwords.includes(name)),
 				).forEach(({alias, name}) => {
 					insensitive[alias.replace(/:$/, '')] = name;
 				});
 			}
 		}
-		config.redirect = magicwords.find(/** @param {{name: string}} */ ({name}) => name === 'redirect').aliases;
+		config.redirect = magicwords.find(({name}) => name === 'redirect').aliases;
 		config.img = getConfig(
-			getAliases(magicwords.filter(/** @returns {boolean} */ ({name}) => name.startsWith('img_'))),
+			getAliases(magicwords.filter(({name}) => name.startsWith('img_'))),
 		);
 		mw.config.set('extCodeMirrorConfig', config);
 		updateCachedConfig(config);
@@ -527,7 +511,7 @@
 		}
 
 		const json = setting || contentmodel === 'json',
-			/** @type {{name: string}} */ {name} = $.client.profile();
+			{name} = $.client.profile();
 		cm = CodeMirror.fromTextArea($target[0], $.extend({
 			inputStyle: name === 'safari' ? 'textarea' : 'contenteditable',
 			lineNumbers: true,
@@ -559,7 +543,7 @@
 		wrapper.id = 'Wikiplus-CodeMirror';
 		if (['mediawiki', 'widget'].includes(mode) && addons.includes('contextmenu')) {
 			contextmenuStyle.disabled = false;
-			const /** @type {mwConfig} */ {functionSynonyms: [synonyms]} = mw.config.get('extCodeMirrorConfig');
+			const {functionSynonyms: [synonyms]} = mw.config.get('extCodeMirrorConfig');
 			/** @param {string} str */
 			const getSysnonyms = str => Object.keys(synonyms).filter(key => synonyms[key] === str)
 				.map(key => key.startsWith('#') ? key : `#${key}`);
@@ -569,7 +553,7 @@
 			await mw.loader.using('mediawiki.Title');
 			$(wrapper).on('contextmenu', '.cm-mw-template-name', function() {
 				const /** @type {string} */ text = this.textContent.replace(/\u200e/g, '').trim(),
-					/** @type {{namespace: number, getUrl: () => string}} */ title = new mw.Title(text);
+					title = new mw.Title(text);
 				if (title.namespace !== 0 || text.startsWith(':')) {
 					open(title.getUrl(), '_blank');
 				} else {
@@ -624,12 +608,8 @@
 
 	// 监视 Wikiplus 编辑框
 	const observer = new MutationObserver(records => {
-		const $editArea = $(records.flatMap(
-			/**
-			 * @param {{addedNodes: NodeList}}
-			 * @returns {Node[]}
-			 */
-			({addedNodes}) => [...addedNodes],
+		const $editArea = $(flat.call(
+			records.map(({addedNodes}) => [...addedNodes]),
 		)).find('#Wikiplus-Quickedit, #Wikiplus-Setting-Input');
 		if ($editArea.length === 0) {
 			return;
@@ -639,7 +619,7 @@
 	observer.observe(document.body, {childList: true});
 
 	// 添加样式
-	const /** @type {HTMLStyleElement} */ wphlStyle = document.getElementById('wphl-style') || mw.loader.addStyleTag(
+	const wphlStyle = document.getElementById('wphl-style') || mw.loader.addStyleTag(
 		'#Wikiplus-Quickedit+.CodeMirror,#Wikiplus-Setting-Input+.CodeMirror'
 		+ '{border:1px solid #c8ccd1;line-height:1.3;clear:both}'
 		+ 'div.Wikiplus-InterBox{font-size:14px;z-index:100}'
@@ -664,10 +644,7 @@
 			elem.value = value;
 		},
 	} = $.valHooks.textarea || {};
-	/**
-	 * @param {HTMLTextAreaElement} elem
-	 * @returns {boolean}
-	 */
+	/** @param {HTMLTextAreaElement} elem */
 	const isWikiplus = elem => ['Wikiplus-Quickedit', 'Wikiplus-Setting-Input'].includes(elem.id);
 	$.valHooks.textarea = {
 		get(elem) {
@@ -706,7 +683,7 @@
 		minerva: 'page-actions-overflow',
 		citizen: 'p-actions',
 	};
-	const /** @type {JQuery<HTMLLIElement} */ $portlet = $(mw.util.addPortletLink(
+	const $portlet = $(mw.util.addPortletLink(
 		portletContainer[skin] || 'p-cactions', '#', msg('portlet'), 'wphl-settings',
 	)).click(async e => {
 		e.preventDefault();

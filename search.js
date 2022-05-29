@@ -6,10 +6,7 @@
 (() => {
 	'use strict';
 
-	/**
-	 * @param {string} key
-	 * @returns {string}
-	 */
+	/** @param {string} key */
 	const msg = key => mw.msg(`wphl-${key}`);
 
 	// Prepare elements
@@ -46,7 +43,7 @@
 			text: msg('addon-search'),
 		});
 
-	const /** @type {(str: string) => string} */ escapeRegExp = mw.util.escapeRegExp || mw.RegExp.escape;
+	const escapeRegExp = mw.util.escapeRegExp || mw.RegExp.escape;
 	const /** @type {{token: (stream: CodeMirror.StringStream) => string}} */ overlay = {token: () => {}};
 
 	/**
@@ -156,7 +153,7 @@
 		findNext(doc, false);
 	};
 
-	const /** @type {{name: string}} */ {name} = $.client.profile(),
+	const {name} = $.client.profile(),
 		focus = name === 'safari'
 			? /** @param {CodeMirror.Editor} cm */ cm => {
 				cm.focus();

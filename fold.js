@@ -12,11 +12,12 @@
 	 * 只用于title属性的消息，不存在时fallback到键名
 	 * @param {string} key
 	 * @param {string|undefined} argKey
+	 * @returns {string}
 	 */
 	const msg = (key, argKey) => {
 		const fullKey = `wphl-${key}`,
-			/** @type {string} */ message = (argKey === undefined ? mw.msg(fullKey) : mw.msg(fullKey, msg(argKey)))
-				.replaceAll('&lt;', '<').replaceAll('&gt;', '>');
+			message = (argKey === undefined ? mw.msg(fullKey) : mw.msg(fullKey, msg(argKey)))
+				.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 		return message === `⧼${fullKey}⧽` ? key : message;
 	};
 
@@ -171,13 +172,13 @@
 				range = comment;
 				type = 'comment';
 			} else {
+				const template = findEnclosingTemplate(cm, cursor);
 				/**
 				 * @typedef {object} enclosingTag
 				 * @property {CodeMirror.Position} from
 				 * @property {CodeMirror.Position} to
 				 * @property {string} tag
 				 */
-				const template = findEnclosingTemplate(cm, cursor);
 				let /** @type {{close: enclosingTag, open: enclosingTag}} */ tags = cm.findEnclosingTag(cursor);
 				if (tags && cmpPos(tags.open.to, tags.close.from) === 0) {
 					tags = undefined;
