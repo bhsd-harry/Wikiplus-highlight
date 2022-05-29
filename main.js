@@ -777,9 +777,4 @@
 		/** @param {{cm: CodeMirror.Editor}} */ ({cm: doc}) => handleOtherEditors(doc),
 	);
 	mw.hook('inspector').add(/** @param {CodeMirror.Editor} doc */ doc => handleOtherEditors(doc));
-	mw.hook('wiki-codemirror').add(/** @param {CodeMirror.EditorFromTextArea} doc */ doc => {
-		if (!doc.getTextArea().matches('#Wikiplus-Quickedit, #Wikiplus-Setting-Input')) {
-			handleOtherEditors(doc);
-		}
-	});
 })();
