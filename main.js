@@ -713,7 +713,10 @@
 					{data: 'fold', label: msg('addon-fold')},
 					{data: 'contextmenu', label: msg('addon-contextmenu')},
 					{data: 'indentWithSpace', label: msg('addon-indentwithspace')},
-					{data: 'otherEditors', label: msg('addon-othereditors')},
+					{
+						data: 'otherEditors',
+						label: msg(msg('version') === '2.12' ? 'addon-othereditos' : 'addon-othereditors'),
+					},
 				],
 				value: addons,
 			}).on('change', toggleIndent);
