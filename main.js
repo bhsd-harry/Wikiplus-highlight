@@ -158,11 +158,65 @@
 	let /** @type {string[]} */ addons = storage.getObject('Wikiplus-highlight-addons') || defaultAddons,
 		/** @type {string} */ indent = storage.getObject('Wikiplus-highlight-indent') || defaultIndent;
 
-	// 用于contextMenu插件
-	const contextmenuStyle = document.getElementById('wphl-contextmenu')
-		|| mw.loader.addStyleTag('#Wikiplus-CodeMirror .cm-mw-template-name{cursor:pointer}');
-	contextmenuStyle.id = 'wphl-contextmenu';
-	contextmenuStyle.disabled = true;
+	/**
+	 * contextMenu插件
+	 * @param {CodeMirror.Editor} doc
+	 * @param {string} mode
+	 */
+	const handleContextMenu = async (doc, mode) => {
+		if (!['mediawiki', 'widget'].includes(mode) || !addons.includes('contextmenu')) {
+			return;
+		}
+		const $wrapper = $(doc.getWrapperElement()).addClass('CodeMirror-contextmenu'),
+			{functionSynonyms: [synonyms]} = mw.config.get('extCodeMirrorConfig') || {
+				functionSynonyms: [{
+					invoke: 'invoke',
+					调用: 'invoke',
+					widget: 'widget',
+					小工具: 'widget',
+				}],
+			};
+		/** @param {string} str */
+		const getSysnonyms = str => Object.keys(synonyms).filter(key => synonyms[key] === str)
+			.map(key => key.startsWith('#') ? key : `#${key}`);
+		const invoke = getSysnonyms('invoke'),
+			widget = getSysnonyms('widget');
+
+		await mw.loader.using('mediawiki.Title');
+		$wrapper.contextmenu(({pageX, pageY}) => {
+			const pos = doc.coordsChar({left: pageX, top: pageY}),
+				{line, ch} = pos,
+				type = doc.getTokenTypeAt(pos);
+			if (!/\bmw-(?:template-name|parserfunction)\b/.test(type)) {
+				return;
+			}
+			const tokens = doc.getLineTokens(line),
+				index = tokens.findIndex(({start, end}) => start < ch && end >= ch),
+				text = tokens[index].string.replace(/\u200e/g, '').replace(/_/g, ' ').trim();
+			if (/\bmw-template-name\b/.test(type)) {
+				const title = new mw.Title(text);
+				if (title.namespace !== 0 || text.startsWith(':')) {
+					open(title.getUrl(), '_blank');
+				} else {
+					open(mw.util.getUrl(`Template:${text}`), '_blank');
+				}
+				return false;
+			} else if (index < 2 || !/\bmw-parserfunction-delimiter\b/.test(tokens[index - 1].type)
+				|| !/\bmw-parserfunction-name\b/.test(tokens[index - 2].type)
+			) {
+				return;
+			}
+			const parserFunction = tokens[index - 2].string.trim().toLocaleLowerCase();
+			if (invoke.includes(parserFunction)) {
+				open(mw.util.getUrl(`Module:${text}`), '_blank');
+			} else if (widget.includes(parserFunction)) {
+				open(mw.util.getUrl(`Widget:${text}`, {action: 'edit'}), '_blank');
+			} else {
+				return;
+			}
+			return false;
+		});
+	};
 
 	let /** @type {Record<string, string>} */ i18n = storage.getObject('Wikiplus-highlight-i18n'),
 		/** @type {() => JQuery<HTMLElement>} */ welcome;
@@ -539,49 +593,7 @@
 		cm.setSize(null, height);
 		cm.refresh();
 
-		const wrapper = cm.getWrapperElement();
-		wrapper.id = 'Wikiplus-CodeMirror';
-		if (['mediawiki', 'widget'].includes(mode) && addons.includes('contextmenu')) {
-			contextmenuStyle.disabled = false;
-			const {functionSynonyms: [synonyms]} = mw.config.get('extCodeMirrorConfig');
-			/** @param {string} str */
-			const getSysnonyms = str => Object.keys(synonyms).filter(key => synonyms[key] === str)
-				.map(key => key.startsWith('#') ? key : `#${key}`);
-			const invoke = getSysnonyms('invoke'),
-				widget = getSysnonyms('widget');
-
-			await mw.loader.using('mediawiki.Title');
-			$(wrapper).on(
-				'contextmenu',
-				'.cm-mw-template-name',
-				/** @type {function(this: HTMLElement): false} */
-				function() {
-					const text = this.textContent.replace(/\u200e/g, '').trim(),
-						title = new mw.Title(text);
-					if (title.namespace !== 0 || text.startsWith(':')) {
-						open(title.getUrl(), '_blank');
-					} else {
-						open(mw.util.getUrl(`Template:${text}`), '_blank');
-					}
-					return false;
-				},
-			).on(
-				'contextmenu',
-				'.cm-mw-parserfunction-name + .cm-mw-parserfunction-delimiter + .cm-mw-parserfunction',
-				/** @type {function(this: HTMLElement): false} */
-				function() {
-					const parserFunction = this.previousSibling.previousSibling.textContent.trim().toLowerCase();
-					if (invoke.includes(parserFunction)) {
-						open(mw.util.getUrl(`Module:${this.textContent}`), '_blank');
-					} else if (widget.includes(parserFunction)) {
-						open(mw.util.getUrl(`Widget:${this.textContent}`, {action: 'edit'}), '_blank');
-					}
-					return false;
-				},
-			);
-		} else {
-			contextmenuStyle.disabled = true;
-		}
+		handleContextMenu(cm, mode);
 
 		$('#Wikiplus-Quickedit-Jump').children('a').attr('href', '#Wikiplus-CodeMirror');
 
@@ -633,7 +645,8 @@
 		+ 'div.CodeMirror span.CodeMirror-matchingbracket{box-shadow:0 0 0 2px #9aef98}'
 		+ 'div.CodeMirror span.CodeMirror-nonmatchingbracket{box-shadow:0 0 0 2px #eace64}'
 		+ '#Wikiplus-highlight-dialog .oo-ui-messageDialog-title{margin-bottom:0.28571429em}'
-		+ '#Wikiplus-highlight-dialog .oo-ui-flaggedElement-notice{font-weight:normal;margin:0}',
+		+ '#Wikiplus-highlight-dialog .oo-ui-flaggedElement-notice{font-weight:normal;margin:0}'
+		+ '.CodeMirror-contextmenu .cm-mw-template-name{cursor:pointer}',
 	);
 	wphlStyle.id = 'wphl-style';
 
@@ -713,6 +726,9 @@
 			indentField = new OO.ui.FieldLayout(indentWidget, {label: msg('addon-indent')});
 			toggleIndent();
 		}
+		const wikiplusLoaded = typeof window.Wikiplus === 'object';
+		widget.$element.find('.oo-ui-checkboxInputWidget').first().toggleClass('oo-ui-widget-enabled', wikiplusLoaded)
+			.children('input').prop('disabled', !wikiplusLoaded);
 		dialog.open({
 			title: msg('addon-title'),
 			message: field.$element.add(indentField.$element).add(
@@ -771,6 +787,7 @@
 			doc.setOption('indentUnit', indent);
 			doc.setOption('indentWithTabs', false);
 		}
+		handleContextMenu(doc, mode);
 	};
 
 	mw.hook('InPageEdit.quickEdit.codemirror').add(
