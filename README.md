@@ -85,6 +85,10 @@ CodeMirror 扩展会错误地匹配 `<!-- -->` 注释内外的括号，而这个
 
 这不是一个真正意义上的插件，而是一个设置选项。默认设置下使用 Tab 进行缩进。勾选这一选项时，会出现一个新的文本框以设置缩进对应的空格个数，初始值为 `4`。
 
+### 用于其他编辑器
+
+勾选这一选项时，除[【搜索】](#搜索)插件以外的当前正在使用的插件也将作用于其他开启了 CodeMirror 高亮的编辑器。目前支持的编辑器包括 [InPageEdit-v2](https://github.com/inpageedit/inpageedit-v2) 和 [Inspector](https://zh.moegirl.org.cn/User:Bhsd/Inspector)，不包括 MediaWiki 默认的编辑器。
+
 ## Supported languages
 
 - **English (en)**
