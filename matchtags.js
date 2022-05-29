@@ -137,7 +137,10 @@
 			}
 		}
 
-		/** @param {string} tag */
+		/**
+		 * @param {string} tag
+		 * @returns {CodeMirror.matchingTag}
+		 */
 		findMatchingClose(tag) {
 			const /** @type {string[]} */ stack = [];
 			for (;;) {
@@ -175,7 +178,10 @@
 			}
 		}
 
-		/** @param {string} tag */
+		/**
+		 * @param {string|undefined} tag
+		 * @returns {CodeMirror.matchingTag}
+		 */
 		findMatchingOpen(tag) {
 			const /** @type {string[]} */ stack = [];
 			for (;;) {
@@ -214,35 +220,43 @@
 		}
 	}
 
-	CodeMirror.defineExtension('findMatchingTag', /** @param {CodeMirror.Position} pos */ function(pos) {
-		let iter = new Iter(this, pos);
-		if (!iter.isTag()) {
-			return;
-		}
-		const end = iter.toTagEnd(),
-			to = end && Pos(iter.line, iter.ch);
-		const start = end && iter.toTagStart();
-		if (!start || cmpPos(iter, pos) > 0) {
-			return;
-		}
-		const tag = start[2].toLowerCase(),
-			here = {from: Pos(iter.line, iter.ch), to, tag};
-		if (end === 'selfClose' || voidTags.includes(tag)) {
-			return {open: here, close: null, at: 'self'};
-		}
+	CodeMirror.defineExtension(
+		'findMatchingTag',
+		/**
+		 * @param {CodeMirror.Position} pos
+		 * @returns {CodeMirror.matchingTags}
+		 */
+		function(pos) {
+			let iter = new Iter(this, pos);
+			if (!iter.isTag()) {
+				return;
+			}
+			const end = iter.toTagEnd(),
+				to = end && Pos(iter.line, iter.ch);
+			const start = end && iter.toTagStart();
+			if (!start || cmpPos(iter, pos) > 0) {
+				return;
+			}
+			const tag = start[2].toLowerCase(),
+				here = {from: Pos(iter.line, iter.ch), to, tag};
+			if (end === 'selfClose' || voidTags.includes(tag)) {
+				return {open: here, close: null, at: 'self'};
+			}
 
-		if (start[1]) { // closing tag
-			return {open: iter.findMatchingOpen(tag), close: here, at: 'close'};
-		} // opening tag
-		iter = new Iter(this, to);
-		return {open: here, close: iter.findMatchingClose(tag), at: 'open'};
-	});
+			if (start[1]) { // closing tag
+				return {open: iter.findMatchingOpen(tag), close: here, at: 'close'};
+			} // opening tag
+			iter = new Iter(this, to);
+			return {open: here, close: iter.findMatchingClose(tag), at: 'open'};
+		},
+	);
 
 	CodeMirror.defineExtension(
 		'findEnclosingTag',
 		/**
 		 * @param {CodeMirror.Position} pos
 		 * @param {string} tag
+		 * @returns {CodeMirror.matchingTags}
 		 */
 		function(pos, tag) {
 			const iter = new Iter(this, pos);
@@ -258,12 +272,7 @@
 		},
 	);
 
-	/**
-	 * Used by addon/edit/closetag.js
-	 * @param {CodeMirror.Editor} cm
-	 * @param {CodeMirror.Position} pos
-	 * @param {string} name
-	 */
+	// Used by addon/edit/closetag.js
 	CodeMirror.scanForClosingTag = function(cm, pos, name) {
 		const iter = new Iter(cm, pos);
 		return iter.findMatchingClose(name);
@@ -280,7 +289,7 @@
 		}
 	});
 
-	/** @param {CodeMirror.Editor} cm */
+	/** @param {CodeMirror.EditorWithMatchingTags} cm */
 	function clear(cm) {
 		if (cm.state.tagHit) {
 			cm.state.tagHit.clear();
@@ -292,22 +301,14 @@
 		cm.state.tagOther = null;
 	}
 
-	/** @param {CodeMirror.Editor} cm */
+	/** @param {CodeMirror.EditorWithMatchingTags} cm */
 	function doMatchTags(cm) {
 		cm.operation(() => {
 			clear(cm);
 			if (cm.somethingSelected()) {
 				return;
 			}
-
-			/**
-			 * @typedef {object} matchingTag
-			 * @property {string} at
-			 * @property {CodeMirror.MarkerRange} open
-			 * @property {CodeMirror.MarkerRange} close
-			 */
-
-			const /** @type {matchingTag}} */ match = cm.findMatchingTag(cm.getCursor());
+			const match = cm.findMatchingTag(cm.getCursor());
 			if (!match) {
 				return;
 			}

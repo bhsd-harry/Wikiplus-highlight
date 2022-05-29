@@ -38,10 +38,10 @@
 		};
 	/**
 	 * polyfill for Object.fromEntries
-	 * @type {(entries: Iterable<[string, any]>) => Object<string, any>}
+	 * @type {(entries: Iterable<[string, any]>) => Record<string, any>}
 	 */
 	const fromEntries = Object.fromEntries || (entries => {
-		const /** @type {Object<string, any>} */ obj = {};
+		const /** @type {Record<string, any>} */ obj = {};
 		for (const [key, value] of entries) {
 			obj[key] = value;
 		}
@@ -108,13 +108,13 @@
 
 	// 和本地缓存有关的常数
 	const USING_LOCAL = mw.loader.getState('ext.CodeMirror') !== null,
-		/** @type {Object<string, {time: number, config: mwConfig}>} */
+		/** @type {Record<string, {time: number, config: mwConfig}>} */
 		ALL_SETTINGS_CACHE = storage.getObject('InPageEditMwConfig') || {},
 		SITE_ID = `${server}${scriptPath}`,
 		/** @type {{time: number, config: mwConfig}} */ SITE_SETTINGS = ALL_SETTINGS_CACHE[SITE_ID] || {},
 		EXPIRED = SITE_SETTINGS.time < Date.now() - 86400 * 1000 * 30;
 
-	const /** @type {Object<string, string>} */ CONTENTMODEL = {
+	const /** @type {Record<string, string>} */ CONTENTMODEL = {
 		css: 'css',
 		'sanitized-css': 'css',
 		javascript: 'javascript',
@@ -164,7 +164,7 @@
 	contextmenuStyle.id = 'wphl-contextmenu';
 	contextmenuStyle.disabled = true;
 
-	let /** @type {Object<string, string>} */ i18n = storage.getObject('Wikiplus-highlight-i18n'),
+	let /** @type {Record<string, string>} */ i18n = storage.getObject('Wikiplus-highlight-i18n'),
 		/** @type {() => JQuery<HTMLElement>} */ welcome;
 	if (!i18n) { // 首次安装
 		i18n = {};
@@ -173,7 +173,7 @@
 		welcome = notify(`welcome-${newAddon ? 'new-addon' : 'upgrade'}`, version, newAddon);
 	}
 
-	const /** @type {Object<string, string>} */ i18nLanguages = {
+	const /** @type {Record<string, string>} */ i18nLanguages = {
 			zh: 'zh-hans', 'zh-hans': 'zh-hans', 'zh-cn': 'zh-hans', 'zh-my': 'zh-hans', 'zh-sg': 'zh-hans',
 			'zh-hant': 'zh-hant', 'zh-tw': 'zh-hant', 'zh-hk': 'zh-hant', 'zh-mo': 'zh-hant',
 		},
@@ -405,7 +405,7 @@
 		);
 		/**
 		 * @param {{alias: string, name: string}[]} aliases
-		 * @returns {Object<string, string>}
+		 * @returns {Record<string, string>}
 		 */
 		const getConfig = aliases => fromEntries(
 			aliases.map(({alias, name}) => [alias.replace(/:$/, ''), name]),
@@ -465,7 +465,7 @@
 		if ([274, 828].includes(ns) && !page.endsWith('/doc')) {
 			const pageMode = ns === 274 ? 'Widget' : 'Lua';
 			await mw.loader.using(['oojs-ui-windows', 'oojs-ui.styles.icons-content']);
-			const /** @type {boolean} */ bool = await OO.ui.confirm(msg('contentmodel'), {
+			const bool = await OO.ui.confirm(msg('contentmodel'), {
 				actions: [
 					{label: pageMode},
 					{label: 'Wikitext', action: 'accept'},
@@ -486,7 +486,7 @@
 	const renderEditor = async ($target, setting) => {
 		const mode = setting ? 'javascript' : await getPageMode();
 		const initModePromise = initMode(mode);
-		const /** @type {[mwConfig]} */ [mwConfig] = await Promise.all([
+		const [mwConfig] = await Promise.all([
 			getMwConfig(mode, initModePromise),
 			initModePromise,
 		]);
@@ -519,7 +519,7 @@
 			mode,
 			mwConfig,
 			json,
-		}, Object.fromEntries(
+		}, fromEntries(
 			options.filter(({complex}) => !complex).map(({option, addon = option, modes}) => {
 				const mainAddon = Array.isArray(addon) ? addon[0] : addon;
 				return [option, addons.includes(mainAddon) && (!modes || modes.includes(mode))];
@@ -551,20 +551,25 @@
 				widget = getSysnonyms('widget');
 
 			await mw.loader.using('mediawiki.Title');
-			$(wrapper).on('contextmenu', '.cm-mw-template-name', function() {
-				const /** @type {string} */ text = this.textContent.replace(/\u200e/g, '').trim(),
-					title = new mw.Title(text);
-				if (title.namespace !== 0 || text.startsWith(':')) {
-					open(title.getUrl(), '_blank');
-				} else {
-					open(mw.util.getUrl(`Template:${text}`), '_blank');
-				}
-				return false;
-			}).on(
+			$(wrapper).on(
+				'contextmenu',
+				'.cm-mw-template-name',
+				/** @type {function(this: HTMLElement): false} */
+				function() {
+					const text = this.textContent.replace(/\u200e/g, '').trim(),
+						title = new mw.Title(text);
+					if (title.namespace !== 0 || text.startsWith(':')) {
+						open(title.getUrl(), '_blank');
+					} else {
+						open(mw.util.getUrl(`Template:${text}`), '_blank');
+					}
+					return false;
+				},
+			).on(
 				'contextmenu',
 				'.cm-mw-parserfunction-name + .cm-mw-parserfunction-delimiter + .cm-mw-parserfunction',
+				/** @type {function(this: HTMLElement): false} */
 				function() {
-					/** @type {string} */
 					const parserFunction = this.previousSibling.previousSibling.textContent.trim().toLowerCase();
 					if (invoke.includes(parserFunction)) {
 						open(mw.util.getUrl(`Module:${this.textContent}`), '_blank');
@@ -661,21 +666,12 @@
 
 	await i18nPromise; // 以下内容依赖I18N
 
-	/**
-	 * @typedef {object} OOUI.widget
-	 * @property {(data: any) => {closing: Promise<{action: string}>}} open
-	 * @property {() => string|string[]} getValue
-	 * @property {JQuery<HTMLDivElement>} $element
-	 * @property {(show: boolean) => OOUI.widget} toggle
-	 * @property {(windows: OOUI.widget[]) => void} addWindows
-	 */
-
 	// 设置对话框
-	let /** @type {OOUI.widget} */ dialog,
-		/** @type {OOUI.widget} */ widget,
-		/** @type {OOUI.widget} */ indentWidget,
-		/** @type {OOUI.widget} */ field,
-		/** @type {OOUI.widget} */ indentField;
+	let /** @type {OOUI.DialogWidget} */ dialog,
+		/** @type {OOUI.MultiInputWidget} */ widget,
+		/** @type {OOUI.InputWidget} */ indentWidget,
+		/** @type {OOUI.LayoutWidget} */ field,
+		/** @type {OOUI.LayoutWidget} */ indentField;
 	const toggleIndent = (value = addons) => {
 		indentField.toggle(value.includes('indentWithSpace'));
 	};
@@ -691,7 +687,7 @@
 			await mw.loader.using(['oojs-ui-windows', 'oojs-ui.styles.icons-content']);
 			// eslint-disable-next-line require-atomic-updates
 			dialog = new OO.ui.MessageDialog({id: 'Wikiplus-highlight-dialog'});
-			const /** @type {OOUI.widget} */ windowManager = new OO.ui.WindowManager();
+			const windowManager = new OO.ui.WindowManager();
 			windowManager.$element.appendTo(document.body);
 			windowManager.addWindows([dialog]);
 			widget = new OO.ui.CheckboxMultiselectInputWidget({

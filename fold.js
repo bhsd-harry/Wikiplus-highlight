@@ -25,8 +25,7 @@
 		$placeholder = $('<span>', {text: '\u22ef', class: 'CodeMirror-widget-unfold'}),
 		$delimiter = $('<span>', {text: '|', class: 'cm-mw-template-delimiter'}),
 		$tt = $('<div>', {class: 'CodeMirror-tooltip', text: '\uff0d'}).click(function() {
-			/** @type {{cm: CodeMirror.Editor, from: CodeMirror.Position, to: CodeMirror.Position, type: string}} */
-			const {cm, from, to, type} = $(this).fadeOut('fast').data(),
+			const /** @type {CodeMirror.FoldData} */ {cm, from, to, type} = $(this).fadeOut('fast').data(),
 				notTag = ['template', 'comment'].includes(type),
 				$clonedPlaceholder = $placeholder.clone()
 					.attr('title', msg('unfold', notTag ? `fold-${type}` : `<${type}>`)),
@@ -155,9 +154,8 @@
 		return {from: cm.posFromIndex(fromIndex + 4), to: cm.posFromIndex(toIndex)};
 	}
 
-	/** @param {CodeMirror.Editor} cm */
+	/** @param {CodeMirror.EditorWithFolding} cm */
 	function showTooltip(cm) {
-		/** @type {{$tooltip: JQuery<HTMLElement>, hide: (wait: number, update?: boolean) => void}} */
 		const {$tooltip, hide} = cm.state.fold;
 		cm.operation(() => {
 			if (cm.somethingSelected()) {
@@ -173,13 +171,7 @@
 				type = 'comment';
 			} else {
 				const template = findEnclosingTemplate(cm, cursor);
-				/**
-				 * @typedef {object} enclosingTag
-				 * @property {CodeMirror.Position} from
-				 * @property {CodeMirror.Position} to
-				 * @property {string} tag
-				 */
-				let /** @type {{close: enclosingTag, open: enclosingTag}} */ tags = cm.findEnclosingTag(cursor);
+				let tags = cm.findEnclosingTag(cursor);
 				if (tags && cmpPos(tags.open.to, tags.close.from) === 0) {
 					tags = undefined;
 				}

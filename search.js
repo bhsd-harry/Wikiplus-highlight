@@ -71,17 +71,9 @@
 		$search.css('background-color', '').off('input', onInput);
 	};
 
-	/**
-	 * @typedef {object} SearchCursor
-	 * @property {() => boolean} findNext
-	 * @property {() => boolean} findPrevious
-	 * @property {() => CodeMirror.Position} from
-	 * @property {() => CodeMirror.Position} to
-	 */
-
 	// keyboard event handler of $search
 	let /** @type {string|RegExp} */ lastPtn,
-		/** @type {SearchCursor} */ cursor;
+		/** @type {CodeMirror.SearchCursor} */ cursor;
 	/**
 	 * @param {CodeMirror.Editor} cm
 	 * @param {boolean} dir
@@ -105,7 +97,7 @@
 			cursor = cm.getSearchCursor(ptn, cm.getCursor(), {caseFold: true});
 		}
 		const method = dir ? 'findNext' : 'findPrevious';
-		let result = cursor[method]();
+		let /** @type {boolean} */ result = cursor[method]();
 		if (!result) {
 			if (dir) {
 				cursor = cm.getSearchCursor(ptn, {line: 0, ch: 0}, {caseFold: true});
@@ -144,11 +136,9 @@
 		lastPtn = '';
 	};
 
-	/** @param {CodeMirror.Editor} doc */
 	CodeMirror.commands.findForward = doc => {
 		findNext(doc, true);
 	};
-	/** @param {CodeMirror.Editor} doc */
 	CodeMirror.commands.findBackward = doc => {
 		findNext(doc, false);
 	};
