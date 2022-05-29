@@ -8,7 +8,7 @@
 (async () => {
 	'use strict';
 
-	const version = '2.12',
+	const version = '2.12.1',
 		newAddon = 1;
 
 	/** @type {mw.storage} */
