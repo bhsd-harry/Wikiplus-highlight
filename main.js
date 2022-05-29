@@ -229,7 +229,45 @@
 	};
 
 	// 以下进入CodeMirror相关内容
-	let /** @type {CodeMirror.Editor} */ cm;
+	let /** @type {CodeMirror.EditorFromTextArea} */ cm;
+
+	/**
+	 * @typedef {object} addon
+	 * @property {string} option
+	 * @property {string|string[]} addon
+	 * @property {string} download
+	 * @property {boolean} complex
+	 * @property {string[]} modes
+	 * @property {boolean} only
+	 */
+
+	const /** @type {addon[]} */ options = [
+		{option: 'styleActiveLine', addon: 'activeLine'},
+		{option: 'styleSelectedText', addon: 'search', download: 'markSelection', only: true},
+		{option: 'showTrailingSpace', addon: 'trailingspace'},
+		{option: 'matchBrackets', complex: true},
+		{option: 'matchTags', addon: ['matchTags', 'fold'], modes: ['mediawiki', 'widget']},
+		{option: 'fold', modes: ['mediawiki', 'widget']},
+	];
+
+	/** @param {CodeMirror} CM */
+	const getAddonScript = (CM, other = false) => {
+		const /** @type {string[]} */ addonScript = [];
+		for (const {option, addon = option, download = Array.isArray(addon) ? option : addon, only} of options) {
+			if (!(only && other) && !CM.optionHandlers[option] && intersect(addon, addons)) {
+				addonScript.push(ADDON_LIST[download]);
+			}
+		}
+		return addonScript;
+	};
+
+	/**
+	 * @param {array|any} arr1
+	 * @param {array} arr2
+	 */
+	const intersect = (arr1, arr2) => Array.isArray(arr1)
+		? arr1.some(ele => arr2.includes(ele))
+		: arr2.includes(arr1);
 
 	/**
 	 * 根据文本的高亮模式加载依赖项
@@ -259,7 +297,7 @@
 			mw.loader.load(`${CDN}/${MW_CDN}/mediawiki.min.css`, 'text/css');
 			(USING_LOCAL ? externalScript : scripts).push(`${MW_CDN}/mediawiki.min.js`);
 		}
-		if (type === 'mediawiki' && typeof SITE_SETTINGS.config === 'object' && SITE_SETTINGS.config.tags.html) {
+		if (type === 'mediawiki' && SITE_SETTINGS.config && SITE_SETTINGS.config.tags.html) {
 			// NamespaceHTML扩展自由度过高，所以这里一律当作允许<html>标签
 			type = 'html'; // eslint-disable-line no-param-reassign
 		}
@@ -275,24 +313,7 @@
 		if (!CM.commands.findForward && addons.includes('search')) {
 			addonScript.push(ADDON_LIST.search);
 		}
-		if (!CM.optionHandlers.styleActiveLine && addons.includes('activeLine')) {
-			addonScript.push(ADDON_LIST.activeLine);
-		}
-		if (!CM.optionHandlers.styleSelectedText && addons.includes('search')) {
-			addonScript.push(ADDON_LIST.markSelection);
-		}
-		if (!CM.optionHandlers.showTrailingSpace && addons.includes('trailingspace')) {
-			addonScript.push(ADDON_LIST.trailingspace);
-		}
-		if (!CM.optionHandlers.matchBrackets && addons.includes('matchBrackets')) {
-			addonScript.push(ADDON_LIST.matchBrackets);
-		}
-		if (!CM.optionHandlers.matchTags && ['matchTags', 'fold'].some(addon => addons.includes(addon))) {
-			addonScript.push(ADDON_LIST.matchTags);
-		}
-		if (!CM.optionHandlers.fold && addons.includes('fold')) {
-			addonScript.push(ADDON_LIST.fold);
-		}
+		addonScript.push(...getAddonScript(CM));
 		if (['widget', 'html'].includes(type)) {
 			['css', 'javascript', 'mediawiki', 'htmlmixed', 'xml'].forEach(lang => {
 				if (!CM.modes[lang]) {
@@ -354,11 +375,14 @@
 		let /** @type {mwConfig} */ config = mw.config.get('extCodeMirrorConfig');
 		if (!config && !EXPIRED && isLatest) {
 			({config} = SITE_SETTINGS);
+			if (config.tags.ref) { // fix a bug in InPageEdit-v2
+				config.tagModes.ref = 'text/mediawiki';
+			}
 			mw.config.set('extCodeMirrorConfig', config);
 		}
 		if (config && config.redirect && config.img) { // 情形1：config已更新，可能来自localStorage
 			return config;
-		} else if (config) { // FIXME: 暂不需要redirect和img相关设置
+		} else if (config) { /** @todo 暂不需要redirect和img相关设置 */
 			return config;
 		}
 
@@ -511,15 +535,16 @@
 			mode,
 			mwConfig,
 			json,
-			styleActiveLine: addons.includes('activeLine'),
-			styleSelectedText: addons.includes('search'),
-			showTrailingSpace: addons.includes('trailingspace'),
+		}, Object.fromEntries(
+			options.filter(({complex}) => !complex).map(({option, addon = option, modes}) => {
+				const mainAddon = Array.isArray(addon) ? addon[0] : addon;
+				return [option, addons.includes(mainAddon) && (!modes || modes.includes(mode))];
+			}),
+		), {
 			matchBrackets: addons.includes('matchBrackets') && (mode === 'mediawiki' || json
 				? {bracketRegex: /[{}[\]]/}
 				: true
 			),
-			matchTags: addons.includes('matchTags') && ['mediawiki', 'widget'].includes(mode),
-			fold: addons.includes('fold') && ['mediawiki', 'widget'].includes(mode),
 		}, mode === 'mediawiki'
 			? {}
 			: {
@@ -702,6 +727,7 @@
 					{data: 'fold', label: msg('addon-fold')},
 					{data: 'contextmenu', label: msg('addon-contextmenu')},
 					{data: 'indentWithSpace', label: msg('addon-indentwithspace')},
+					{data: 'otherEditors', label: msg('addon-othereditors')},
 				],
 				value: addons,
 			}).on('change', toggleIndent);
@@ -746,4 +772,41 @@
 			$('#wphl-settings').triggerHandler('click');
 		});
 	}
+
+	/** @param {CodeMirror.Editor} doc */
+	const handleOtherEditors = async doc => {
+		if (!addons.includes('otherEditors')) {
+			return;
+		}
+		let mode = doc.getOption('mode');
+		mode = mode === 'text/mediawiki' ? 'mediawiki' : mode;
+		const addonScript = getAddonScript(CodeMirror, true);
+		await getScript(addonScript);
+		for (const {option, addon = option, modes} of options.filter(({only, complex}) => !(only || complex))) {
+			const mainAddon = Array.isArray(addon) ? addon[0] : addon;
+			if (doc.getOption(option) === undefined && addons.includes(mainAddon) && (!modes || modes.includes(mode))) {
+				doc.setOption(option, true);
+			}
+		}
+		if (doc.getOption('matchBrackets') === undefined && addons.includes('matchBrackets')) {
+			doc.setOption('matchBrackets', mode === 'mediawiki' || doc.getOption('json')
+				? {bracketRegex: /[{}[\]]/}
+				: true,
+			);
+		}
+		if (mode !== 'mediawiki' && addons.includes('indentWithSpace')) {
+			doc.setOption('indentUnit', indent);
+			doc.setOption('indentWithTabs', false);
+		}
+	};
+
+	mw.hook('InPageEdit.quickEdit.codemirror').add(
+		/** @param {{cm: CodeMirror.Editor}} */ ({cm: doc}) => handleOtherEditors(doc),
+	);
+	mw.hook('inspector').add(/** @param {CodeMirror.Editor} doc */ doc => handleOtherEditors(doc));
+	mw.hook('wiki-codemirror').add(/** @param {CodeMirror.EditorFromTextArea} doc */ doc => {
+		if (!doc.getTextArea().matches('#Wikiplus-Quickedit, #Wikiplus-Setting-Input')) {
+			handleOtherEditors(doc);
+		}
+	});
 })();

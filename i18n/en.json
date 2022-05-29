@@ -10,6 +10,7 @@
 	"wphl-addon-contextmenu": "Open the template or module page when right clicking",
 	"wphl-addon-indentwithspace": "Indent JavaScript/CSS/Lua codes with spaces instead of tabs",
 	"wphl-addon-indent": "Indent",
+	"wphl-addon-othereditos": "Apply selected addons to other editors if possible",
 	"wphl-addon-label": "Please select the addons you wish to load",
 	"wphl-addon-notice": "Changes will apply when opening a new Wikiplus dialog.",
 	"wphl-addon-title": "Wikiplus Highlight Addons",
