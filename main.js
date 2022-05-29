@@ -8,8 +8,8 @@
 (async () => {
 	'use strict';
 
-	const version = '2.11',
-		newAddon = 0;
+	const version = '2.12',
+		newAddon = 1;
 
 	/** @type {mw.storage} */
 	const storage = typeof mw.storage === 'object' && typeof mw.storage.getObject === 'function'
