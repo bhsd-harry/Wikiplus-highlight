@@ -44,14 +44,14 @@
 
 	/** @param {JQuery<HTMLElement>} $tooltip */
 	function hideTooltip($tooltip) {
-		let /** @type {?number} */ timeout = null,
+		let timeout = -1,
 			executeTime = 0;
 		return /** @param {number} wait */ (wait, update = true) => {
 			if (update || executeTime - Date.now() > wait) {
 				clearTimeout(timeout);
 				timeout = setTimeout(() => {
 					$tooltip.fadeOut('fast');
-					timeout = null;
+					timeout = -1;
 				}, wait);
 				executeTime = Date.now() + wait;
 			}
@@ -154,7 +154,7 @@
 		return {from: cm.posFromIndex(fromIndex + 4), to: cm.posFromIndex(toIndex)};
 	}
 
-	/** @param {CodeMirror.EditorWithFolding} cm */
+	/** @param {CodeMirror.EditorFoldable} cm */
 	function showTooltip(cm) {
 		const {$tooltip, hide} = cm.state.fold;
 		cm.operation(() => {
@@ -162,14 +162,10 @@
 				hide(500, false);
 				return;
 			}
-			const cursor = cm.getCursor(),
-				comment = findEnclosingComment(cm, cursor);
-			let /** @type {CodeMirror.MarkerRange} */ range,
-				/** @type {string} */ type;
-			if (comment) {
-				range = comment;
+			const cursor = cm.getCursor();
+			let range = findEnclosingComment(cm, cursor),
 				type = 'comment';
-			} else {
+			if (!range) {
 				const template = findEnclosingTemplate(cm, cursor);
 				let tags = cm.findEnclosingTag(cursor);
 				if (tags && cmpPos(tags.open.to, tags.close.from) === 0) {
@@ -202,24 +198,29 @@
 
 	CodeMirror.defineExtension(
 		'scanForDelimiterAndBracket',
-		/**
-		 * @param {CodeMirror.Position} where
-		 * @param {1|-1} dir
-		 */
+		/** @type {function(this: CodeMirror.Editor, CodeMirror.Position, 1|-1): CodeMirror.MarkerRange} */
 		function(where, dir) {
 			return scanForDelimiterAndBracket(this, where || this.getCursor(), dir || 1);
 		},
 	);
 
-	CodeMirror.defineExtension('findEnclosingTemplate', /** @param {CodeMirror.Position} pos */ function(pos) {
-		return findEnclosingTemplate(this, pos || this.getCursor());
-	});
+	CodeMirror.defineExtension(
+		'findEnclosingTemplate',
+		/** @type {function(this: CodeMirror.Editor, CodeMirror.Position): CodeMirror.MarkerRange} */
+		function(pos) {
+			return findEnclosingTemplate(this, pos || this.getCursor());
+		},
+	);
 
-	CodeMirror.defineExtension('findEnclosingComment', /** @param {CodeMirror.Position} pos */ function(pos) {
-		return findEnclosingComment(this, pos || this.getCursor());
-	});
+	CodeMirror.defineExtension(
+		'findEnclosingComment',
+		/** @type {function(this: CodeMirror.Editor, CodeMirror.Position): CodeMirror.MarkerRange} */
+		function(pos) {
+			return findEnclosingComment(this, pos || this.getCursor());
+		},
+	);
 
-	CodeMirror.defineOption('fold', false, (cm, val, old) => {
+	CodeMirror.defineOption('fold', false, (/** @type {CodeMirror.EditorFoldable} */ cm, val, old) => {
 		if (old && old !== CodeMirror.Init) {
 			cm.off('cursorActivity', showTooltip);
 			if (cm.state.fold) {

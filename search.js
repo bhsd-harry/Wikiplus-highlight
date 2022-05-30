@@ -44,23 +44,20 @@
 		});
 
 	const escapeRegExp = mw.util.escapeRegExp || mw.RegExp.escape;
-	const /** @type {{token: (stream: CodeMirror.StringStream) => string}} */ overlay = {token: () => {}};
+	const /** @type {CodeMirror.Mode<undefined>} */ overlay = {token: () => {}};
 
 	/**
 	 * 根据搜索字符串生成高亮
 	 * @param {string|RegExp} str
 	 */
 	const token = str => {
-		let /** @type {RegExp} */ initial;
-		if (typeof str === 'string') {
-			initial = RegExp(`[^${escapeRegExp(str[0])}]`, 'i');
-		}
+		const initial = typeof str === 'string' ? RegExp(`[^${escapeRegExp(str[0])}]`, 'i') : null;
 		return /** @param {CodeMirror.StringStream} stream */ stream => {
 			if (stream.match(str, true, true)) {
 				return 'search';
 			}
 			stream.next();
-			if (typeof str === 'string') {
+			if (initial) {
 				stream.eatWhile(initial);
 			}
 		};
@@ -84,7 +81,7 @@
 			return;
 		}
 
-		if (/^\/.+\/i?$/.test(ptn)) {
+		if (typeof ptn === 'string' && /^\/.+\/i?$/.test(ptn)) {
 			ptn = ptn.endsWith('i')
 				? RegExp(ptn.slice(1, -2), 'i')
 				: RegExp(ptn.slice(1, -1));
@@ -96,8 +93,7 @@
 			lastPtn = ptn;
 			cursor = cm.getSearchCursor(ptn, cm.getCursor(), {caseFold: true});
 		}
-		const method = dir ? 'findNext' : 'findPrevious';
-		let /** @type {boolean} */ result = cursor[method]();
+		let result = dir ? cursor.findNext() : cursor.findPreviouse();
 		if (!result) {
 			if (dir) {
 				cursor = cm.getSearchCursor(ptn, {line: 0, ch: 0}, {caseFold: true});
@@ -106,7 +102,7 @@
 					lastCh = cm.getLine(lastLine).length;
 				cursor = cm.getSearchCursor(ptn, {line: lastLine, ch: lastCh}, {caseFold: true});
 			}
-			result = cursor[method]();
+			result = dir ? cursor.findNext() : cursor.findPreviouse();
 		}
 		if (result) {
 			const from = cursor.from(),

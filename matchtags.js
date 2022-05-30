@@ -39,7 +39,7 @@
 			return /\b(?:mw-(?:html|ext)tag-)?bracket\b/.test(type);
 		}
 
-		// Jump to the start of the next line
+		/** Jump to the start of the next line */
 		nextLine() {
 			if (this.line >= this.max) {
 				return;
@@ -49,7 +49,7 @@
 			return true;
 		}
 
-		// Jump to the end of the previous line
+		/** Jump to the end of the previous line */
 		prevLine() {
 			if (this.line <= this.min) {
 				return;
@@ -59,7 +59,7 @@
 			return true;
 		}
 
-		// Jump to the letter after a '>' towards the line end
+		/** Jump to the letter after a '>' towards the line end */
 		toTagEnd() {
 			for (;;) {
 				const gt = this.text.indexOf('>', this.ch);
@@ -74,7 +74,7 @@
 			}
 		}
 
-		// Jump to a '<' towards the line start
+		/** Jump to a '<' towards the line start */
 		toTagStart() {
 			for (;;) {
 				const lt = this.ch ? this.text.lastIndexOf('<', this.ch - 1) : -1;
@@ -94,7 +94,7 @@
 			}
 		}
 
-		// Jump to the start of the last line, or the letter after a ${tagStart}
+		/** Jump to the start of the last line, or the letter after a ${tagStart} */
 		toNextTag() {
 			for (;;) {
 				tagStart.lastIndex = this.ch;
@@ -115,7 +115,7 @@
 			}
 		}
 
-		// Jump to the end of the first line, or a non-bracket '>', or the letter after a tag bracket '>'
+		/** Jump to the end of the first line, or a non-bracket '>', or the letter after a tag bracket '>' */
 		toPrevTag() {
 			for (;;) {
 				const gt = this.ch ? this.text.lastIndexOf('>', this.ch - 1) : -1;
@@ -139,7 +139,7 @@
 
 		/**
 		 * @param {string} tag
-		 * @returns {CodeMirror.matchingTag}
+		 * @returns {CodeMirror.MatchingTag}
 		 */
 		findMatchingClose(tag) {
 			const /** @type {string[]} */ stack = [];
@@ -180,7 +180,7 @@
 
 		/**
 		 * @param {string|undefined} tag
-		 * @returns {CodeMirror.matchingTag}
+		 * @returns {CodeMirror.MatchingTag}
 		 */
 		findMatchingOpen(tag) {
 			const /** @type {string[]} */ stack = [];
@@ -222,10 +222,7 @@
 
 	CodeMirror.defineExtension(
 		'findMatchingTag',
-		/**
-		 * @param {CodeMirror.Position} pos
-		 * @returns {CodeMirror.matchingTags}
-		 */
+		/** @type {function(this: CodeMirror.Editor, CodeMirror.Position): CodeMirror.MatchingTagPair} */
 		function(pos) {
 			let iter = new Iter(this, pos);
 			if (!iter.isTag()) {
@@ -253,11 +250,7 @@
 
 	CodeMirror.defineExtension(
 		'findEnclosingTag',
-		/**
-		 * @param {CodeMirror.Position} pos
-		 * @param {string} tag
-		 * @returns {CodeMirror.matchingTags}
-		 */
+		/** @type {function(this: CodeMirror.Editor, CodeMirror.Position, string): CodeMirror.MatchingTagPair} */
 		function(pos, tag) {
 			const iter = new Iter(this, pos);
 			const open = iter.findMatchingOpen(tag);

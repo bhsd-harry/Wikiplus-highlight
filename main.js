@@ -27,9 +27,8 @@
 				}
 			},
 			setObject(key, value) {
-				let /** @type {string} */ json;
 				try {
-					json = JSON.stringify(value);
+					const json = JSON.stringify(value);
 					return localStorage.setItem(key, json);
 				} catch (e) {
 					return false;
@@ -206,7 +205,7 @@
 			) {
 				return;
 			}
-			const parserFunction = tokens[index - 2].string.trim().toLocaleLowerCase();
+			const parserFunction = tokens[index - 2].string.trim().toLowerCase();
 			if (invoke.includes(parserFunction)) {
 				open(mw.util.getUrl(`Module:${text}`), '_blank');
 			} else if (widget.includes(parserFunction)) {
@@ -428,7 +427,7 @@
 		}
 
 		/**
-		 * @typedef {object} siteInfoQuery
+		 * @typedef {object} ApiSiteInfoQuery
 		 * @property {{name: string, aliases: string[], 'case-sensitive': boolean}[]} magicwords
 		 * @property {string[]} extensiontags
 		 * @property {string[]} functionhooks
@@ -441,7 +440,7 @@
 		 * 情形3：新加载的 ext.CodeMirror.data
 		 * 情形4：config === null
 		 */
-		const /** @type {{query: siteInfoQuery}} */ {
+		const /** @type {{query: ApiSiteInfoQuery}} */ {
 			query: {magicwords, extensiontags, functionhooks, variables},
 		} = await new mw.Api().get({
 			meta: 'siteinfo',
@@ -680,11 +679,11 @@
 	await i18nPromise; // 以下内容依赖I18N
 
 	// 设置对话框
-	let /** @type {OOUI.DialogWidget} */ dialog,
-		/** @type {OOUI.MultiInputWidget} */ widget,
-		/** @type {OOUI.InputWidget} */ indentWidget,
-		/** @type {OOUI.LayoutWidget} */ field,
-		/** @type {OOUI.LayoutWidget} */ indentField;
+	let /** @type {OOUI.MessageDialog} */ dialog,
+		/** @type {OOUI.CheckboxMultiselectInputWidget} */ widget,
+		/** @type {OOUI.NumberInputWidget} */ indentWidget,
+		/** @type {OOUI.FieldLayout} */ field,
+		/** @type {OOUI.FieldLayout} */ indentField;
 	const toggleIndent = (value = addons) => {
 		indentField.toggle(value.includes('indentWithSpace'));
 	};
