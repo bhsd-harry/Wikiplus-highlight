@@ -176,7 +176,7 @@
 		{
 			option: 'autoCloseBrackets', addon: 'closeBrackets',
 			complex: (mode, json) => mode === 'mediawiki' || json
-				? '[]{}""'
+				? '()[]{}""'
 				: true,
 		},
 		{option: 'matchTags', addon: ['matchTags', 'fold'], modes: ['mediawiki', 'widget']},
