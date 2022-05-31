@@ -9,7 +9,7 @@
 	'use strict';
 
 	const version = '2.12.1',
-		newAddon = 1;
+		newAddon = 2;
 
 	/** @type {mw.storage} */
 	const storage = typeof mw.storage === 'object' && typeof mw.storage.getObject === 'function'
@@ -144,18 +144,66 @@
 	const ADDON_LIST = {
 		searchcursor: `${CM_CDN}/addon/search/searchcursor.min.js`,
 		search: `${REPO_CDN}/search.min.js`,
-		activeLine: `${CM_CDN}/addon/selection/active-line.min.js`,
 		markSelection: `${CM_CDN}/addon/selection/mark-selection.min.js`,
+		activeLine: `${CM_CDN}/addon/selection/active-line.min.js`,
 		trailingspace: `${CM_CDN}/addon/edit/trailingspace.min.js`,
 		matchBrackets: `${CM_CDN}/addon/edit/matchbrackets.min.js`,
+		closeBrackets: `${CM_CDN}/addon/edit/closebrackets.min.js`,
 		matchTags: `${REPO_CDN}/matchtags.min.js`,
 		fold: `${REPO_CDN}/fold.min.js`,
 	};
+
+	/**
+	 * @typedef {object} addon
+	 * @property {string} option
+	 * @property {string|string[]} addon
+	 * @property {string} download
+	 * @property {(mode: string, json: boolean) => any} complex
+	 * @property {string[]} modes
+	 * @property {boolean} only
+	 */
+
+	const /** @type {addon[]} */ options = [
+		{option: 'styleSelectedText', addon: 'search', download: 'markSelection', only: true},
+		{option: 'styleActiveLine', addon: 'activeLine'},
+		{option: 'showTrailingSpace', addon: 'trailingspace'},
+		{
+			option: 'matchBrackets',
+			complex: (mode, json) => mode === 'mediawiki' || json
+				? {bracketRegex: /[{}[\]]/}
+				: true,
+		},
+		{
+			option: 'autoCloseBrackets', addon: 'closeBrackets',
+			complex: (mode, json) => mode === 'mediawiki' || json
+				? '[]{}""'
+				: true,
+		},
+		{option: 'matchTags', addon: ['matchTags', 'fold'], modes: ['mediawiki', 'widget']},
+		{option: 'fold', modes: ['mediawiki', 'widget']},
+	];
 
 	const defaultAddons = ['search'],
 		defaultIndent = '4';
 	let /** @type {string[]} */ addons = storage.getObject('Wikiplus-highlight-addons') || defaultAddons,
 		/** @type {string} */ indent = storage.getObject('Wikiplus-highlight-indent') || defaultIndent;
+
+	/** @type {Record<string, string>} */
+	const entity = {'"': 'quot', "'": 'apos', '<': 'lt', '>': 'gt', '&': 'amp', ' ': 'nbsp'},
+		/** @type {(func: (str: string) => string) => (doc: CodeMirror.Editor) => void} */
+		convert = func => doc => {
+			doc.replaceSelection(func(doc.getSelection()), 'around');
+		},
+		escapeHTML = convert(str => str.split('').map(c => {
+			if (c in entity) {
+				return `&${entity[c]};`;
+			}
+			const code = c.charCodeAt();
+			return code < 256 ? `&#${code};` : `&#x${code.toString(16)};`;
+		}).join('')),
+		/** @type {function(typeof CodeMirror): boolean} */ isPc = ({keyMap}) => keyMap.default === keyMap.pcDefault,
+		extraKeysPc = {'Ctrl-/': escapeHTML, 'Ctrl-\\': convert(encodeURIComponent)},
+		extraKeysMac = {'Cmd-/': escapeHTML, 'Cmd-\\': convert(encodeURIComponent)};
 
 	/**
 	 * contextMenu插件
@@ -270,25 +318,6 @@
 
 	// 以下进入CodeMirror相关内容
 	let /** @type {CodeMirror.EditorFromTextArea} */ cm;
-
-	/**
-	 * @typedef {object} addon
-	 * @property {string} option
-	 * @property {string|string[]} addon
-	 * @property {string} download
-	 * @property {boolean} complex
-	 * @property {string[]} modes
-	 * @property {boolean} only
-	 */
-
-	const /** @type {addon[]} */ options = [
-		{option: 'styleActiveLine', addon: 'activeLine'},
-		{option: 'styleSelectedText', addon: 'search', download: 'markSelection', only: true},
-		{option: 'showTrailingSpace', addon: 'trailingspace'},
-		{option: 'matchBrackets', complex: true},
-		{option: 'matchTags', addon: ['matchTags', 'fold'], modes: ['mediawiki', 'widget']},
-		{option: 'fold', modes: ['mediawiki', 'widget']},
-	];
 
 	/** @param {CodeMirror} CM */
 	const getAddonScript = (CM, other = false) => {
@@ -573,17 +602,14 @@
 			mwConfig,
 			json,
 		}, fromEntries(
-			options.filter(({complex}) => !complex).map(({option, addon = option, modes}) => {
+			options.map(({option, addon = option, modes, complex = mod => !modes || modes.includes(mod)}) => {
 				const mainAddon = Array.isArray(addon) ? addon[0] : addon;
-				return [option, addons.includes(mainAddon) && (!modes || modes.includes(mode))];
+				return [option, addons.includes(mainAddon) && complex(mode, json)];
 			}),
-		), {
-			matchBrackets: addons.includes('matchBrackets') && (mode === 'mediawiki' || json
-				? {bracketRegex: /[{}[\]]/}
-				: true
-			),
-		}, mode === 'mediawiki'
-			? {}
+		), mode === 'mediawiki'
+			? {
+				extraKeys: addons.includes('escape') && (isPc(CodeMirror) ? extraKeysPc : extraKeysMac),
+			}
 			: {
 				indentUnit: addons.includes('indentWithSpace') ? indent : defaultIndent,
 				indentWithTabs: !addons.includes('indentWithSpace'),
@@ -604,18 +630,17 @@
 					$('#Wikiplus-Quickedit-MinorEdit').click();
 					$('#Wikiplus-Quickedit-Submit').triggerHandler('click');
 				};
-			cm.addKeyMap($.extend({
-				'Ctrl-S': submit,
-				'Cmd-S': submit,
-				'Shift-Ctrl-S': submitMinor,
-				'Shift-Cmd-S': submitMinor,
-			}, Wikiplus.getSetting('esc_to_exit_quickedit')
-				? {
-					Esc() {
-						$('#Wikiplus-Quickedit-Back').triggerHandler('click');
-					},
-				}
-				: {},
+			cm.addKeyMap($.extend(
+				isPc(CodeMirror)
+					? {'Ctrl-S': submit, 'Shift-Ctrl-S': submitMinor}
+					: {'Cmd-S': submit, 'Shift-Cmd-S': submitMinor},
+				Wikiplus.getSetting('esc_to_exit_quickedit')
+					? {
+						Esc() {
+							$('#Wikiplus-Quickedit-Back').triggerHandler('click');
+						},
+					}
+					: {},
 			));
 		}
 
@@ -704,18 +729,12 @@
 			windowManager.addWindows([dialog]);
 			widget = new OO.ui.CheckboxMultiselectInputWidget({
 				options: [
-					{data: 'search', label: msg('addon-search')},
-					{data: 'activeLine', label: msg('addon-active-line')},
-					{data: 'trailingspace', label: msg('addon-trailingspace')},
-					{data: 'matchBrackets', label: msg('addon-matchbrackets')},
-					{data: 'matchTags', label: msg('addon-matchtags')},
-					{data: 'fold', label: msg('addon-fold')},
-					{data: 'contextmenu', label: msg('addon-contextmenu')},
-					{data: 'indentWithSpace', label: msg('addon-indentwithspace')},
-					{
-						data: 'otherEditors',
-						label: msg(msg('version') === '2.12' ? 'addon-othereditos' : 'addon-othereditors'),
-					},
+					...options.map(({option, addon = option}) => {
+						const mainAddon = Array.isArray(addon) ? addon[0] : addon;
+						return {data: mainAddon, label: msg(`addon-${mainAddon.toLowerCase()}`)};
+					}),
+					...['escape', 'contextmenu', 'indentWithSpace', 'otherEditors']
+						.map(addon => ({data: addon, label: msg(`addon-${addon.toLowerCase()}`)})),
 				],
 				value: addons,
 			}).on('change', toggleIndent);
@@ -771,23 +790,22 @@
 		}
 		let mode = doc.getOption('mode');
 		mode = mode === 'text/mediawiki' ? 'mediawiki' : mode;
-		const addonScript = getAddonScript(CodeMirror, true);
+		const addonScript = getAddonScript(CodeMirror, true),
+			json = doc.getOption('json');
 		await getScript(addonScript);
-		for (const {option, addon = option, modes} of options.filter(({only, complex}) => !(only || complex))) {
+		for (const {
+			option, addon = option, modes, complex = (/** @type {string} */ mod) => !modes || modes.includes(mod),
+		} of options.filter(({only}) => !only)) {
 			const mainAddon = Array.isArray(addon) ? addon[0] : addon;
-			if (doc.getOption(option) === undefined && addons.includes(mainAddon) && (!modes || modes.includes(mode))) {
-				doc.setOption(option, true);
+			if (doc.getOption(option) === undefined && addons.includes(mainAddon)) {
+				doc.setOption(option, complex(mode, json));
 			}
-		}
-		if (doc.getOption('matchBrackets') === undefined && addons.includes('matchBrackets')) {
-			doc.setOption('matchBrackets', mode === 'mediawiki' || doc.getOption('json')
-				? {bracketRegex: /[{}[\]]/}
-				: true,
-			);
 		}
 		if (mode !== 'mediawiki' && addons.includes('indentWithSpace')) {
 			doc.setOption('indentUnit', indent);
 			doc.setOption('indentWithTabs', false);
+		} else if (mode === 'mediawiki' && addons.includes('escape')) {
+			doc.addKeyMap(isPc(CodeMirror) ? extraKeysPc : extraKeysMac, true);
 		}
 		handleContextMenu(doc, mode);
 	};

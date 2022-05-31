@@ -176,14 +176,10 @@
 				reset(cm);
 			}
 		});
-		cm.addKeyMap({
-			'Ctrl-F': findNew,
-			'Cmd-F': findNew,
-			'Ctrl-G': 'findForward',
-			'Cmd-G': 'findForward',
-			'Shift-Ctrl-G': 'findBackward',
-			'Shift-Cmd-G': 'findBackward',
-		});
+		cm.addKeyMap(CodeMirror.keyMap.default === CodeMirror.keyMap.pcDefault
+			? {'Ctrl-F': findNew, 'Ctrl-G': 'findForward', 'Shift-Ctrl-G': 'findBackward'}
+			: {'Cmd-F': findNew, 'Cmd-G': 'findForward', 'Shift-Cmd-G': 'findBackward'},
+		);
 	});
 
 	mw.loader.addStyleTag(
