@@ -192,7 +192,7 @@
 	const entity = {'"': 'quot', "'": 'apos', '<': 'lt', '>': 'gt', '&': 'amp', ' ': 'nbsp'},
 		/** @type {(func: (str: string) => string) => (doc: CodeMirror.Editor) => void} */
 		convert = func => doc => {
-			doc.replaceSelection(func(doc.getSelection()), 'around');
+			doc.replaceSelection(doc.getSelection().split('\n').map(func).join('\n'), 'around');
 		},
 		escapeHTML = convert(str => str.split('').map(c => {
 			if (c in entity) {
