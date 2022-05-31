@@ -8,10 +8,10 @@
 (async () => {
 	'use strict';
 
-	const version = '2.12.1',
+	const version = '2.13',
 		newAddon = 2;
 
-	/** @type {mw.storage} */
+	/** @type {typeof mw.storage} */
 	const storage = typeof mw.storage === 'object' && typeof mw.storage.getObject === 'function'
 		? mw.storage
 		: {
@@ -93,7 +93,7 @@
 	const CDN = '//fastly.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.65.3',
 		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.5',
-		REPO_CDN = `npm/wikiplus-highlight@${majorVersion}`;
+		REPO_CDN = `gh/bhsd-harry/Wikiplus-highlight@${majorVersion}`;
 
 	const {
 		wgPageName: page,
@@ -319,11 +319,11 @@
 	// 以下进入CodeMirror相关内容
 	let /** @type {CodeMirror.EditorFromTextArea} */ cm;
 
-	/** @param {CodeMirror} CM */
+	/** @param {typeof CodeMirror} CM */
 	const getAddonScript = (CM, other = false) => {
 		const /** @type {string[]} */ addonScript = [];
 		for (const {option, addon = option, download = Array.isArray(addon) ? option : addon, only} of options) {
-			if (!(only && other) && !CM.optionHandlers[option] && intersect(addon, addons)) {
+			if (!(only && other) && !(option in CM.optionHandlers) && intersect(addon, addons)) {
 				addonScript.push(ADDON_LIST[download]);
 			}
 		}
@@ -350,7 +350,7 @@
 
 		/**
 		 * 代替CodeMirror的局部变量
-		 * @type {CodeMirror}
+		 * @type {typeof CodeMirror}
 		 */
 		const CM = loaded
 			? window.CodeMirror
