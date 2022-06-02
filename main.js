@@ -8,8 +8,8 @@
 (async () => {
 	'use strict';
 
-	const version = '2.13.1',
-		newAddon = 2;
+	const version = '2.14',
+		newAddon = 0;
 
 	/** @type {typeof mw.storage} */
 	const storage = typeof mw.storage === 'object' && typeof mw.storage.getObject === 'function'
@@ -95,7 +95,7 @@
 	const CDN = '//fastly.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.65.3',
 		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.5',
-		REPO_CDN = `npm/wikiplus-highlight@${majorVersion}`;
+		REPO_CDN = `gh/bhsd-harry/Wikiplus-highlight@${majorVersion}`;
 
 	const {
 		wgPageName: page,
