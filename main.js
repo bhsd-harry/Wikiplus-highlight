@@ -37,10 +37,11 @@
 		};
 	/**
 	 * polyfill for Object.fromEntries
-	 * @type {(entries: Iterable<[string, any]>) => Record<string, any>}
+	 * @type {(entries: Iterable<[string, T]>) => Record<string, T>}
+	 * @template T
 	 */
 	const fromEntries = Object.fromEntries || (entries => {
-		const /** @type {Record<string, any>} */ obj = {};
+		const /** @type {Record<string, T>} */ obj = {};
 		for (const [key, value] of entries) {
 			obj[key] = value;
 		}
@@ -48,11 +49,10 @@
 	});
 	/**
 	 * polyfill for Array.prototype.flat
-	 * @type {function(this: any[][]): any[]}
+	 * @type {(arr: T[][]) => T[]}
+	 * @template T
 	 */
-	const flat = Array.prototype.flat || function() {
-		return this.reduce((acc, cur) => acc.concat(cur), []);
-	};
+	const flatten = Array.prototype.flat.call || (arr => arr.reduce((acc, cur) => acc.concat(cur), []));
 
 	/**
 	 * 解析版本号
@@ -333,8 +333,9 @@
 	};
 
 	/**
-	 * @param {array|any} arr1
-	 * @param {array} arr2
+	 * @param {T[]|T} arr1
+	 * @param {T[]} arr2
+	 * @template T
 	 */
 	const intersect = (arr1, arr2) => Array.isArray(arr1)
 		? arr1.some(ele => arr2.includes(ele))
@@ -457,23 +458,13 @@
 			return config;
 		}
 
-		/**
-		 * @typedef {object} ApiSiteInfoQuery
-		 * @property {{name: string, aliases: string[], 'case-sensitive': boolean}[]} magicwords
-		 * @property {string[]} extensiontags
-		 * @property {string[]} functionhooks
-		 * @property {string[]} variables
-		 */
-
 		/*
 		 * 以下情形均需要发送API请求
 		 * 情形2：localStorage未过期但不包含新设置
 		 * 情形3：新加载的 ext.CodeMirror.data
 		 * 情形4：config === null
 		 */
-		const /** @type {{query: ApiSiteInfoQuery}} */ {
-			query: {magicwords, extensiontags, functionhooks, variables},
-		} = await new mw.Api().get({
+		const {query: {magicwords, extensiontags, functionhooks, variables}} = await new mw.Api().get({
 			meta: 'siteinfo',
 			siprop: config ? 'magicwords' : 'magicwords|extensiontags|functionhooks|variables',
 			formatversion: 2,
@@ -484,7 +475,7 @@
 		 * @param {{aliases: string[], name: string}[]} words
 		 * @returns {{alias: string, name: string}[]}
 		 */
-		const getAliases = words => flat.call(
+		const getAliases = words => flatten(
 			words.map(({aliases, name}) => aliases.map(alias => ({alias, name}))),
 		);
 		/**
@@ -651,7 +642,7 @@
 
 	// 监视 Wikiplus 编辑框
 	const observer = new MutationObserver(records => {
-		const $editArea = $(flat.call(
+		const $editArea = $(flatten(
 			records.map(({addedNodes}) => [...addedNodes]),
 		)).find('#Wikiplus-Quickedit, #Wikiplus-Setting-Input');
 		if ($editArea.length === 0) {
