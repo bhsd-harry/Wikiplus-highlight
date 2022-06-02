@@ -76,6 +76,8 @@
 	 * @param {string[]} args
 	 */
 	const msg = (key, ...args) => mw.msg(`wphl-${key}`, ...args);
+	/** @param {string[]} args */
+	const htmlMsg = (...args) => $($.parseHTML(msg(...args)));
 	/**
 	 * 提示消息
 	 * @param {string[]} args
@@ -731,10 +733,10 @@
 				options: [
 					...options.map(({option, addon = option}) => {
 						const mainAddon = Array.isArray(addon) ? addon[0] : addon;
-						return {data: mainAddon, label: msg(`addon-${mainAddon.toLowerCase()}`)};
+						return {data: mainAddon, label: htmlMsg(`addon-${mainAddon.toLowerCase()}`)};
 					}),
 					...['escape', 'contextmenu', 'indentWithSpace', 'otherEditors']
-						.map(addon => ({data: addon, label: msg(`addon-${addon.toLowerCase()}`)})),
+						.map(addon => ({data: addon, label: htmlMsg(`addon-${addon.toLowerCase()}`)})),
 				],
 				value: addons,
 			}).on('change', toggleIndent);
