@@ -52,7 +52,12 @@
 	 * @type {(arr: T[][]) => T[]}
 	 * @template T
 	 */
-	const flatten = Array.prototype.flat.call || (arr => arr.reduce((acc, cur) => acc.concat(cur), []));
+	const flatten = arr => {
+		if (typeof arr.flat === 'function') {
+			return arr.flat();
+		}
+		return arr.reduce((acc, cur) => acc.concat(cur), []);
+	};
 
 	/**
 	 * 解析版本号
@@ -235,14 +240,21 @@
 		$wrapper.contextmenu(({pageX, pageY}) => {
 			const pos = doc.coordsChar({left: pageX, top: pageY}),
 				{line, ch} = pos,
-				type = doc.getTokenTypeAt(pos);
-			if (!/\bmw-(?:template-name|parserfunction)\b/.test(type)) {
+				curType = doc.getTokenTypeAt(pos);
+			if (!/\bmw-(?:template-name|parserfunction)\b/.test(curType)) {
 				return;
 			}
-			const tokens = doc.getLineTokens(line),
-				index = tokens.findIndex(({start, end}) => start < ch && end >= ch),
+			const tokens = doc.getLineTokens(line);
+			for (const [i, {type, end, string}] of [...tokens.entries()].reverse()) {
+				if (i > 0 && tokens[i - 1].type === type) {
+					tokens[i - 1].end = end;
+					tokens[i - 1].string += string;
+					tokens.splice(i, 1);
+				}
+			}
+			const index = tokens.findIndex(({start, end}) => start < ch && end >= ch),
 				text = tokens[index].string.replace(/\u200e/g, '').replace(/_/g, ' ').trim();
-			if (/\bmw-template-name\b/.test(type)) {
+			if (/\bmw-template-name\b/.test(curType)) {
 				const title = new mw.Title(text);
 				if (title.namespace !== 0 || text.startsWith(':')) {
 					open(title.getUrl(), '_blank');
@@ -387,11 +399,11 @@
 		}
 		addonScript.push(...getAddonScript(CM));
 		if (['widget', 'html'].includes(type)) {
-			['css', 'javascript', 'mediawiki', 'htmlmixed', 'xml'].forEach(lang => {
+			for (const lang of ['css', 'javascript', 'mediawiki', 'htmlmixed', 'xml']) {
 				if (!CM.modes[lang]) {
 					scripts = scripts.concat(MODE_LIST[lang]);
 				}
-			});
+			}
 		} else if (!CM.modes[type]) {
 			if (type === 'lua') { // CodeMirror扩展没有提供Lua模式，必须从外部下载
 				(USING_LOCAL ? externalScript : scripts).push(MODE_LIST.lua);
