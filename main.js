@@ -8,6 +8,11 @@
 (async () => {
 	'use strict';
 
+	if (mw.libs.wphl) {
+		return;
+	}
+	mw.libs.wphl = true; // 开始加载
+
 	const version = '2.15',
 		newAddon = 0;
 
@@ -63,7 +68,7 @@
 	 * 解析版本号
 	 * @param {string} str 版本字符串
 	 */
-	const getVersion = str => str.split('.').map(s => Number(s));
+	const getVersion = (str = version) => str.split('.').map(s => Number(s));
 	/**
 	 * 比较版本号
 	 * @param {string} a
@@ -94,7 +99,7 @@
 	};
 
 	// 插件和I18N依主版本号
-	const majorVersion = getVersion(version).slice(0, 2).join('.');
+	const majorVersion = getVersion().slice(0, 2).join('.');
 
 	// 路径
 	const CDN = '//fastly.jsdelivr.net',
@@ -751,6 +756,9 @@
 			});
 			indentField = new OO.ui.FieldLayout(indentWidget, {label: msg('addon-indent')});
 			toggleIndent();
+		} else {
+			widget.setValue(addons);
+			indentWidget.setValue(indent);
 		}
 		const wikiplusLoaded = typeof window.Wikiplus === 'object';
 		widget.$element.find('.oo-ui-checkboxInputWidget').first().toggleClass('oo-ui-widget-enabled', wikiplusLoaded)
@@ -819,4 +827,12 @@
 		/** @param {{cm: CodeMirror.Editor}} */ ({cm: doc}) => handleOtherEditors(doc),
 	);
 	mw.hook('inspector').add(/** @param {CodeMirror.Editor} doc */ doc => handleOtherEditors(doc));
+
+	mw.libs.wphl = {
+		version, majorVersion, options, addons, indent, i18n, i18nLang, wphlStyle, $portlet,
+		CDN, CM_CDN, MW_CDN, REPO_CDN, USING_LOCAL, MODE_LIST, ADDON_LIST, I18N_CDN,
+		getVersion, cmpVersion, msg, htmlMsg, escapeHTML, handleContextMenu, setI18N, getScript, getAddonScript,
+		intersect, initMode, updateCachedConfig, getMwConfig, getPageMode, renderEditor, handleOtherEditors,
+	}; // 加载完毕
+	Object.freeze(mw.libs.wphl);
 })();
