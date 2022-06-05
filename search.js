@@ -40,7 +40,7 @@
 		}),
 		$searchBtn = $('<span>', {
 			class: 'Wikiplus-Btn',
-			text: msg('addon-search'),
+			html: msg('addon-search'),
 		});
 
 	const escapeRegExp = mw.util.escapeRegExp || mw.RegExp.escape;
