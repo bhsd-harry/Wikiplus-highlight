@@ -64,10 +64,7 @@
 		return arr.reduce((acc, cur) => acc.concat(cur), []);
 	};
 
-	/**
-	 * 解析版本号
-	 * @param {string} str 版本字符串
-	 */
+	/** 解析版本号 */
 	const getVersion = (str = version) => str.split('.').map(s => Number(s));
 	/**
 	 * 比较版本号
