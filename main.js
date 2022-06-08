@@ -120,7 +120,7 @@
 		ALL_SETTINGS_CACHE = storage.getObject('InPageEditMwConfig') || {},
 		SITE_ID = `${server}${scriptPath}`,
 		/** @type {{time: number, config: mwConfig}} */ SITE_SETTINGS = ALL_SETTINGS_CACHE[SITE_ID] || {},
-		EXPIRED = SITE_SETTINGS.time < Date.now() - 86400 * 1000 * 30;
+		EXPIRED = !(SITE_SETTINGS.time > Date.now() - 86400 * 1000 * 30);
 
 	const /** @type {Record<string, string>} */ CONTENTMODEL = {
 		css: 'css',
@@ -406,6 +406,8 @@
 					scripts = scripts.concat(MODE_LIST[lang]);
 				}
 			}
+		} else if (type === 'mediawiki') {
+			scripts = scripts.concat(MODE_LIST.mediawiki); // 从站内下载ext.CodeMirror.data，或没有效果
 		} else if (!CM.modes[type]) {
 			if (type === 'lua') { // CodeMirror扩展没有提供Lua模式，必须从外部下载
 				(USING_LOCAL ? externalScript : scripts).push(MODE_LIST.lua);
