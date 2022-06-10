@@ -632,7 +632,14 @@
 		$('#Wikiplus-Quickedit-Jump').children('a').attr('href', '#Wikiplus-CodeMirror');
 
 		if (!setting) { // 普通Wikiplus编辑区
-			const submit = () => {
+			const /** @type {Wikiplus} */ Wikiplus = typeof window.Wikiplus === 'object'
+					? window.Wikiplus
+					: {
+						getSetting(key) {
+							return storage.getObject('Wikiplus_Settings')[key];
+						},
+					},
+				submit = () => {
 					$('#Wikiplus-Quickedit-Submit').triggerHandler('click');
 				},
 				submitMinor = () => {
