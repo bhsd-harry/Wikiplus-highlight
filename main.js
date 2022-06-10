@@ -102,7 +102,7 @@
 	const CDN = '//fastly.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.65.3',
 		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.5',
-		REPO_CDN = `gh/bhsd-harry/Wikiplus-highlight@${majorVersion}`;
+		REPO_CDN = `npm/wikiplus-highlight@${majorVersion}`;
 
 	const {
 		wgPageName: page,
@@ -636,7 +636,8 @@
 					? window.Wikiplus
 					: {
 						getSetting(key) {
-							return storage.getObject('Wikiplus_Settings')[key];
+							const settings = storage.getObject('Wikiplus_Settings');
+							return settings && settings[key];
 						},
 					},
 				submit = () => {
@@ -650,7 +651,7 @@
 				isPc(CodeMirror)
 					? {'Ctrl-S': submit, 'Shift-Ctrl-S': submitMinor}
 					: {'Cmd-S': submit, 'Shift-Cmd-S': submitMinor},
-				Wikiplus.getSetting('esc_to_exit_quickedit')
+				[true, 'true'].includes(Wikiplus.getSetting('esc_to_exit_quickedit'))
 					? {
 						Esc() {
 							$('#Wikiplus-Quickedit-Back').triggerHandler('click');
