@@ -41,7 +41,7 @@
 			},
 		};
 	/**
-	 * polyfill for Object.fromEntries
+	 * polyfill for `Object.fromEntries`
 	 * @type {(entries: Iterable<[string, T]>) => Record<string, T>}
 	 * @template T
 	 */
@@ -53,7 +53,7 @@
 		return obj;
 	});
 	/**
-	 * polyfill for Array.prototype.flat
+	 * polyfill for `Array.prototype.flat`
 	 * @type {(arr: T[][]) => T[]}
 	 * @template T
 	 */
@@ -70,7 +70,7 @@
 	 * 比较版本号
 	 * @param {string} a
 	 * @param {string} b
-	 * @returns a的版本号是否小于b的版本号
+	 * @returns `a`的版本号是否小于`b`的版本号
 	 */
 	const cmpVersion = (a, b) => {
 		const [a0, a1] = getVersion(a),
@@ -79,7 +79,7 @@
 	};
 	/**
 	 * 获取I18N消息
-	 * @param {string} key 消息键，省略'wphl-'前缀
+	 * @param {string} key 消息键，省略`wphl-`前缀
 	 * @param {string[]} args
 	 */
 	const msg = (key, ...args) => mw.msg(`wphl-${key}`, ...args);
@@ -366,7 +366,7 @@
 			loaded = typeof window.CodeMirror === 'function';
 
 		/**
-		 * 代替CodeMirror的局部变量
+		 * 代替`CodeMirror`的局部变量
 		 * @type {typeof CodeMirror}
 		 */
 		const CM = loaded
@@ -470,7 +470,7 @@
 		}
 		if (config && config.redirect && config.img) { // 情形1：config已更新，可能来自localStorage
 			return config;
-		} else if (config) { /** @todo 暂不需要redirect和img相关设置 */
+		} else if (config) { /** @todo 暂不需要`redirect`和`img`相关设置 */
 			return config;
 		}
 
@@ -478,7 +478,7 @@
 		 * 以下情形均需要发送API请求
 		 * 情形2：localStorage未过期但不包含新设置
 		 * 情形3：新加载的 ext.CodeMirror.data
-		 * 情形4：config === null
+		 * 情形4：`config === null`
 		 */
 		const {query: {magicwords, extensiontags, functionhooks, variables}} = await new mw.Api().get({
 			meta: 'siteinfo',
@@ -502,7 +502,7 @@
 			aliases.map(({alias, name}) => [alias.replace(/:$/, ''), name]),
 		);
 
-		if (!config) { // 情形4：config === null\
+		if (!config) { // 情形4：`config === null`
 			config = {
 				tagModes: {
 					pre: 'mw-tag-pre',
@@ -584,7 +584,7 @@
 
 		if (mode === 'mediawiki' && mwConfig.tags.html) {
 			mwConfig.tagModes.html = 'htmlmixed';
-			await initMode('html'); // 如果已经缓存过mwConfig，这一步什么都不会发生
+			await initMode('html'); // 如果已经缓存过`mwConfig`，这一步什么都不会发生
 		} else if (mode === 'widget' && !CodeMirror.mimeModes.widget) { // 到这里CodeMirror已确定加载完毕
 			CodeMirror.defineMIME('widget', {
 				name: 'htmlmixed',

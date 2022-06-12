@@ -63,15 +63,15 @@
 		};
 	};
 
-	// input event handler of $search
+	/** input event handler of `$search` */
 	const onInput = () => {
 		$search.css('background-color', '').off('input', onInput);
 	};
 
-	// keyboard event handler of $search
 	let /** @type {string|RegExp} */ lastPtn,
 		/** @type {CodeMirror.SearchCursor} */ cursor;
 	/**
+	 * keyboard event handler of `$search`
 	 * @param {CodeMirror.Editor} cm
 	 * @param {boolean} dir
 	 */
@@ -115,7 +115,7 @@
 		}
 	};
 
-	// click event handler of $searchBtn
+	/** click event handler of `$searchBtn` */
 	const findNew = () => {
 		$searchContainer.show();
 		$search.select().focus()[0]
@@ -123,7 +123,7 @@
 	};
 
 	/**
-	 * click event handler of $searchClose
+	 * click event handler of `$searchClose`
 	 * @param {CodeMirror.Editor} cm
 	 */
 	const reset = cm => {

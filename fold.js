@@ -9,7 +9,7 @@
 	const {Pos, cmpPos} = CodeMirror;
 
 	/**
-	 * 只用于title属性的消息，不存在时fallback到键名
+	 * 只用于`title`属性的消息，不存在时fallback到键名
 	 * @param {string} key
 	 * @param {string|undefined} argKey
 	 * @returns {string}
@@ -85,7 +85,7 @@
 			const end = dir > 0 ? length : -1;
 			let pos = dir > 0 ? 0 : length - 1;
 			if (line === where.line) {
-				pos = where.ch - (dir > 0 ? 0 : 1); // dir = 1时不包含当前字符，dir = -1时包含当前字符
+				pos = where.ch - (dir > 0 ? 0 : 1); // `dir = 1`时不包含当前字符，`dir = -1`时包含当前字符
 			}
 			for (; pos !== end; pos += dir) {
 				const ch = curLine.charAt(pos);

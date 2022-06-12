@@ -59,7 +59,7 @@
 			return true;
 		}
 
-		/** Jump to the letter after a '>' towards the line end */
+		/** Jump to the letter after a `>` towards the line end */
 		toTagEnd() {
 			for (;;) {
 				const gt = this.text.indexOf('>', this.ch);
@@ -74,7 +74,7 @@
 			}
 		}
 
-		/** Jump to a '<' towards the line start */
+		/** Jump to a `<` towards the line start */
 		toTagStart() {
 			for (;;) {
 				const lt = this.ch ? this.text.lastIndexOf('<', this.ch - 1) : -1;
@@ -94,7 +94,7 @@
 			}
 		}
 
-		/** Jump to the start of the last line, or the letter after a ${tagStart} */
+		/** Jump to the start of the last line, or the letter after a `tagStart` */
 		toNextTag() {
 			for (;;) {
 				tagStart.lastIndex = this.ch;
@@ -115,7 +115,7 @@
 			}
 		}
 
-		/** Jump to the end of the first line, or a non-bracket '>', or the letter after a tag bracket '>' */
+		/** Jump to the end of the first line, or a non-bracket `>`, or the letter after a tag bracket `>` */
 		toPrevTag() {
 			for (;;) {
 				const gt = this.ch ? this.text.lastIndexOf('>', this.ch - 1) : -1;
@@ -265,7 +265,7 @@
 		},
 	);
 
-	// Used by addon/edit/closetag.js
+	/** Used by addon/edit/closetag.js */
 	CodeMirror.scanForClosingTag = function(cm, pos, name) {
 		const iter = new Iter(cm, pos);
 		return iter.findMatchingClose(name);
