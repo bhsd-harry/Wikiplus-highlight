@@ -601,10 +601,9 @@
 			cm.toTextArea();
 		}
 
-		const json = setting || contentmodel === 'json',
-			{name} = $.client.profile();
+		const json = setting || contentmodel === 'json';
 		cm = CodeMirror.fromTextArea($target[0], $.extend({
-			inputStyle: ['safari', 'crios', 'fxios', 'iphone'].includes(name) ? 'textarea' : 'contenteditable',
+			inputStyle: 'contenteditable',
 			lineNumbers: true,
 			lineWrapping: true,
 			mode,
@@ -679,7 +678,8 @@
 	// 添加样式
 	const wphlStyle = document.getElementById('wphl-style') || mw.loader.addStyleTag(
 		'#Wikiplus-Quickedit+.CodeMirror,#Wikiplus-Setting-Input+.CodeMirror'
-		+ '{border:1px solid #c8ccd1;line-height:1.3;clear:both}'
+		+ '{border:1px solid #c8ccd1;line-height:1.3;clear:both;'
+		+ '-moz-user-select:auto;-webkit-user-select:auto;user-select:auto}'
 		+ 'div.Wikiplus-InterBox{font-size:14px;z-index:100}'
 		+ '.skin-minerva .Wikiplus-InterBox{font-size:16px}'
 		+ '.cm-trailingspace{text-decoration:underline wavy red}'
