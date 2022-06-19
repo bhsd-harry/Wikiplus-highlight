@@ -625,6 +625,7 @@
 		));
 		cm.setSize(null, height);
 		cm.refresh();
+		cm.getWrapperElement().id = 'Wikiplus-CodeMirror';
 
 		handleContextMenu(cm, mode);
 
@@ -677,9 +678,10 @@
 
 	// 添加样式
 	const wphlStyle = document.getElementById('wphl-style') || mw.loader.addStyleTag(
-		'.Wikiplus-InterBox .CodeMirror{border:1px solid #c8ccd1;line-height:1.3;clear:both;}'
-		+ '.Wikiplus-InterBox .CodeMirror-code{-moz-user-select:auto;-webkit-user-select:auto;user-select:auto}'
-		+ '.Wikiplus-InterBox .CodeMirror-gutter-wrapper{-moz-user-select:none;-webkit-user-select:none;user-select:none}'
+		'#Wikiplus-CodeMirror{border:1px solid #c8ccd1;line-height:1.3;clear:both;'
+		+ '-moz-user-select:auto;-webkit-user-select:auto;user-select:auto}' // fix mobile select
+		+ '#Wikiplus-CodeMirror .CodeMirror-gutter-wrapper{'
+		+ '-moz-user-select:none;-webkit-user-select:none;user-select:none}' // fix iOS select-all
 		+ 'div.Wikiplus-InterBox{font-size:14px;z-index:100}'
 		+ '.skin-minerva .Wikiplus-InterBox{font-size:16px}'
 		+ '.cm-trailingspace{text-decoration:underline wavy red}'
@@ -836,10 +838,8 @@
 	mw.hook('inspector').add(/** @param {CodeMirror.Editor} doc */ doc => handleOtherEditors(doc));
 
 	mw.libs.wphl = {
-		version, majorVersion, options, addons, indent, i18n, i18nLang, wphlStyle, $portlet,
-		CDN, CM_CDN, MW_CDN, REPO_CDN, USING_LOCAL, MODE_LIST, ADDON_LIST, I18N_CDN,
-		getVersion, cmpVersion, msg, htmlMsg, escapeHTML, handleContextMenu, setI18N, getScript, getAddonScript,
-		intersect, initMode, updateCachedConfig, getMwConfig, getPageMode, renderEditor, handleOtherEditors,
+		version, options, addons, i18n, i18nLang, wphlStyle, $portlet, USING_LOCAL, MODE_LIST, ADDON_LIST,
+		msg, htmlMsg, escapeHTML, handleContextMenu, setI18N, getAddonScript,
+		intersect, updateCachedConfig, getMwConfig, renderEditor, handleOtherEditors,
 	}; // 加载完毕
-	Object.freeze(mw.libs.wphl);
 })();
