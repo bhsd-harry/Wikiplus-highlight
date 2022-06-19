@@ -604,7 +604,7 @@
 		const json = setting || contentmodel === 'json',
 			{name} = $.client.profile();
 		cm = CodeMirror.fromTextArea($target[0], $.extend({
-			inputStyle: name === 'safari' ? 'textarea' : 'contenteditable',
+			inputStyle: ['safari', 'crios', 'fxios', 'iphone'].includes(name) ? 'textarea' : 'contenteditable',
 			lineNumbers: true,
 			lineWrapping: true,
 			mode,
