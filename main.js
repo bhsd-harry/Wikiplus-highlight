@@ -604,7 +604,7 @@
 		const json = setting || contentmodel === 'json';
 		cm = CodeMirror.fromTextArea($target[0], $.extend({
 			inputStyle: 'contenteditable',
-			lineNumbers: true,
+			lineNumbers: !/Android\b/.test(navigator.userAgent),
 			lineWrapping: true,
 			mode,
 			mwConfig,
