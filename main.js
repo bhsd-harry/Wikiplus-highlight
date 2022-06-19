@@ -677,9 +677,9 @@
 
 	// 添加样式
 	const wphlStyle = document.getElementById('wphl-style') || mw.loader.addStyleTag(
-		'#Wikiplus-Quickedit+.CodeMirror,#Wikiplus-Setting-Input+.CodeMirror'
-		+ '{border:1px solid #c8ccd1;line-height:1.3;clear:both;'
-		+ '-moz-user-select:auto;-webkit-user-select:auto;user-select:auto}'
+		'.Wikiplus-InterBox .CodeMirror{border:1px solid #c8ccd1;line-height:1.3;clear:both;}'
+		+ '.Wikiplus-InterBox .CodeMirror-code{-moz-user-select:auto;-webkit-user-select:auto;user-select:auto}'
+		+ '.Wikiplus-InterBox .CodeMirror-gutter-wrapper{-moz-user-select:none;-webkit-user-select:none;user-select:none}'
 		+ 'div.Wikiplus-InterBox{font-size:14px;z-index:100}'
 		+ '.skin-minerva .Wikiplus-InterBox{font-size:16px}'
 		+ '.cm-trailingspace{text-decoration:underline wavy red}'
