@@ -769,7 +769,7 @@
 			widget.setValue(addons);
 			indentWidget.setValue(indent);
 		}
-		const wikiplusLoaded = typeof window.Wikiplus === 'object';
+		const wikiplusLoaded = typeof window.Wikiplus === 'object' || typeof window.Pages === 'object';
 		widget.$element.find('.oo-ui-checkboxInputWidget').first().toggleClass('oo-ui-widget-enabled', wikiplusLoaded)
 			.children('input').prop('disabled', !wikiplusLoaded);
 		dialog.open({

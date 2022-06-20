@@ -93,7 +93,7 @@
 			lastPtn = ptn;
 			cursor = cm.getSearchCursor(ptn, cm.getCursor(), {caseFold: true});
 		}
-		let result = dir ? cursor.findNext() : cursor.findPreviouse();
+		let result = dir ? cursor.findNext() : cursor.findPrevious();
 		if (!result) {
 			if (dir) {
 				cursor = cm.getSearchCursor(ptn, {line: 0, ch: 0}, {caseFold: true});
@@ -102,7 +102,7 @@
 					lastCh = cm.getLine(lastLine).length;
 				cursor = cm.getSearchCursor(ptn, {line: lastLine, ch: lastCh}, {caseFold: true});
 			}
-			result = dir ? cursor.findNext() : cursor.findPreviouse();
+			result = dir ? cursor.findNext() : cursor.findPrevious();
 		}
 		if (result) {
 			const from = cursor.from(),
@@ -139,12 +139,6 @@
 		findNext(doc, false);
 	};
 
-	const {name} = $.client.profile(),
-		focus = name === 'safari'
-			? /** @param {CodeMirror.Editor} cm */ cm => {
-				cm.focus();
-			}
-			: () => {};
 	mw.hook('wiki-codemirror').add(/** @param {CodeMirror.Editor} cm */ cm => {
 		if (!cm.getOption('styleSelectedText')) {
 			return;
@@ -160,17 +154,14 @@
 		});
 		$searchNext.click(() => {
 			findNext(cm, true);
-			focus(cm);
 		});
 		$searchPrev.click(() => {
 			findNext(cm, false);
-			focus(cm);
 		});
 		$search.val('').keydown(e => {
 			if (e.key === 'Enter') {
 				e.preventDefault();
 				findNext(cm, true);
-				focus(cm);
 			} else if (e.key === 'Escape') {
 				e.stopPropagation();
 				reset(cm);
@@ -187,6 +178,7 @@
 		+ '#Wikiplus-Quickedit-Search-Div{margin:7px 0 5px;}'
 		+ '.Wikiplus-Symbol-Btn{font-size:20px;margin:7px;vertical-align:middle;cursor:pointer;}'
 		+ '#Wikiplus-Quickedit-Search{width:50%;}'
-		+ 'span.cm-search{background-color:#ffc0cb83;}',
+		+ '.cm-search{background-color:#ffc0cb83;}'
+		+ 'span.CodeMirror-selectedtext{background:#d7d4f0}',
 	);
 })();
