@@ -781,7 +781,7 @@
 				{action: 'reject', label: mw.msg('ooui-dialog-message-reject')},
 				{action: 'accept', label: mw.msg('ooui-dialog-message-accept'), flags: 'progressive'},
 			],
-			size: i18nLang === 'en' ? 'medium' : 'small',
+			size: i18nLang === 'en' || skin === 'minerva' ? 'medium' : 'small',
 		}).closing.then(data => {
 			field.$element.detach();
 			indentField.$element.detach();
@@ -794,7 +794,7 @@
 		});
 	});
 	if (skin === 'minerva') {
-		$portlet.find('a').addClass('mw-ui-icon-minerva-settings');
+		$portlet.find('.mw-ui-icon').addClass('mw-ui-icon-minerva-settings');
 	}
 
 	// 发送欢迎提示

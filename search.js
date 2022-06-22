@@ -177,7 +177,7 @@
 		'.Wikiplus-Btn{line-height:1.4}'
 		+ '#Wikiplus-Quickedit-Search-Div{margin:7px 0 5px;}'
 		+ '.Wikiplus-Symbol-Btn{font-size:20px;margin:7px;vertical-align:middle;cursor:pointer;}'
-		+ '#Wikiplus-Quickedit-Search{width:50%;}'
+		+ '#Wikiplus-Quickedit-Search{width:50%;padding:revert;border:revert;background:revert;vertical-align:middle}'
 		+ '.cm-search{background-color:#ffc0cb83;}'
 		+ 'span.CodeMirror-selectedtext{background:#d7d4f0}',
 	);
