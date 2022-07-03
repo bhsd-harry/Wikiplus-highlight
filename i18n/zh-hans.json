@@ -8,6 +8,7 @@
 	"wphl-addon-closebrackets": "自动闭合括号和引号",
 	"wphl-addon-matchtags": "高亮显示匹配和未匹配的标签",
 	"wphl-addon-fold": "折叠模板参数和标签内部文本",
+	"wphl-addon-wikieditor": "添加WikiEditor工具条",
 	"wphl-addon-escape": "<span title=\"Ctrl/Cmd + / : HTML编码\nCtrl/Cmd + \\ : URL编码\">添加HTML和URL编码快捷键</span>",
 	"wphl-addon-contextmenu": "右键点击可打开模板或模块页面",
 	"wphl-addon-indentwithspace": "代码缩进使用空格而非Tab",

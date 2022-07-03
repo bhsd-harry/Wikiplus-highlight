@@ -10,38 +10,15 @@
 	const msg = key => mw.msg(`wphl-${key}`);
 
 	// Prepare elements
-	const $search = $('<input>', {
-			id: 'Wikiplus-Quickedit-Search',
-			placeholder: msg('search-placeholder'),
-		}),
-		$searchClose = $('<span>', {
-			text: '×',
-			id: 'Wikiplus-Quickedit-Search-Close',
-			class: 'Wikiplus-Symbol-Btn',
-		}),
-		$searchNext = $('<span>', {
-			text: '▼',
-			id: 'Wikiplus-Quickedit-Search-Next',
-			class: 'Wikiplus-Symbol-Btn',
-		}),
-		$searchPrev = $('<span>', {
-			text: '▲',
-			id: 'Wikiplus-Quickedit-Search-Prev',
-			class: 'Wikiplus-Symbol-Btn',
-		}),
+	const $search = $('<input>', {id: 'Wikiplus-Quickedit-Search', placeholder: msg('search-placeholder')}),
+		$searchClose = $('<span>', {text: '×', id: 'Wikiplus-Quickedit-Search-Close', class: 'Wikiplus-Symbol-Btn'}),
+		$searchNext = $('<span>', {text: '▼', id: 'Wikiplus-Quickedit-Search-Next', class: 'Wikiplus-Symbol-Btn'}),
+		$searchPrev = $('<span>', {text: '▲', id: 'Wikiplus-Quickedit-Search-Prev', class: 'Wikiplus-Symbol-Btn'}),
 		$searchContainer = $('<div>', {
 			id: 'Wikiplus-Quickedit-Search-Div',
-			html: [
-				$search,
-				$searchNext,
-				$searchPrev,
-				$searchClose,
-			],
+			html: [$search, $searchNext, $searchPrev, $searchClose],
 		}),
-		$searchBtn = $('<span>', {
-			class: 'Wikiplus-Btn',
-			html: msg('addon-search'),
-		});
+		$searchBtn = $('<span>', {class: 'Wikiplus-Btn', html: msg('addon-search')});
 
 	const escapeRegExp = mw.util.escapeRegExp || mw.RegExp.escape;
 	const /** @type {CodeMirror.Mode<undefined>} */ overlay = {token: () => {}};
@@ -140,7 +117,7 @@
 	};
 
 	mw.hook('wiki-codemirror').add(/** @param {CodeMirror.Editor} cm */ cm => {
-		if (!cm.getOption('styleSelectedText')) {
+		if (!cm.getOption('styleSelectedText') || mw.libs.wphl.addons.includes('wikiEditor')) {
 			return;
 		}
 		const $textarea = $(cm.getWrapperElement()).prev('#Wikiplus-Quickedit');

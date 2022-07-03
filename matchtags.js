@@ -166,11 +166,7 @@
 						}
 					}
 					if (i < 0 && (!tag || tag === tagName)) {
-						return {
-							tag: tagName,
-							from: Pos(this.line, start),
-							to: Pos(this.line, this.ch),
-						};
+						return {tag: tagName, from: Pos(this.line, start), to: Pos(this.line, this.ch)};
 					}
 				} else { // opening tag
 					stack.push(tagName);
@@ -209,11 +205,7 @@
 						}
 					}
 					if (i < 0 && (!tag || tag === tagName)) {
-						return {
-							tag: tagName,
-							from: Pos(this.line, this.ch),
-							to: Pos(this.line, end),
-						};
+						return {tag: tagName, from: Pos(this.line, this.ch), to: Pos(this.line, end)};
 					}
 				}
 			}
