@@ -673,7 +673,9 @@
 		cm.refresh();
 		cm.getWrapperElement().id = 'Wikiplus-CodeMirror';
 
-		$target.textSelection('register', cmTextSelection);
+		if ($.fn.textSelection) {
+			$target.textSelection('register', cmTextSelection);
+		}
 
 		handleContextMenu(cm, mode);
 
