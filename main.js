@@ -105,7 +105,7 @@
 	const CDN = '//fastly.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.65.3',
 		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.5',
-		REPO_CDN = `gh/bhsd-harry/Wikiplus-highlight@${majorVersion}`;
+		REPO_CDN = `npm/wikiplus-highlight@${majorVersion}`;
 
 	const {
 		wgPageName: page,
