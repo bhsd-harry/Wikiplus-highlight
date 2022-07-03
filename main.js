@@ -385,21 +385,35 @@
 		 */
 		const CM = loaded ? window.CodeMirror : {modes: {}, prototype: {}, commands: {}, optionHandlers: {}};
 
-		if (['mediawiki', 'widget'].includes(type) && !CM.modes.mediawiki) {
-			// 总是外部样式表和外部脚本
-			mw.loader.load(`${CDN}/${MW_CDN}/mediawiki.min.css`, 'text/css');
-			scripts.push(`${MW_CDN}/mediawiki.min.js`);
-		}
-		if (type === 'mediawiki' && SITE_SETTINGS.config && SITE_SETTINGS.config.tags.html) {
-			// NamespaceHTML扩展自由度过高，所以这里一律当作允许<html>标签
-			type = 'html'; // eslint-disable-line no-param-reassign
-		}
+		// lib
 		if (!loaded) {
 			scripts.push(MODE_LIST.lib);
 			if (!USING_LOCAL) {
 				mw.loader.load(`${CDN}/${CM_CDN}/lib/codemirror.min.css`, 'text/css');
 			}
 		}
+
+		// modes
+		if (type === 'mediawiki' && SITE_SETTINGS.config && SITE_SETTINGS.config.tags.html) {
+			// NamespaceHTML扩展自由度过高，所以这里一律当作允许<html>标签
+			type = 'html'; // eslint-disable-line no-param-reassign
+		}
+		if (['mediawiki', 'widget'].includes(type) && !CM.modes.mediawiki) {
+			// 总是外部样式表和外部脚本
+			mw.loader.load(`${CDN}/${MW_CDN}/mediawiki.min.css`, 'text/css');
+			scripts.push(`${MW_CDN}/mediawiki.min.js`);
+		}
+		if (['widget', 'html'].includes(type)) {
+			for (const lang of ['css', 'javascript', 'mediawiki', 'htmlmixed', 'xml']) {
+				if (!CM.modes[lang]) {
+					scripts = scripts.concat(MODE_LIST[lang]);
+				}
+			}
+		} else {
+			scripts = scripts.concat(MODE_LIST[type]);
+		}
+
+		// addons
 		if (!CM.prototype.getSearchCursor && addons.includes('search') && !addons.includes('wikiEditor')) {
 			scripts.push(ADDON_LIST.searchcursor);
 		}
@@ -413,15 +427,6 @@
 			scripts.push(ADDON_LIST.contextmenu);
 		}
 		scripts.push(...getAddonScript(CM));
-		if (['widget', 'html'].includes(type)) {
-			for (const lang of ['css', 'javascript', 'mediawiki', 'htmlmixed', 'xml']) {
-				if (!CM.modes[lang]) {
-					scripts = scripts.concat(MODE_LIST[lang]);
-				}
-			}
-		} else {
-			scripts = scripts.concat(MODE_LIST[type]);
-		}
 
 		return getScript(scripts, loaded ? undefined : USING_LOCAL);
 	};
