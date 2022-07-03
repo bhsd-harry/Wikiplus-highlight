@@ -677,6 +677,15 @@
 			$target.textSelection('register', cmTextSelection);
 		}
 
+		if (addons.includes('wikiEditor')) {
+			const context = $target.data('wikiEditorContext'),
+				{keyMap} = CodeMirror,
+				callback = () => {
+					$.wikiEditor.modules.dialogs.api.openDialog(context, 'search-and-replace');
+				};
+			cm.addKeyMap(keyMap.default === keyMap.pcDefault ? {'Ctrl-F': callback} : {'Cmd-F': callback});
+		}
+
 		handleContextMenu(cm, mode);
 
 		$('#Wikiplus-Quickedit-Jump').children('a').attr('href', '#Wikiplus-CodeMirror');
@@ -714,6 +723,8 @@
 		mw.hook('wiki-codemirror').fire(cm);
 	};
 
+	const {body} = document;
+
 	// 监视 Wikiplus 编辑框
 	const observer = new MutationObserver(records => {
 		const $editArea = $(flatten(
@@ -724,7 +735,17 @@
 		}
 		renderEditor($editArea, $editArea.attr('id') === 'Wikiplus-Setting-Input');
 	});
-	observer.observe(document.body, {childList: true});
+	observer.observe(body, {childList: true});
+
+	$(body).on('keydown.wphl', '.ui-dialog', function(e) {
+		if (e.key === 'Escape') {
+			/** @type {{$textarea: JQuery<HTMLTextAreaElement>}} */
+			const context = $(this).children('.ui-dialog-content').data('context');
+			if (context && context.$textarea && context.$textarea.attr('id') === 'Wikiplus-Quickedit') {
+				e.stopPropagation();
+			}
+		}
+	});
 
 	// 添加样式
 	const wphlStyle = document.getElementById('wphl-style') || mw.loader.addStyleTag(
@@ -795,7 +816,7 @@
 			// eslint-disable-next-line require-atomic-updates
 			dialog = new OO.ui.MessageDialog({id: 'Wikiplus-highlight-dialog'});
 			const windowManager = new OO.ui.WindowManager();
-			windowManager.$element.appendTo(document.body);
+			windowManager.$element.appendTo(body);
 			windowManager.addWindows([dialog]);
 			widget = new OO.ui.CheckboxMultiselectInputWidget({
 				options: [
