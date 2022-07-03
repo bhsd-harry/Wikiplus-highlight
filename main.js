@@ -201,9 +201,9 @@
 	];
 
 	const defaultAddons = ['search'],
-		defaultIndent = '4';
+		defaultIndent = 4;
 	let /** @type {string[]} */ addons = storage.getObject('Wikiplus-highlight-addons') || defaultAddons,
-		/** @type {string} */ indent = storage.getObject('Wikiplus-highlight-indent') || defaultIndent;
+		/** @type {number} */ indent = storage.getObject('Wikiplus-highlight-indent') || defaultIndent;
 
 	/** @type {Record<string, string>} */
 	const entity = {'"': 'quot', "'": 'apos', '<': 'lt', '>': 'gt', '&': 'amp', ' ': 'nbsp'},
@@ -831,7 +831,7 @@
 			indentField.$element.detach();
 			if (typeof data === 'object' && data.action === 'accept') {
 				addons = widget.getValue();
-				indent = indentWidget.getValue();
+				indent = Number(indentWidget.getValue());
 				storage.setObject('Wikiplus-highlight-addons', addons);
 				storage.setObject('Wikiplus-highlight-indent', indent);
 			}
