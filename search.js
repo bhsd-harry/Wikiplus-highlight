@@ -117,7 +117,7 @@
 	};
 
 	mw.hook('wiki-codemirror').add(/** @param {CodeMirror.Editor} cm */ cm => {
-		if (!cm.getOption('styleSelectedText') || mw.libs.wphl.addons.includes('wikiEditor')) {
+		if (!cm.getOption('styleSelectedText') || mw.libs.wphl.addons.has('wikiEditor')) {
 			return;
 		}
 		const $textarea = $(cm.getWrapperElement()).prev('#Wikiplus-Quickedit');
