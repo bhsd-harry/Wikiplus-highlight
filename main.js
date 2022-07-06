@@ -13,7 +13,7 @@
 	}
 	mw.libs.wphl = {}; // 开始加载
 
-	const version = '2.18.3',
+	const version = '2.18.4',
 		newAddon = 1;
 
 	/** @type {typeof mw.storage} */
@@ -180,7 +180,7 @@
 	const /** @type {addon[]} */ options = [
 		{
 			option: 'styleSelectedText', addon: 'search', download: 'markSelection', only: true,
-			complex: () => !addons.includes('wikiEditor'),
+			complex: () => !addons.has('wikiEditor'),
 		},
 		{option: 'styleActiveLine', addon: 'activeLine'},
 		{option: 'showTrailingSpace', addon: 'trailingspace'},
@@ -202,7 +202,7 @@
 
 	const defaultAddons = ['search'],
 		defaultIndent = 4;
-	let /** @type {string[]} */ addons = storage.getObject('Wikiplus-highlight-addons') || defaultAddons,
+	let /** @type {Set<string>} */ addons = new Set(storage.getObject('Wikiplus-highlight-addons') || defaultAddons),
 		/** @type {number} */ indent = storage.getObject('Wikiplus-highlight-indent') || defaultIndent;
 
 	/** @type {Record<string, string>} */
@@ -228,7 +228,7 @@
 	 * @param {string} mode
 	 */
 	const handleContextMenu = (doc, mode) => {
-		if (!['mediawiki', 'widget'].includes(mode) || !addons.includes('contextmenu')) {
+		if (!['mediawiki', 'widget'].includes(mode) || !addons.has('contextmenu')) {
 			return;
 		}
 		const $wrapper = $(doc.getWrapperElement()).addClass('CodeMirror-contextmenu'),
@@ -363,13 +363,13 @@
 	};
 
 	/**
-	 * @param {T[]|T} arr1
-	 * @param {T[]} arr2
+	 * @param {T[]|T} arr
+	 * @param {Set<T>} set
 	 * @template T
 	 */
-	const intersect = (arr1, arr2) => Array.isArray(arr1)
-		? arr1.some(ele => arr2.includes(ele))
-		: arr2.includes(arr1);
+	const intersect = (arr, set) => Array.isArray(arr)
+		? arr.some(ele => set.has(ele))
+		: set.has(arr);
 
 	/**
 	 * 根据文本的高亮模式加载依赖项
@@ -414,16 +414,21 @@
 		}
 
 		// addons
-		if (!CM.prototype.getSearchCursor && addons.includes('search') && !addons.includes('wikiEditor')) {
+		if (!CM.prototype.getSearchCursor && addons.has('search') && !addons.has('wikiEditor')) {
 			scripts.push(ADDON_LIST.searchcursor);
 		}
-		if (!CM.commands.findForward && addons.includes('search') && !addons.includes('wikiEditor')) {
+		if (!CM.commands.findForward && addons.has('search') && !addons.has('wikiEditor')) {
 			scripts.push(ADDON_LIST.search);
 		}
-		if (mw.loader.getState('ext.wikiEditor') !== 'ready' && addons.includes('wikiEditor')) {
-			scripts.push(ADDON_LIST.wikiEditor);
+		if (addons.has('wikiEditor')) {
+			const state = mw.loader.getState('ext.wikiEditor');
+			if (!state) {
+				addons.delete('wikiEditor');
+			} else if (state !== 'ready') {
+				scripts.push(ADDON_LIST.wikiEditor);
+			}
 		}
-		if (mw.loader.getState('mediawiki.Title') !== 'ready' && addons.includes('contextmenu')) {
+		if (mw.loader.getState('mediawiki.Title') !== 'ready' && addons.has('contextmenu')) {
 			scripts.push(ADDON_LIST.contextmenu);
 		}
 		scripts.push(...getAddonScript(CM));
@@ -614,7 +619,7 @@
 				initModePromise,
 			]);
 
-		if (!setting && addons.includes('wikiEditor')) {
+		if (!setting && addons.has('wikiEditor')) {
 			try {
 				if (typeof mw.addWikiEditor === 'function') {
 					mw.addWikiEditor($target);
@@ -627,7 +632,7 @@
 					config.replaceIcons($target);
 				}
 			} catch (e) {
-				addons.splice(addons.indexOf('wikiEditor'), 1);
+				addons.delete('wikiEditor');
 				mw.notify('WikiEditor工具栏加载失败。', {type: 'error'});
 				console.error(e);
 			}
@@ -658,15 +663,15 @@
 		}, fromEntries(
 			options.map(({option, addon = option, modes, complex = mod => !modes || modes.includes(mod)}) => {
 				const mainAddon = Array.isArray(addon) ? addon[0] : addon;
-				return [option, addons.includes(mainAddon) && complex(mode, json)];
+				return [option, addons.has(mainAddon) && complex(mode, json)];
 			}),
 		), mode === 'mediawiki'
 			? {
-				extraKeys: addons.includes('escape') && (isPc(CodeMirror) ? extraKeysPc : extraKeysMac),
+				extraKeys: addons.has('escape') && (isPc(CodeMirror) ? extraKeysPc : extraKeysMac),
 			}
 			: {
-				indentUnit: addons.includes('indentWithSpace') ? indent : defaultIndent,
-				indentWithTabs: !addons.includes('indentWithSpace'),
+				indentUnit: addons.has('indentWithSpace') ? indent : defaultIndent,
+				indentWithTabs: !addons.has('indentWithSpace'),
 			},
 		));
 		cm.setSize(null, height);
@@ -677,7 +682,7 @@
 			$target.textSelection('register', cmTextSelection);
 		}
 
-		if (addons.includes('wikiEditor')) {
+		if (addons.has('wikiEditor')) {
 			const context = $target.data('wikiEditorContext'),
 				{keyMap} = CodeMirror,
 				callback = () => {
@@ -797,10 +802,12 @@
 	// 设置对话框
 	let /** @type {OOUI.MessageDialog} */ dialog,
 		/** @type {OOUI.CheckboxMultiselectInputWidget} */ widget,
+		/** @type {OOUI.CheckboxMultioptionWidget} */ searchWidget,
+		/** @type {OOUI.CheckboxMultioptionWidget} */ wikiEditorWidget,
 		/** @type {OOUI.NumberInputWidget} */ indentWidget,
 		/** @type {OOUI.FieldLayout} */ field,
 		/** @type {OOUI.FieldLayout} */ indentField;
-	const toggleIndent = (value = addons) => {
+	const toggleIndent = (value = [...addons]) => {
 		indentField.toggle(value.includes('indentWithSpace'));
 	};
 	const portletContainer = {
@@ -827,8 +834,11 @@
 					...['wikiEditor', 'escape', 'contextmenu', 'indentWithSpace', 'otherEditors']
 						.map(addon => ({data: addon, label: htmlMsg(`addon-${addon.toLowerCase()}`)})),
 				],
-				value: addons,
+				value: [...addons],
 			}).on('change', toggleIndent);
+			const {checkboxMultiselectWidget} = widget;
+			searchWidget = checkboxMultiselectWidget.findItemFromData('search');
+			wikiEditorWidget = checkboxMultiselectWidget.findItemFromData('wikiEditor');
 			indentWidget = new OO.ui.NumberInputWidget({min: 0, value: indent});
 			field = new OO.ui.FieldLayout(widget, {
 				label: msg('addon-label'),
@@ -837,13 +847,14 @@
 			});
 			indentField = new OO.ui.FieldLayout(indentWidget, {label: msg('addon-indent')});
 			toggleIndent();
+			Object.assign(mw.libs.wphl, {widget, indentWidget});
 		} else {
-			widget.setValue(addons);
+			widget.setValue([...addons]);
 			indentWidget.setValue(indent);
 		}
 		const wikiplusLoaded = typeof window.Wikiplus === 'object' || typeof window.Pages === 'object';
-		widget.$element.find('.oo-ui-checkboxInputWidget').first().toggleClass('oo-ui-widget-enabled', wikiplusLoaded)
-			.children('input').prop('disabled', !wikiplusLoaded);
+		searchWidget.setDisabled(!wikiplusLoaded);
+		wikiEditorWidget.setDisabled(!wikiplusLoaded || !mw.loader.getState('ext.wikiEditor'));
 		dialog.open({
 			title: msg('addon-title'),
 			message: field.$element.add(indentField.$element).add(
@@ -858,9 +869,10 @@
 			field.$element.detach();
 			indentField.$element.detach();
 			if (typeof data === 'object' && data.action === 'accept') {
-				addons = widget.getValue();
+				const value = widget.getValue();
+				addons = new Set(value);
 				indent = Number(indentWidget.getValue());
-				storage.setObject('Wikiplus-highlight-addons', addons);
+				storage.setObject('Wikiplus-highlight-addons', value);
 				storage.setObject('Wikiplus-highlight-indent', indent);
 			}
 		});
@@ -879,7 +891,7 @@
 
 	/** @param {CodeMirror.Editor} doc */
 	const handleOtherEditors = async doc => {
-		if (!addons.includes('otherEditors')) {
+		if (!addons.has('otherEditors')) {
 			return;
 		}
 		let mode = doc.getOption('mode');
@@ -891,14 +903,14 @@
 			option, addon = option, modes, complex = (/** @type {string} */ mod) => !modes || modes.includes(mod),
 		} of options.filter(({only}) => !only)) {
 			const mainAddon = Array.isArray(addon) ? addon[0] : addon;
-			if (doc.getOption(option) === undefined && addons.includes(mainAddon)) {
+			if (doc.getOption(option) === undefined && addons.has(mainAddon)) {
 				doc.setOption(option, complex(mode, json));
 			}
 		}
-		if (mode !== 'mediawiki' && addons.includes('indentWithSpace')) {
+		if (mode !== 'mediawiki' && addons.has('indentWithSpace')) {
 			doc.setOption('indentUnit', indent);
 			doc.setOption('indentWithTabs', false);
-		} else if (mode === 'mediawiki' && addons.includes('escape')) {
+		} else if (mode === 'mediawiki' && addons.has('escape')) {
 			doc.addKeyMap(isPc(CodeMirror) ? extraKeysPc : extraKeysMac, true);
 		}
 		handleContextMenu(doc, mode);
@@ -912,6 +924,6 @@
 	mw.libs.wphl = {
 		version, options, addons, i18n, i18nLang, wphlStyle, $portlet, USING_LOCAL, MODE_LIST, ADDON_LIST,
 		msg, htmlMsg, escapeHTML, handleContextMenu, setI18N, getAddonScript,
-		intersect, updateCachedConfig, getMwConfig, renderEditor, handleOtherEditors,
+		updateCachedConfig, getMwConfig, renderEditor, handleOtherEditors,
 	}; // 加载完毕
 })();
