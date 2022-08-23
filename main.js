@@ -294,7 +294,7 @@
 
 	const /** @type {Record<string, string>} */ i18nLanguages = {
 			zh: 'zh-hans', 'zh-hans': 'zh-hans', 'zh-cn': 'zh-hans', 'zh-my': 'zh-hans', 'zh-sg': 'zh-hans',
-			'zh-hant': 'zh-hant', 'zh-tw': 'zh-hant', 'zh-hk': 'zh-hant', 'zh-mo': 'zh-hant',
+			'zh-hant': 'zh-hant', 'zh-tw': 'zh-hant', 'zh-hk': 'zh-hant', 'zh-mo': 'zh-hant', ka: 'ka',
 		},
 		i18nLang = i18nLanguages[userLang] || 'en',
 		I18N_CDN = `${CDN}/${REPO_CDN}/i18n/${i18nLang}.json`,
