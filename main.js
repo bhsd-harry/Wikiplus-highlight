@@ -765,7 +765,8 @@
 		+ 'div.CodeMirror span.CodeMirror-nonmatchingbracket{box-shadow:0 0 0 2px #eace64}'
 		+ '#Wikiplus-highlight-dialog .oo-ui-messageDialog-title{margin-bottom:0.28571429em}'
 		+ '#Wikiplus-highlight-dialog .oo-ui-flaggedElement-notice{font-weight:normal;margin:0}'
-		+ '.CodeMirror-contextmenu .cm-mw-template-name{cursor:pointer}',
+		+ '.CodeMirror-contextmenu .cm-mw-template-name{cursor:pointer}'
+		+ '.skin-moeskin #ca-more-actions li>a{display:inline-block;padding:0.4rem 0.8rem;line-height:1.5}',
 	);
 	wphlStyle.id = 'wphl-style';
 
@@ -813,6 +814,7 @@
 	const portletContainer = {
 		minerva: 'page-actions-overflow',
 		citizen: 'p-actions',
+		moeskin: 'ca-more-actions',
 	};
 	const $portlet = $(mw.util.addPortletLink(
 		portletContainer[skin] || 'p-cactions', '#', msg('portlet'), 'wphl-settings',
