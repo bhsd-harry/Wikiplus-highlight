@@ -534,11 +534,10 @@
 		} else { // 情形2或3
 			const {functionSynonyms: [insensitive]} = config;
 			if (!insensitive.subst) {
-				getAliases(
-					magicwords.filter(({name}) => otherMagicwords.includes(name)),
-				).forEach(({alias, name}) => {
+				const aliases = getAliases(magicwords.filter(({name}) => otherMagicwords.includes(name)));
+				for (const {alias, name} of aliases) {
 					insensitive[alias.replace(/:$/, '')] = name;
-				});
+				}
 			}
 		}
 		config.redirect = magicwords.find(({name}) => name === 'redirect').aliases;
