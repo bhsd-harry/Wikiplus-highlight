@@ -64,10 +64,16 @@
 			2,
 			{
 				"functions": false,
+				"classes": false,
 				"variables": false
 			}
 		],
-		"require-atomic-updates": 2,
+		"require-atomic-updates": [
+			2,
+			{
+				"allowProperties": true
+			}
+		],
 		"block-scoped-var": 2,
 		"class-methods-use-this": 2,
 		"consistent-this": 2,
