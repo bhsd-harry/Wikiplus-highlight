@@ -78,12 +78,12 @@
 			if (!curLine) {
 				continue;
 			}
-			const {length} = curLine;
-			if (length > maxScanLen) {
+			const l = curLine.length;
+			if (l > maxScanLen) {
 				continue;
 			}
-			const end = dir > 0 ? length : -1;
-			let pos = dir > 0 ? 0 : length - 1;
+			const end = dir > 0 ? l : -1;
+			let pos = dir > 0 ? 0 : l - 1;
 			if (line === where.line) {
 				pos = where.ch - (dir > 0 ? 0 : 1); // `dir = 1`时不包含当前字符，`dir = -1`时包含当前字符
 			}
@@ -182,14 +182,14 @@
 					type = tags.open.tag;
 				}
 			}
-			const {top, left} = cm.charCoords(cursor, 'local'),
+			const {top: t, left} = cm.charCoords(cursor, 'local'),
 				height = $tooltip.outerHeight(),
 				notTag = ['template', 'comment'].includes(type);
 			$tooltip.attr('title', msg('fold', notTag ? `fold-${type}` : `<${type}>`))
 				.toggleClass('cm-mw-htmltag-name', !notTag)
 				.toggleClass('cm-mw-template-name', type === 'template')
 				.toggleClass('cm-mw-comment', type === 'comment')
-				.css({top: top > height ? top - height : top + 17, left})
+				.css({top: t > height ? t - height : t + 17, left})
 				.data({...range, type})
 				.show();
 			hide(5000);

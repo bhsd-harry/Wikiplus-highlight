@@ -245,22 +245,22 @@
 		/** @type {function(this: CodeMirror.Editor, CodeMirror.Position, string): CodeMirror.MatchingTagPair} */
 		function(pos, tag) {
 			const iter = new Iter(this, pos);
-			const open = iter.findMatchingOpen(tag);
-			if (!open) {
+			const op = iter.findMatchingOpen(tag);
+			if (!op) {
 				return;
 			}
 			const forward = new Iter(this, pos);
-			const close = forward.findMatchingClose(open.tag);
-			if (close) {
-				return {open, close};
+			const cl = forward.findMatchingClose(op.tag);
+			if (cl) {
+				return {op, cl};
 			}
 		},
 	);
 
 	/** Used by addon/edit/closetag.js */
-	CodeMirror.scanForClosingTag = function(cm, pos, name) {
+	CodeMirror.scanForClosingTag = function(cm, pos, tagName) {
 		const iter = new Iter(cm, pos);
-		return iter.findMatchingClose(name);
+		return iter.findMatchingClose(tagName);
 	};
 
 	CodeMirror.defineOption('matchTags', false, (cm, val, old) => {
