@@ -245,12 +245,12 @@
 		/** @type {function(this: CodeMirror.Editor, CodeMirror.Position, string): CodeMirror.MatchingTagPair} */
 		function(pos, tag) {
 			const iter = new Iter(this, pos),
-			      op = iter.findMatchingOpen(tag);
+				op = iter.findMatchingOpen(tag);
 			if (!op) {
 				return;
 			}
 			const forward = new Iter(this, pos),
-			      cl = forward.findMatchingClose(op.tag);
+				cl = forward.findMatchingClose(op.tag);
 			if (cl) {
 				return {open: op, close: cl};
 			}
