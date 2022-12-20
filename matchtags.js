@@ -244,15 +244,15 @@
 		'findEnclosingTag',
 		/** @type {function(this: CodeMirror.Editor, CodeMirror.Position, string): CodeMirror.MatchingTagPair} */
 		function(pos, tag) {
-			const iter = new Iter(this, pos);
-			const op = iter.findMatchingOpen(tag);
+			const iter = new Iter(this, pos),
+			      op = iter.findMatchingOpen(tag);
 			if (!op) {
 				return;
 			}
-			const forward = new Iter(this, pos);
-			const cl = forward.findMatchingClose(op.tag);
+			const forward = new Iter(this, pos),
+			      cl = forward.findMatchingClose(op.tag);
 			if (cl) {
-				return {op, cl};
+				return {open: op, close: cl};
 			}
 		},
 	);
