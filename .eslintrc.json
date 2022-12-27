@@ -3,7 +3,13 @@
 		"browser": true,
 		"es6": true
 	},
-	"extends": "eslint:recommended",
+	"plugins": [
+        "promise"
+    ],
+    "extends": [
+        "eslint:recommended",
+        "plugin:promise/recommended"
+    ],
 	"parserOptions": {
 		"ecmaVersion": 9
 	},
@@ -265,6 +271,20 @@
 		"wrap-iife": [
 			2,
 			"inside"
-		]
+		],
+        "promise/no-multiple-resolved": 1,
+        "promise/param-names": 0,
+        "promise/catch-or-return": [
+            2,
+            {
+                "allowThen": true
+            }
+        ],
+        "promise/always-return": [
+            2,
+            {
+                "ignoreLastCallback": true
+            }
+        ]
 	}
 }

@@ -876,7 +876,7 @@
 				storage.setObject('Wikiplus-highlight-addons', value);
 				storage.setObject('Wikiplus-highlight-indent', indent);
 			}
-		});
+		}, () => {});
 	});
 	if (skin === 'minerva') {
 		$portlet.find('.mw-ui-icon').addClass('mw-ui-icon-minerva-settings');
