@@ -5,11 +5,13 @@
 	},
 	"plugins": [
 		"promise",
-		"es-x"
+		"es-x",
+		"regexp"
 	],
 	"extends": [
 		"eslint:recommended",
-		"plugin:promise/recommended"
+		"plugin:promise/recommended",
+		"plugin:regexp/recommended"
 	],
 	"parserOptions": {
 		"ecmaVersion": 9
@@ -287,6 +289,20 @@
 				"ignoreLastCallback": true
 			}
 		],
-		"es-x/no-regexp-lookbehind-assertions": 2
+		"es-x/no-regexp-lookbehind-assertions": 2,
+		"regexp/no-contradiction-with-assertion": 2,
+		"regexp/no-missing-g-flag": 2,
+		"regexp/no-super-linear-move": 2,
+		"regexp/no-extra-lookaround-assertions": 2,
+		"regexp/no-octal": 2,
+		"regexp/no-standalone-backslash": 2,
+		"regexp/prefer-escape-replacement-dollar-char": 2,
+		"regexp/prefer-quantifier": 2,
+		"regexp/prefer-regexp-exec": 2,
+		"regexp/prefer-regexp-test": 2,
+		"regexp/use-ignore-case": 2,
+		"regexp/hexadecimal-escape": 2,
+		"regexp/letter-case": 2,
+		"regexp/prefer-lookaround": 2
 	}
 }

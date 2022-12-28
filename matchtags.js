@@ -9,7 +9,7 @@
 
 	const {Pos, cmpPos} = CodeMirror;
 
-	const tagStart = /<(\/?)([A-Z_a-z]\w*)/g,
+	const tagStart = /<(\/?)([_a-z]\w*)/gi,
 		voidTags = ['br', 'wbr', 'hr', 'img'],
 		maxScanLines = 1000;
 
