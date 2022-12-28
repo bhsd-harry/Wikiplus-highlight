@@ -188,8 +188,8 @@
 		],
 		"require-await": 2,
 		"spaced-comment": 2,
-		"symbol-description": 2,
 		"strict": 2,
+		"symbol-description": 2,
 		"yoda": 2,
 		"array-bracket-spacing": 2,
 		"arrow-parens": [
@@ -276,7 +276,6 @@
 			"inside"
 		],
 		"promise/no-multiple-resolved": 1,
-		"promise/param-names": 0,
 		"promise/catch-or-return": [
 			2,
 			{
@@ -292,7 +291,18 @@
 		"es-x/no-regexp-lookbehind-assertions": 2,
 		"regexp/no-contradiction-with-assertion": 2,
 		"regexp/no-missing-g-flag": 2,
-		"regexp/no-super-linear-move": 2,
+		"regexp/no-super-linear-backtracking": [
+			2,
+			{
+				"report": "potential"
+			}
+		],
+		"regexp/no-super-linear-move": [
+			2,
+			{
+				"report": "potential"
+			}
+		],
 		"regexp/no-extra-lookaround-assertions": 2,
 		"regexp/no-octal": 2,
 		"regexp/no-standalone-backslash": 2,
