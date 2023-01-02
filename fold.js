@@ -4,9 +4,10 @@
  */
 
 (() => {
+	/* eslint-disable func-style */
 	'use strict';
 
-	const {Pos, cmpPos} = CodeMirror;
+	const {Pos, cmpPos, Init} = CodeMirror;
 
 	/**
 	 * 只用于`title`属性的消息，不存在时fallback到键名
@@ -17,30 +18,33 @@
 	const msg = (key, argKey) => {
 		const fullKey = `wphl-${key}`,
 			message = (argKey === undefined ? mw.msg(fullKey) : mw.msg(fullKey, msg(argKey)))
-				.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+				.replace(/&lt;/gu, '<').replace(/&gt;/gu, '>');
 		return message === `⧼${fullKey}⧽` ? key : message;
 	};
 
-	const braceRegex = /\bmw-template-bracket\b/,
+	const braceRegex = /\bmw-template-bracket\b/u,
 		$placeholder = $('<span>', {text: '\u22ef', class: 'CodeMirror-widget-unfold'}),
 		$delimiter = $('<span>', {text: '|', class: 'cm-mw-template-delimiter'}),
-		$tt = $('<div>', {class: 'CodeMirror-tooltip', text: '\uff0d'}).click(function() {
-			const /** @type {CodeMirror.FoldData} */ {cm, from, to, type} = $(this).fadeOut('fast').data(),
-				notTag = ['template', 'comment'].includes(type),
-				$clonedPlaceholder = $placeholder.clone()
-					.attr('title', msg('unfold', notTag ? `fold-${type}` : `<${type}>`)),
-				mark = cm.markText(from, to, {
-					replacedWith: type === 'template'
-						? $('<span>', {html: [$delimiter.clone(), $clonedPlaceholder]})[0]
-						: $clonedPlaceholder[0],
-					selectLeft: type === 'template',
-					selectRight: false,
-					_isFold: true,
+		$tt = $('<div>', {class: 'CodeMirror-tooltip', text: '\uff0d'}).click(
+			/** @this {HTMLDivElement} */
+			function() {
+				const /** @type {CodeMirror.FoldData} */ {cm, from, to, type} = $(this).fadeOut('fast').data(),
+					notTag = type === 'template' || type === 'comment',
+					$clonedPlaceholder = $placeholder.clone()
+						.attr('title', msg('unfold', notTag ? `fold-${type}` : `<${type}>`)),
+					mark = cm.markText(from, to, {
+						replacedWith: type === 'template'
+							? $('<span>', {html: [$delimiter.clone(), $clonedPlaceholder]})[0]
+							: $clonedPlaceholder[0],
+						selectLeft: type === 'template',
+						selectRight: false,
+						_isFold: true,
+					});
+				$clonedPlaceholder.click(() => {
+					mark.clear();
 				});
-			$clonedPlaceholder.click(() => {
-				mark.clear();
-			});
-		});
+			},
+		);
 
 	/** @param {JQuery<HTMLElement>} $tooltip */
 	function hideTooltip($tooltip) {
@@ -73,30 +77,30 @@
 		let stack = 0,
 			hasDelimiter = dir < 0,
 			/** @type {CodeMirror.Position} */ delimiter;
-		for (let {line} = where; line !== lineEnd; line += dir) {
+		for (let {line, ch: chWhere} = where; line !== lineEnd; line += dir) {
 			const curLine = cm.getLine(line);
 			if (!curLine) {
 				continue;
 			}
-			const l = curLine.length;
+			const {length: l} = curLine;
 			if (l > maxScanLen) {
 				continue;
 			}
 			const end = dir > 0 ? l : -1;
 			let pos = dir > 0 ? 0 : l - 1;
-			if (line === where.line) {
-				pos = where.ch - (dir > 0 ? 0 : 1); // `dir = 1`时不包含当前字符，`dir = -1`时包含当前字符
+			if (line === where.line) { // eslint-disable-line unicorn/consistent-destructuring
+				pos = chWhere - (dir > 0 ? 0 : 1); // `dir = 1`时不包含当前字符，`dir = -1`时包含当前字符
 			}
 			for (; pos !== end; pos += dir) {
 				const ch = curLine.charAt(pos);
-				if (!hasDelimiter && /[^\s|]/.test(ch)) {
+				if (!hasDelimiter && /[^\s|]/u.test(ch)) {
 					delimiter = Pos(line, pos + 1);
 				}
-				if (!(hasDelimiter ? /[{}]/ : /[{}|]/).test(ch)) {
+				if (!(hasDelimiter ? /[{}]/u : /[{}|]/u).test(ch)) {
 					continue;
 				}
 				const type = cm.getTokenTypeAt(Pos(line, pos + 1)) || '';
-				if (ch === '|' && stack === 0 && /\bmw-template-delimiter\b/.test(type)) {
+				if (ch === '|' && stack === 0 && /\bmw-template-delimiter\b/u.test(type)) {
 					hasDelimiter = true;
 				} else if (ch === '|' || !braceRegex.test(type)) {
 					continue;
@@ -119,17 +123,18 @@
 	 */
 	function findEnclosingTemplate(cm, cursor) {
 		const type = cm.getTokenTypeAt(cursor) || '';
-		if (!/\bmw-template\d*-ground\b/.test(type) || /\bmw-template-(?:bracket|name)\b/.test(type)) {
-			return;
+		if (!/\bmw-template\d*-ground\b/u.test(type) || /\bmw-template-(?:bracket|name)\b/u.test(type)) {
+			return undefined;
 		}
 		const {to: bracket} = scanForDelimiterAndBracket(cm, cursor, -1);
 		if (!bracket) {
-			return;
+			return undefined;
 		}
 		const {from, to} = scanForDelimiterAndBracket(cm, bracket, 1);
 		if (typeof from === 'object' && (from.line < to.line || from.ch < to.ch - 2)) {
 			return {from, to};
 		}
+		return undefined;
 	}
 
 	/**
@@ -140,15 +145,15 @@
 	function findEnclosingComment(cm, cursor) {
 		const {type, string, start, end} = cm.getTokenAt(cursor),
 			{ch} = cursor;
-		if (!/\bmw-comment\b/.test(type)
+		if (!/\bmw-comment\b/u.test(type)
 			|| string.startsWith('<!--') && ch <= start + 4
 			|| string.endsWith('-->') && ch >= end - 3
 		) {
-			return;
+			return undefined;
 		}
 		const index = cm.indexFromPos(cursor),
 			text = cm.getValue(),
-			fromIndex = text.slice(0, index - 1).search(/<!--(?:(?!-->).)*$/s);
+			fromIndex = text.slice(0, index - 1).search(/<!--(?:(?!-->).)*$/su);
 		let toIndex = text.slice(index).indexOf('-->');
 		toIndex = toIndex === -1 ? text.length : toIndex + index;
 		return {from: cm.posFromIndex(fromIndex + 4), to: cm.posFromIndex(toIndex)};
@@ -156,7 +161,7 @@
 
 	/** @param {CodeMirror.EditorFoldable} cm */
 	function showTooltip(cm) {
-		const {$tooltip, hide} = cm.state.fold;
+		const {state: {fold: {$tooltip, hide}}} = cm;
 		cm.operation(() => {
 			if (cm.somethingSelected()) {
 				hide(500, false);
@@ -184,7 +189,7 @@
 			}
 			const {top: t, left} = cm.charCoords(cursor, 'local'),
 				height = $tooltip.outerHeight(),
-				notTag = ['template', 'comment'].includes(type);
+				notTag = type === 'template' || type === 'comment';
 			$tooltip.attr('title', msg('fold', notTag ? `fold-${type}` : `<${type}>`))
 				.toggleClass('cm-mw-htmltag-name', !notTag)
 				.toggleClass('cm-mw-template-name', type === 'template')
@@ -198,7 +203,12 @@
 
 	CodeMirror.defineExtension(
 		'scanForDelimiterAndBracket',
-		/** @type {function(this: CodeMirror.Editor, CodeMirror.Position, 1|-1): CodeMirror.MarkerRange} */
+
+		/**
+		 * @this {CodeMirror.Editor}
+		 * @param {CodeMirror.Position} where
+		 * @param {1|-1} dir
+		 */
 		function(where, dir) {
 			return scanForDelimiterAndBracket(this, where || this.getCursor(), dir || 1);
 		},
@@ -206,7 +216,11 @@
 
 	CodeMirror.defineExtension(
 		'findEnclosingTemplate',
-		/** @type {function(this: CodeMirror.Editor, CodeMirror.Position): CodeMirror.MarkerRange} */
+
+		/**
+		 * @this {CodeMirror.Editor}
+		 * @param {CodeMirror.Position} pos
+		 */
 		function(pos) {
 			return findEnclosingTemplate(this, pos || this.getCursor());
 		},
@@ -214,14 +228,18 @@
 
 	CodeMirror.defineExtension(
 		'findEnclosingComment',
-		/** @type {function(this: CodeMirror.Editor, CodeMirror.Position): CodeMirror.MarkerRange} */
+
+		/**
+		 * @this {CodeMirror.Editor}
+		 * @param {CodeMirror.Position} pos
+		 */
 		function(pos) {
 			return findEnclosingComment(this, pos || this.getCursor());
 		},
 	);
 
 	CodeMirror.defineOption('fold', false, (/** @type {CodeMirror.EditorFoldable} */ cm, val, old) => {
-		if (old && old !== CodeMirror.Init) {
+		if (old && old !== Init) {
 			cm.off('cursorActivity', showTooltip);
 			if (cm.state.fold) {
 				cm.state.fold.$tooltip.remove();

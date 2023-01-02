@@ -20,6 +20,7 @@
 	const storage = typeof mw.storage === 'object' && typeof mw.storage.getObject === 'function'
 		? mw.storage
 		: {
+			/** @override */
 			getObject(key) {
 				const json = localStorage.getItem(key);
 				if (json === false) {
@@ -31,6 +32,7 @@
 					return null;
 				}
 			},
+			/** @override */
 			setObject(key, value) {
 				try {
 					return localStorage.setItem(key, JSON.stringify(value));
@@ -39,18 +41,20 @@
 				}
 			},
 		};
+
 	/**
 	 * polyfill for `Object.fromEntries`
 	 * @type {(entries: Iterable<[string, T]>) => Record<string, T>}
 	 * @template T
 	 */
-	const fromEntries = Object.fromEntries || (entries => {
+	const fromEntries = Object.fromEntries || (entries => { // eslint-disable-line es-x/no-object-fromentries
 		const /** @type {Record<string, T>} */ obj = {};
 		for (const [key, value] of entries) {
 			obj[key] = value;
 		}
 		return obj;
 	});
+
 	/**
 	 * polyfill for `Array.prototype.flat`
 	 * @type {(arr: HTMLElement[][]) => HTMLElement[]}
@@ -59,16 +63,21 @@
 		if (typeof arr.flat === 'function') {
 			return arr.flat();
 		}
+		// eslint-disable-next-line unicorn/no-array-reduce
 		return arr.reduce((acc, cur) => acc.concat(cur), []);
 	};
 
-	/** 解析版本号 */
-	const getVersion = (str = version) => str.split('.').map(s => Number(s));
+	/**
+	 * 解析版本号
+	 * @param {string} str 版本号
+	 */
+	const getVersion = (str = version) => str.split('.').map(Number);
+
 	/**
 	 * 比较版本号
-	 * @param {string} a
-	 * @param {string} b
-	 * @returns `a`的版本号是否小于`b`的版本号
+	 * @param {string} a 版本号1
+	 * @param {string} b 版本号2
+	 * @returns {boolean} `a`的版本号是否小于`b`的版本号
 	 */
 	const cmpVersion = (a, b) => {
 		const [a0, a1] = getVersion(a),
@@ -79,18 +88,19 @@
 	/**
 	 * 获取I18N消息
 	 * @param {string} key 消息键，省略`wphl-`前缀
-	 * @param {string[]} args
+	 * @param {string[]} args 替换`$1`等的参数
 	 */
 	const msg = (key, ...args) => mw.msg(`wphl-${key}`, ...args);
+
 	/**
 	 * 生成JQuery的I18N消息
-	 * @param {string[]} args
+	 * @param {string[]} args 替换`$1`等的参数
 	 */
 	const htmlMsg = (...args) => $($.parseHTML(msg(...args)));
 
 	/**
 	 * 提示消息
-	 * @param {string[]} args
+	 * @param {string[]} args 替换`$1`等的参数
 	 */
 	const notify = (...args) => () => {
 		const $p = $('<p>', {html: msg(...args)});
@@ -107,7 +117,7 @@
 		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.5',
 		REPO_CDN = `npm/wikiplus-highlight@${majorVersion}`;
 
-	const {
+	const {config: {values: {
 		wgPageName: page,
 		wgNamespaceNumber: ns,
 		wgPageContentModel: contentmodel,
@@ -115,7 +125,7 @@
 		wgScriptPath: scriptPath,
 		wgUserLanguage: userLang,
 		skin,
-	} = mw.config.values;
+	}}} = mw;
 
 	// 和本地缓存有关的常数
 	const USING_LOCAL = mw.loader.getState('ext.CodeMirror') !== null,
@@ -179,20 +189,24 @@
 
 	const /** @type {addon[]} */ options = [
 		{
-			option: 'styleSelectedText', addon: 'search', download: 'markSelection', only: true,
-			complex: () => !addons.has('wikiEditor'),
+			option: 'styleSelectedText',
+			addon: 'search',
+			download: 'markSelection',
+			only: true,
+			/** @implements */ complex: () => !addons.has('wikiEditor'),
 		},
 		{option: 'styleActiveLine', addon: 'activeLine'},
 		{option: 'showTrailingSpace', addon: 'trailingspace'},
 		{
 			option: 'matchBrackets',
-			complex: (mode, json) => mode === 'mediawiki' || json
-				? {bracketRegex: /[{}[\]]/}
+			/** @implements */ complex: (mode, json) => mode === 'mediawiki' || json
+				? {bracketRegex: /[{}[\]]/u}
 				: true,
 		},
 		{
-			option: 'autoCloseBrackets', addon: 'closeBrackets',
-			complex: (mode, json) => mode === 'mediawiki' || json
+			option: 'autoCloseBrackets',
+			addon: 'closeBrackets',
+			/** @implements */ complex: (mode, json) => mode === 'mediawiki' || json
 				? '()[]{}""'
 				: true,
 		},
@@ -211,11 +225,11 @@
 		convert = func => doc => {
 			doc.replaceSelection(doc.getSelection().split('\n').map(func).join('\n'), 'around');
 		},
-		escapeHTML = convert(str => str.split('').map(c => {
+		escapeHTML = convert(str => [...str].map(c => {
 			if (c in entity) {
 				return `&${entity[c]};`;
 			}
-			const code = c.charCodeAt();
+			const code = c.codePointAt();
 			return code < 256 ? `&#${code};` : `&#x${code.toString(16)};`;
 		}).join('')),
 		/** @type {function(typeof CodeMirror): boolean} */ isPc = ({keyMap}) => keyMap.default === keyMap.pcDefault,
@@ -224,18 +238,18 @@
 
 	/**
 	 * contextMenu插件
-	 * @param {CodeMirror.Editor} doc
-	 * @param {string} mode
+	 * @param {CodeMirror.Editor} doc CodeMirror编辑区
+	 * @param {string} mode 高亮模式
 	 */
 	const handleContextMenu = (doc, mode) => {
-		if (!['mediawiki', 'widget'].includes(mode) || !addons.has('contextmenu')) {
+		if (mode !== 'mediawiki' && mode !== 'widget' || !addons.has('contextmenu')) {
 			return;
 		}
 		const $wrapper = $(doc.getWrapperElement()).addClass('CodeMirror-contextmenu'),
 			{functionSynonyms: [synonyms]} = mw.config.get('extCodeMirrorConfig') || {
 				functionSynonyms: [{invoke: 'invoke', 调用: 'invoke', widget: 'widget', 小工具: 'widget'}],
 			};
-		/** @param {string} str */
+		/** @param {string} str 别名 */
 		const getSysnonyms = str => Object.keys(synonyms).filter(key => synonyms[key] === str)
 			.map(key => key.startsWith('#') ? key : `#${key}`);
 		const invoke = getSysnonyms('invoke'),
@@ -245,20 +259,21 @@
 			const pos = doc.coordsChar({left: pageX, top: pageY}),
 				{line, ch} = pos,
 				curType = doc.getTokenTypeAt(pos);
-			if (!/\bmw-(?:template-name|parserfunction)\b/.test(curType)) {
-				return;
+			if (!/\bmw-(?:template-name|parserfunction)\b/u.test(curType)) {
+				return undefined;
 			}
 			const tokens = doc.getLineTokens(line);
-			for (const [i, {type, end, string}] of [...tokens.entries()].reverse()) {
-				if (i > 0 && tokens[i - 1].type === type) {
+			for (let i = tokens.length - 1; i > 0; i--) {
+				const {type, end, string} = tokens[i];
+				if (tokens[i - 1].type === type) {
 					tokens[i - 1].end = end;
 					tokens[i - 1].string += string;
 					tokens.splice(i, 1);
 				}
 			}
 			const index = tokens.findIndex(({start, end}) => start < ch && end >= ch),
-				text = tokens[index].string.replace(/\u200e/g, '').replace(/_/g, ' ').trim();
-			if (/\bmw-template-name\b/.test(curType)) {
+				text = tokens[index].string.replace(/\u200E/gu, '').replace(/_/gu, ' ').trim();
+			if (/\bmw-template-name\b/u.test(curType)) {
 				const title = new mw.Title(text);
 				if (title.namespace !== 0 || text.startsWith(':')) {
 					open(title.getUrl(), '_blank');
@@ -266,10 +281,10 @@
 					open(mw.util.getUrl(`Template:${text}`), '_blank');
 				}
 				return false;
-			} else if (index < 2 || !/\bmw-parserfunction-delimiter\b/.test(tokens[index - 1].type)
-				|| !/\bmw-parserfunction-name\b/.test(tokens[index - 2].type)
+			} else if (index < 2 || !/\bmw-parserfunction-delimiter\b/u.test(tokens[index - 1].type)
+				|| !/\bmw-parserfunction-name\b/u.test(tokens[index - 2].type)
 			) {
-				return;
+				return undefined;
 			}
 			const parserFunction = tokens[index - 2].string.trim().toLowerCase();
 			if (invoke.includes(parserFunction)) {
@@ -277,7 +292,7 @@
 			} else if (widget.includes(parserFunction)) {
 				open(mw.util.getUrl(`Widget:${text}`, {action: 'edit'}), '_blank');
 			} else {
-				return;
+				return undefined;
 			}
 			return false;
 		});
@@ -293,8 +308,16 @@
 	}
 
 	const /** @type {Record<string, string>} */ i18nLanguages = {
-			zh: 'zh-hans', 'zh-hans': 'zh-hans', 'zh-cn': 'zh-hans', 'zh-my': 'zh-hans', 'zh-sg': 'zh-hans',
-			'zh-hant': 'zh-hant', 'zh-tw': 'zh-hant', 'zh-hk': 'zh-hant', 'zh-mo': 'zh-hant', ka: 'ka',
+			zh: 'zh-hans',
+			'zh-hans': 'zh-hans',
+			'zh-cn': 'zh-hans',
+			'zh-my': 'zh-hans',
+			'zh-sg': 'zh-hans',
+			'zh-hant': 'zh-hant',
+			'zh-tw': 'zh-hant',
+			'zh-hk': 'zh-hant',
+			'zh-mo': 'zh-hant',
+			ka: 'ka',
 		},
 		i18nLang = i18nLanguages[userLang] || 'en',
 		I18N_CDN = `${CDN}/${REPO_CDN}/i18n/${i18nLang}.json`,
@@ -319,14 +342,15 @@
 
 	/**
 	 * 下载MW扩展脚本
-	 * @param {string[]} exts
+	 * @param {string[]} exts CodeMirror扩展模块
 	 */
-	const getInternalScript = exts => exts.length ? mw.loader.using(exts) : Promise.resolve();
+	const getInternalScript = exts => exts.length > 0 ? mw.loader.using(exts) : Promise.resolve();
+
 	/**
 	 * 下载外部脚本
-	 * @param {string[]} urls
+	 * @param {string[]} urls CodeMirror脚本网址
 	 */
-	const getExternalScript = urls => urls.length
+	const getExternalScript = urls => urls.length > 0
 		? $.ajax(`${CDN}/${urls.length > 1 ? 'combine/' : ''}${urls.join()}`, {dataType: 'script', cache: true})
 		: Promise.resolve();
 
@@ -351,7 +375,11 @@
 	// 以下进入CodeMirror相关内容
 	let /** @type {CodeMirror.EditorFromTextArea} */ cm;
 
-	/** @param {typeof CodeMirror} CM */
+	/**
+	 * 生成需要的插件列表
+	 * @param {typeof CodeMirror} CM CodeMirror
+	 * @param {boolean} other 是否用于Wikiplus以外的textarea
+	 */
 	const getAddonScript = (CM, other = false) => {
 		const /** @type {string[]} */ addonScript = [];
 		for (const {option, addon = option, download = Array.isArray(addon) ? option : addon, only} of options) {
@@ -363,8 +391,9 @@
 	};
 
 	/**
-	 * @param {T[]|T} arr
-	 * @param {Set<T>} set
+	 * 交集
+	 * @param {T[]|T} arr 集合1（可重）
+	 * @param {Set<T>} set 集合2
 	 * @template T
 	 */
 	const intersect = (arr, set) => Array.isArray(arr)
@@ -373,7 +402,7 @@
 
 	/**
 	 * 根据文本的高亮模式加载依赖项
-	 * @param {string} type
+	 * @param {string} type 高亮模式
 	 */
 	const initMode = type => {
 		let /** @type {string[]} */ scripts = [];
@@ -398,12 +427,12 @@
 			// NamespaceHTML扩展自由度过高，所以这里一律当作允许<html>标签
 			type = 'html';
 		}
-		if (['mediawiki', 'widget'].includes(type) && !CM.modes.mediawiki) {
+		if ((type === 'mediawiki' || type === 'widget') && !CM.modes.mediawiki) {
 			// 总是外部样式表和外部脚本
 			mw.loader.load(`${CDN}/${MW_CDN}/mediawiki.min.css`, 'text/css');
 			scripts.push(`${MW_CDN}/mediawiki.min.js`);
 		}
-		if (['widget', 'html'].includes(type)) {
+		if (type === 'widget' || type === 'html') {
 			for (const lang of ['css', 'javascript', 'mediawiki', 'htmlmixed', 'xml']) {
 				if (!CM.modes[lang]) {
 					scripts = scripts.concat(MODE_LIST[lang]);
@@ -438,7 +467,7 @@
 
 	/**
 	 * 更新缓存的设置数据
-	 * @param {mwConfig} config
+	 * @param {mwConfig} config wikitext设置
 	 */
 	const updateCachedConfig = config => {
 		ALL_SETTINGS_CACHE[SITE_ID] = {config, time: Date.now()};
@@ -446,13 +475,31 @@
 	};
 
 	/**
+	 * 展开别名列表
+	 * @param {{aliases: string[], name: string}[]} words 原名
+	 * @returns {{alias: string, name: string}[]}
+	 */
+	const getAliases = words => flatten(
+		words.map(({aliases, name: n}) => aliases.map(alias => ({alias, name: n}))),
+	);
+
+	/**
+	 * 将别名信息转换为CodeMirror接受的设置
+	 * @param {{alias: string, name: string}[]} aliases 别名
+	 * @returns {Record<string, string>}
+	 */
+	const getConfig = aliases => fromEntries(
+		aliases.map(({alias, name: n}) => [alias.replace(/:$/u, ''), n]),
+	);
+
+	/**
 	 * 加载CodeMirror的mediawiki模块需要的设置数据
-	 * @param {string} type
+	 * @param {string} type 高亮模式
 	 * @param {Promise<void>} initModePromise 使用本地CodeMirror扩展时大部分数据来自ext.CodeMirror.data模块
 	 */
 	const getMwConfig = async (type, initModePromise) => {
-		if (!['mediawiki', 'widget'].includes(type)) {
-			return;
+		if (type !== 'mediawiki' && type !== 'widget') {
+			return undefined;
 		}
 
 		if (USING_LOCAL && EXPIRED) { // 只在localStorage过期时才会重新加载ext.CodeMirror.data
@@ -486,22 +533,15 @@
 		});
 		const otherMagicwords = ['msg', 'raw', 'msgnw', 'subst', 'safesubst'];
 
-		/**
-		 * @param {{aliases: string[], name: string}[]} words
-		 * @returns {{alias: string, name: string}[]}
-		 */
-		const getAliases = words => flatten(
-			words.map(({aliases, name: n}) => aliases.map(alias => ({alias, name: n}))),
-		);
-		/**
-		 * @param {{alias: string, name: string}[]} aliases
-		 * @returns {Record<string, string>}
-		 */
-		const getConfig = aliases => fromEntries(
-			aliases.map(({alias, name: n}) => [alias.replace(/:$/, ''), n]),
-		);
-
-		if (!config) { // 情形4：`config === null`
+		if (config) { // 情形2或3
+			const {functionSynonyms: [insensitive]} = config;
+			if (!insensitive.subst) {
+				const aliases = getAliases(magicwords.filter(({name: n}) => otherMagicwords.includes(n)));
+				for (const {alias, name: n} of aliases) {
+					insensitive[alias.replace(/:$/u, '')] = n;
+				}
+			}
+		} else { // 情形4：`config === null`
 			config = {
 				tagModes: {
 					pre: 'mw-tag-pre',
@@ -515,7 +555,7 @@
 			};
 			const realMagicwords = new Set([...functionhooks, ...variables, ...otherMagicwords]),
 				allMagicwords = magicwords.filter(
-					({name: n, aliases}) => aliases.some(alias => /^__.+__$/.test(alias)) || realMagicwords.has(n),
+					({name: n, aliases}) => aliases.some(alias => /^__.+__$/u.test(alias)) || realMagicwords.has(n),
 				),
 				sensitive = getAliases(
 					allMagicwords.filter(word => word['case-sensitive']),
@@ -524,21 +564,13 @@
 					allMagicwords.filter(word => !word['case-sensitive']),
 				).map(({alias, name: n}) => ({alias: alias.toLowerCase(), name: n}));
 			config.doubleUnderscore = [
-				getConfig(insensitive.filter(({alias}) => /^__.+__$/.test(alias))),
-				getConfig(sensitive.filter(({alias}) => /^__.+__$/.test(alias))),
+				getConfig(insensitive.filter(({alias}) => /^__.+__$/u.test(alias))),
+				getConfig(sensitive.filter(({alias}) => /^__.+__$/u.test(alias))),
 			];
 			config.functionSynonyms = [
-				getConfig(insensitive.filter(({alias}) => !/^__.+__|^#$/.test(alias))),
-				getConfig(sensitive.filter(({alias}) => !/^__.+__|^#$/.test(alias))),
+				getConfig(insensitive.filter(({alias}) => !/^__.+__|^#$/u.test(alias))),
+				getConfig(sensitive.filter(({alias}) => !/^__.+__|^#$/u.test(alias))),
 			];
-		} else { // 情形2或3
-			const {functionSynonyms: [insensitive]} = config;
-			if (!insensitive.subst) {
-				const aliases = getAliases(magicwords.filter(({name: n}) => otherMagicwords.includes(n)));
-				for (const {alias, name: n} of aliases) {
-					insensitive[alias.replace(/:$/, '')] = n;
-				}
-			}
 		}
 		config.redirect = magicwords.find(({name: n}) => n === 'redirect').aliases;
 		config.img = getConfig(
@@ -551,7 +583,7 @@
 
 	/** 检查页面语言类型 */
 	const getPageMode = async () => {
-		if ([274, 828].includes(ns) && !page.endsWith('/doc')) {
+		if ((ns === 274 || ns === 828) && !page.endsWith('/doc')) {
 			const pageMode = ns === 274 ? 'Widget' : 'Lua';
 			await mw.loader.using(['oojs-ui-windows', 'oojs-ui.styles.icons-content']);
 			const bool = await OO.ui.confirm(msg('contentmodel'), {
@@ -569,17 +601,17 @@
 	 * See jQuery.textSelection.js for method documentation
 	 */
 	const cmTextSelection = {
-		getContents() {
+		/** @override */ getContents() {
 			return cm.getValue();
 		},
-		setContents(content) {
+		/** @override */ setContents(content) {
 			cm.setValue(content);
 			return this;
 		},
-		getSelection() {
+		/** @override */ getSelection() {
 			return cm.getSelection();
 		},
-		setSelection(option) {
+		/** @override */ setSelection(option) {
 			cm.setSelection(
 				cm.posFromIndex(option.start),
 				'end' in option ? cm.posFromIndex(option.end) : undefined,
@@ -587,11 +619,11 @@
 			cm.focus();
 			return this;
 		},
-		replaceSelection(value) {
+		/** @override */ replaceSelection(value) {
 			cm.replaceSelection(value);
 			return this;
 		},
-		getCaretPosition(option) {
+		/** @override */ getCaretPosition(option) {
 			const caretPos = cm.indexFromPos(cm.getCursor('from')),
 				endPos = cm.indexFromPos(cm.getCursor('to'));
 			if (option.startAndEnd) {
@@ -599,7 +631,7 @@
 			}
 			return caretPos;
 		},
-		scrollToCaretPosition() {
+		/** @override */ scrollToCaretPosition() {
 			cm.scrollIntoView();
 			return this;
 		},
@@ -623,7 +655,7 @@
 				if (typeof mw.addWikiEditor === 'function') {
 					mw.addWikiEditor($target);
 				} else {
-					const {config} = $.wikiEditor.modules.dialogs;
+					const {wikiEditor: {modules: {dialogs: {config}}}} = $;
 					$target.wikiEditor('addModule', {
 						...$.wikiEditor.modules.toolbar.config.getDefaultConfig(),
 						...config.getDefaultConfig(),
@@ -652,26 +684,29 @@
 		}
 
 		const json = setting || contentmodel === 'json';
-		cm = CodeMirror.fromTextArea($target[0], $.extend({
-			inputStyle: 'contenteditable',
-			lineNumbers: !/Android\b/.test(navigator.userAgent),
-			lineWrapping: true,
-			mode,
-			mwConfig,
-			json,
-		}, fromEntries(
-			options.map(({option, addon = option, modes, complex = mod => !modes || modes.includes(mod)}) => {
-				const mainAddon = Array.isArray(addon) ? addon[0] : addon;
-				return [option, addons.has(mainAddon) && complex(mode, json)];
-			}),
-		), mode === 'mediawiki'
-			? {
-				extraKeys: addons.has('escape') && (isPc(CodeMirror) ? extraKeysPc : extraKeysMac),
-			}
-			: {
-				indentUnit: addons.has('indentWithSpace') ? indent : defaultIndent,
-				indentWithTabs: !addons.has('indentWithSpace'),
+		cm = CodeMirror.fromTextArea($target[0], $.extend(
+			{
+				inputStyle: 'contenteditable',
+				lineNumbers: !/Android\b/u.test(navigator.userAgent),
+				lineWrapping: true,
+				mode,
+				mwConfig,
+				json,
 			},
+			fromEntries(
+				options.map(({option, addon = option, modes, complex = mod => !modes || modes.includes(mod)}) => {
+					const mainAddon = Array.isArray(addon) ? addon[0] : addon;
+					return [option, addons.has(mainAddon) && complex(mode, json)];
+				}),
+			),
+			mode === 'mediawiki'
+				? {
+					extraKeys: addons.has('escape') && (isPc(CodeMirror) ? extraKeysPc : extraKeysMac),
+				}
+				: {
+					indentUnit: addons.has('indentWithSpace') ? indent : defaultIndent,
+					indentWithTabs: !addons.has('indentWithSpace'),
+				},
 		));
 		cm.setSize(null, height);
 		cm.refresh();
@@ -703,6 +738,7 @@
 							return settings && settings[key];
 						},
 					},
+				escToExitQuickEdit = Wp.getSetting('esc_to_exit_quickedit'),
 				submit = () => {
 					$('#Wikiplus-Quickedit-Submit').triggerHandler('click');
 				},
@@ -714,7 +750,7 @@
 				isPc(CodeMirror)
 					? {'Ctrl-S': submit, 'Shift-Ctrl-S': submitMinor}
 					: {'Cmd-S': submit, 'Shift-Cmd-S': submitMinor},
-				[true, 'true'].includes(Wp.getSetting('esc_to_exit_quickedit'))
+				escToExitQuickEdit === true || escToExitQuickEdit === 'true'
 					? {
 						Esc() {
 							$('#Wikiplus-Quickedit-Back').triggerHandler('click');
@@ -741,18 +777,23 @@
 	});
 	observer.observe(body, {childList: true});
 
-	$(body).on('keydown.wphl', '.ui-dialog', function(e) {
-		if (e.key === 'Escape') {
-			/** @type {{$textarea: JQuery<HTMLTextAreaElement>}} */
-			const context = $(this).children('.ui-dialog-content').data('context');
-			if (context && context.$textarea && context.$textarea.attr('id') === 'Wikiplus-Quickedit') {
-				e.stopPropagation();
+	$(body).on(
+		'keydown.wphl',
+		'.ui-dialog',
+		/** @this {HTMLBodyElement} */
+		function(e) {
+			if (e.key === 'Escape') {
+				/** @type {{$textarea: JQuery<HTMLTextAreaElement>}} */
+				const context = $(this).children('.ui-dialog-content').data('context');
+				if (context && context.$textarea && context.$textarea.attr('id') === 'Wikiplus-Quickedit') {
+					e.stopPropagation();
+				}
 			}
-		}
-	});
+		},
+	);
 
 	// 添加样式
-	const wphlStyle = document.getElementById('wphl-style') || mw.loader.addStyleTag(
+	const wphlStyle = document.querySelector('#wphl-style') || mw.loader.addStyleTag(
 		'#Wikiplus-CodeMirror{border:1px solid #c8ccd1;line-height:1.3;clear:both;'
 		+ '-moz-user-select:auto;-webkit-user-select:auto;user-select:auto}' // fix mobile select
 		+ '#Wikiplus-CodeMirror .CodeMirror-gutter-wrapper{'
@@ -783,7 +824,7 @@
 	} = $.valHooks.textarea || {};
 
 	/** @param {HTMLTextAreaElement} elem */
-	const isWikiplus = elem => ['Wikiplus-Quickedit', 'Wikiplus-Setting-Input'].includes(elem.id);
+	const isWikiplus = elem => elem.id === 'Wikiplus-Quickedit' || elem.id === 'Wikiplus-Setting-Input';
 	$.valHooks.textarea = {
 		get(elem) {
 			return isWikiplus(elem) && cm ? cm.getValue() : get(elem);
@@ -819,7 +860,10 @@
 		portletContainer[skin] || 'p-cactions', '#', msg('portlet'), 'wphl-settings',
 	)).click(async e => {
 		e.preventDefault();
-		if (!dialog) {
+		if (dialog) {
+			widget.setValue([...addons]);
+			indentWidget.setValue(indent);
+		} else {
 			await mw.loader.using(['oojs-ui-windows', 'oojs-ui.styles.icons-content']);
 			// eslint-disable-next-line require-atomic-updates
 			dialog = new OO.ui.MessageDialog({id: 'Wikiplus-highlight-dialog'});
@@ -849,9 +893,6 @@
 			indentField = new OO.ui.FieldLayout(indentWidget, {label: msg('addon-indent')});
 			toggleIndent();
 			Object.assign(mw.libs.wphl, {widget, indentWidget});
-		} else {
-			widget.setValue([...addons]);
-			indentWidget.setValue(indent);
 		}
 		const wikiplusLoaded = typeof window.Wikiplus === 'object' || typeof window.Pages === 'object';
 		searchWidget.setDisabled(!wikiplusLoaded);

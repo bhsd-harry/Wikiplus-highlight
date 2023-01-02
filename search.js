@@ -28,7 +28,7 @@
 	 * @param {string|RegExp} str
 	 */
 	const token = str => {
-		const initial = typeof str === 'string' ? RegExp(`[^${escapeRegExp(str[0])}]`, 'i') : null;
+		const initial = typeof str === 'string' ? new RegExp(`[^${escapeRegExp(str[0])}]`, 'iu') : null;
 		return /** @param {CodeMirror.StringStream} stream */ stream => {
 			if (stream.match(str, true, true)) {
 				return 'search';
@@ -37,6 +37,7 @@
 			if (initial) {
 				stream.eatWhile(initial);
 			}
+			return undefined;
 		};
 	};
 
@@ -58,10 +59,10 @@
 			return;
 		}
 
-		if (typeof ptn === 'string' && /^\/.+\/i?$/.test(ptn)) {
+		if (typeof ptn === 'string' && /^\/.+\/i?$/u.test(ptn)) {
 			ptn = ptn.endsWith('i')
-				? RegExp(ptn.slice(1, -2), 'i')
-				: RegExp(ptn.slice(1, -1));
+				? new RegExp(ptn.slice(1, -2), 'iu')
+				: new RegExp(ptn.slice(1, -1), 'u');
 		}
 		if (ptn !== lastPtn) {
 			cm.removeOverlay(overlay);
@@ -76,7 +77,7 @@
 				cursor = cm.getSearchCursor(ptn, {line: 0, ch: 0}, {caseFold: true});
 			} else {
 				const lastLine = cm.lastLine(),
-					lastCh = cm.getLine(lastLine).length;
+					{length: lastCh} = cm.getLine(lastLine);
 				cursor = cm.getSearchCursor(ptn, {line: lastLine, ch: lastCh}, {caseFold: true});
 			}
 			result = dir ? cursor.findNext() : cursor.findPrevious();
@@ -144,9 +145,10 @@
 				reset(cm);
 			}
 		});
-		cm.addKeyMap(CodeMirror.keyMap.default === CodeMirror.keyMap.pcDefault
-			? {'Ctrl-F': findNew, 'Ctrl-G': 'findForward', 'Shift-Ctrl-G': 'findBackward'}
-			: {'Cmd-F': findNew, 'Cmd-G': 'findForward', 'Shift-Cmd-G': 'findBackward'},
+		cm.addKeyMap(
+			CodeMirror.keyMap.default === CodeMirror.keyMap.pcDefault
+				? {'Ctrl-F': findNew, 'Ctrl-G': 'findForward', 'Shift-Ctrl-G': 'findBackward'}
+				: {'Cmd-F': findNew, 'Cmd-G': 'findForward', 'Shift-Cmd-G': 'findBackward'},
 		);
 	});
 

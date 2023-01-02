@@ -5,11 +5,12 @@
  */
 
 (() => {
+	/* eslint-disable func-style */
 	'use strict';
 
-	const {Pos, cmpPos} = CodeMirror;
+	const {Pos, cmpPos, Init} = CodeMirror;
 
-	const tagStart = /<(\/?)([_a-z]\w*)/gi,
+	const tagStart = /<(\/?)([_a-z]\w*)/giu,
 		voidTags = ['br', 'wbr', 'hr', 'img'],
 		maxScanLines = 1000;
 
@@ -30,19 +31,19 @@
 
 		isTag() {
 			const type = this.cm.getTokenTypeAt(Pos(this.line, this.ch));
-			return /\b(?:mw-(?:html|ext)tag|tag\b)/.test(type);
+			return /\b(?:mw-(?:html|ext)tag|tag\b)/u.test(type);
 		}
 
 		/** @param {number} ch */
 		bracketAt(ch) {
 			const type = this.cm.getTokenTypeAt(Pos(this.line, ch + 1));
-			return /\b(?:mw-(?:html|ext)tag-)?bracket\b/.test(type);
+			return /\b(?:mw-(?:html|ext)tag-)?bracket\b/u.test(type);
 		}
 
 		/** Jump to the start of the next line */
 		nextLine() {
 			if (this.line >= this.max) {
-				return;
+				return false;
 			}
 			this.ch = 0;
 			this.text = this.cm.getLine(++this.line);
@@ -52,7 +53,7 @@
 		/** Jump to the end of the previous line */
 		prevLine() {
 			if (this.line <= this.min) {
-				return;
+				return false;
 			}
 			this.text = this.cm.getLine(--this.line);
 			this.ch = this.text.length;
@@ -64,7 +65,7 @@
 			for (;;) {
 				const gt = this.text.indexOf('>', this.ch);
 				if (gt === -1) {
-					return;
+					return undefined;
 				}
 				this.ch = gt + 1;
 				if (!this.bracketAt(gt)) {
@@ -79,7 +80,7 @@
 			for (;;) {
 				const lt = this.ch ? this.text.lastIndexOf('<', this.ch - 1) : -1;
 				if (lt === -1) {
-					return;
+					return undefined;
 				}
 				if (!this.bracketAt(lt)) {
 					this.ch = lt;
@@ -103,7 +104,7 @@
 					if (this.nextLine()) {
 						continue;
 					} else {
-						return;
+						return undefined;
 					}
 				}
 				if (!this.bracketAt(found.index)) {
@@ -123,7 +124,7 @@
 					if (this.prevLine()) {
 						continue;
 					} else {
-						return;
+						return undefined;
 					}
 				}
 				if (!this.bracketAt(gt)) {
@@ -131,7 +132,7 @@
 					continue;
 				}
 				const lastSlash = this.text.lastIndexOf('/', gt);
-				const selfClose = lastSlash > -1 && !/\S/.test(this.text.slice(lastSlash + 1, gt));
+				const selfClose = lastSlash > -1 && !/\S/u.test(this.text.slice(lastSlash + 1, gt));
 				this.ch = gt + 1;
 				return selfClose ? 'selfClose' : 'regular';
 			}
@@ -146,13 +147,13 @@
 			for (;;) {
 				const next = this.toNextTag();
 				if (!next) {
-					return;
+					return undefined;
 				}
 				const start = this.ch - next[0].length,
 					end = this.toTagEnd(),
 					tagName = next[2].toLowerCase();
 				if (!end) {
-					return;
+					return undefined;
 				}
 				if (end === 'selfClose' || voidTags.includes(tagName)) {
 					continue;
@@ -183,12 +184,12 @@
 			for (;;) {
 				const prev = this.toPrevTag();
 				if (!prev) {
-					return;
+					return undefined;
 				}
-				const end = this.ch,
+				const {ch: end} = this,
 					start = this.toTagStart();
 				if (!start) {
-					return;
+					return undefined;
 				}
 				const tagName = start[2].toLowerCase();
 				if (prev === 'selfClose' || voidTags.includes(tagName)) {
@@ -205,6 +206,7 @@
 						}
 					}
 					if (i < 0 && (!tag || tag === tagName)) {
+						// eslint-disable-next-line unicorn/consistent-destructuring
 						return {tag: tagName, from: Pos(this.line, this.ch), to: Pos(this.line, end)};
 					}
 				}
@@ -214,17 +216,22 @@
 
 	CodeMirror.defineExtension(
 		'findMatchingTag',
-		/** @type {function(this: CodeMirror.Editor, CodeMirror.Position): CodeMirror.MatchingTagPair} */
+
+		/**
+		 * @this {CodeMirror.Editor}
+		 * @param {CodeMirror.Position} pos
+		 * @return {CodeMirror.MatchingTagPair}
+		 */
 		function(pos) {
 			let iter = new Iter(this, pos);
 			if (!iter.isTag()) {
-				return;
+				return undefined;
 			}
 			const end = iter.toTagEnd(),
 				to = end && Pos(iter.line, iter.ch);
 			const start = end && iter.toTagStart();
 			if (!start || cmpPos(iter, pos) > 0) {
-				return;
+				return undefined;
 			}
 			const tag = start[2].toLowerCase(),
 				here = {from: Pos(iter.line, iter.ch), to, tag};
@@ -242,18 +249,25 @@
 
 	CodeMirror.defineExtension(
 		'findEnclosingTag',
-		/** @type {function(this: CodeMirror.Editor, CodeMirror.Position, string): CodeMirror.MatchingTagPair} */
+
+		/**
+		 * @this {CodeMirror.Editor}
+		 * @param {CodeMirror.Position} pos
+		 * @param {string} tag
+		 * @returns {CodeMirror.MatchingTagPair}
+		 */
 		function(pos, tag) {
 			const iter = new Iter(this, pos),
 				op = iter.findMatchingOpen(tag);
 			if (!op) {
-				return;
+				return undefined;
 			}
 			const forward = new Iter(this, pos),
 				cl = forward.findMatchingClose(op.tag);
 			if (cl) {
 				return {open: op, close: cl};
 			}
+			return undefined;
 		},
 	);
 
@@ -264,7 +278,7 @@
 	};
 
 	CodeMirror.defineOption('matchTags', false, (cm, val, old) => {
-		if (old && old !== CodeMirror.Init) {
+		if (old && old !== Init) {
 			cm.off('cursorActivity', doMatchTags);
 			clear(cm);
 		}
