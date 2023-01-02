@@ -249,7 +249,11 @@
 			{functionSynonyms: [synonyms]} = mw.config.get('extCodeMirrorConfig') || {
 				functionSynonyms: [{invoke: 'invoke', 调用: 'invoke', widget: 'widget', 小工具: 'widget'}],
 			};
-		/** @param {string} str 别名 */
+
+		/**
+		 * 生成别名映射表
+		 * @param {string} str 别名
+		 */
 		const getSysnonyms = str => Object.keys(synonyms).filter(key => synonyms[key] === str)
 			.map(key => key.startsWith('#') ? key : `#${key}`);
 		const invoke = getSysnonyms('invoke'),
@@ -719,7 +723,7 @@
 		if (addons.has('wikiEditor')) {
 			const context = $target.data('wikiEditorContext'),
 				{keyMap} = CodeMirror,
-				callback = () => {
+				callback = /** 替代CodeMirror的Ctrl/Cmd-F快捷键 */ () => {
 					$.wikiEditor.modules.dialogs.api.openDialog(context, 'search-and-replace');
 				};
 			cm.addKeyMap(keyMap.default === keyMap.pcDefault ? {'Ctrl-F': callback} : {'Cmd-F': callback});
@@ -733,16 +737,16 @@
 			const /** @type {Wikiplus} */ Wp = typeof window.Wikiplus === 'object'
 					? window.Wikiplus
 					: {
-						getSetting(key) {
+						/** @override */ getSetting(key) {
 							const settings = storage.getObject('Wikiplus_Settings');
 							return settings && settings[key];
 						},
 					},
 				escToExitQuickEdit = Wp.getSetting('esc_to_exit_quickedit'),
-				submit = () => {
+				submit = /** 提交编辑 */ () => {
 					$('#Wikiplus-Quickedit-Submit').triggerHandler('click');
 				},
-				submitMinor = () => {
+				submitMinor = /** 提交小编辑 */ () => {
 					$('#Wikiplus-Quickedit-MinorEdit').click();
 					$('#Wikiplus-Quickedit-Submit').triggerHandler('click');
 				};
@@ -752,7 +756,7 @@
 					: {'Cmd-S': submit, 'Shift-Cmd-S': submitMinor},
 				escToExitQuickEdit === true || escToExitQuickEdit === 'true'
 					? {
-						Esc() {
+						/** 按下Esc键退出编辑 */ Esc() {
 							$('#Wikiplus-Quickedit-Back').triggerHandler('click');
 						},
 					}
@@ -823,13 +827,16 @@
 		},
 	} = $.valHooks.textarea || {};
 
-	/** @param {HTMLTextAreaElement} elem */
+	/**
+	 * 是否是Wikiplus编辑区
+	 * @param {HTMLTextAreaElement} elem textarea元素
+	 */
 	const isWikiplus = elem => elem.id === 'Wikiplus-Quickedit' || elem.id === 'Wikiplus-Setting-Input';
 	$.valHooks.textarea = {
-		get(elem) {
+		/** @override */ get(elem) {
 			return isWikiplus(elem) && cm ? cm.getValue() : get(elem);
 		},
-		set(elem, value) {
+		/** @override */ set(elem, value) {
 			if (isWikiplus(elem) && cm) {
 				cm.setValue(value);
 			} else {
@@ -848,6 +855,10 @@
 		/** @type {OOUI.NumberInputWidget} */ indentWidget,
 		/** @type {OOUI.FieldLayout} */ field,
 		/** @type {OOUI.FieldLayout} */ indentField;
+	/**
+	 * 显示/隐藏缩进大小选项
+	 * @param {string[]} value 加载的插件
+	 */
 	const toggleIndent = (value = [...addons]) => {
 		indentField.toggle(value.includes('indentWithSpace'));
 	};
@@ -931,7 +942,10 @@
 		});
 	}
 
-	/** @param {CodeMirror.Editor} doc */
+	/**
+	 * 处理非Wikiplus编辑器
+	 * @param {CodeMirror.Editor} doc CodeMirror编辑区
+	 */
 	const handleOtherEditors = async doc => {
 		if (!addons.has('otherEditors')) {
 			return;
@@ -964,8 +978,25 @@
 	mw.hook('inspector').add(/** @param {CodeMirror.Editor} doc */ doc => handleOtherEditors(doc));
 
 	mw.libs.wphl = {
-		version, options, addons, i18n, i18nLang, wphlStyle, $portlet, USING_LOCAL, MODE_LIST, ADDON_LIST,
-		msg, htmlMsg, escapeHTML, handleContextMenu, setI18N, getAddonScript,
-		updateCachedConfig, getMwConfig, renderEditor, handleOtherEditors,
+		version,
+		options,
+		addons,
+		i18n,
+		i18nLang,
+		wphlStyle,
+		$portlet,
+		USING_LOCAL,
+		MODE_LIST,
+		ADDON_LIST,
+		msg,
+		htmlMsg,
+		escapeHTML,
+		handleContextMenu,
+		setI18N,
+		getAddonScript,
+		updateCachedConfig,
+		getMwConfig,
+		renderEditor,
+		handleOtherEditors,
 	}; // 加载完毕
 })();

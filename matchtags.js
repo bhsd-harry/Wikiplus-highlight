@@ -14,10 +14,11 @@
 		voidTags = ['br', 'wbr', 'hr', 'img'],
 		maxScanLines = 1000;
 
+	/** @ignore */
 	class Iter {
 		/**
 		 * @param {CodeMirror.Editor} cm
-		 * @param {CodeMirror.Position} pos
+		 * @param {CodeMirror.Position} pos 当前位置
 		 */
 		constructor(cm, pos) {
 			const {line, ch} = pos;
@@ -29,12 +30,16 @@
 			this.max = Math.min(line + maxScanLines - 1, cm.lastLine());
 		}
 
+		/** 是否是标签 */
 		isTag() {
 			const type = this.cm.getTokenTypeAt(Pos(this.line, this.ch));
 			return /\b(?:mw-(?:html|ext)tag|tag\b)/u.test(type);
 		}
 
-		/** @param {number} ch */
+		/**
+		 * 判断是否是括号
+		 * @param {number} ch 列号
+		 */
 		bracketAt(ch) {
 			const type = this.cm.getTokenTypeAt(Pos(this.line, ch + 1));
 			return /\b(?:mw-(?:html|ext)tag-)?bracket\b/u.test(type);
@@ -138,8 +143,10 @@
 			}
 		}
 
+		// eslint-disable-next-line jsdoc/require-returns-check
 		/**
-		 * @param {string} tag
+		 * 搜索匹配的闭合标签
+		 * @param {string} tag 标签名
 		 * @returns {CodeMirror.MatchingTag}
 		 */
 		findMatchingClose(tag) {
@@ -175,8 +182,10 @@
 			}
 		}
 
+		// eslint-disable-next-line jsdoc/require-returns-check
 		/**
-		 * @param {string|undefined} tag
+		 * 搜索匹配的开启标签
+		 * @param {string|undefined} tag 标签名
 		 * @returns {CodeMirror.MatchingTag}
 		 */
 		findMatchingOpen(tag) {
@@ -219,8 +228,8 @@
 
 		/**
 		 * @this {CodeMirror.Editor}
-		 * @param {CodeMirror.Position} pos
-		 * @return {CodeMirror.MatchingTagPair}
+		 * @param {CodeMirror.Position} pos 当前位置
+		 * @returns {CodeMirror.MatchingTagPair}
 		 */
 		function(pos) {
 			let iter = new Iter(this, pos);
@@ -288,7 +297,10 @@
 		}
 	});
 
-	/** @param {CodeMirror.EditorWithMatchingTags} cm */
+	/**
+	 * 清除高亮
+	 * @param {CodeMirror.EditorWithMatchingTags} cm
+	 */
 	function clear(cm) {
 		if (cm.state.tagHit) {
 			cm.state.tagHit.clear();
@@ -300,7 +312,10 @@
 		cm.state.tagOther = null;
 	}
 
-	/** @param {CodeMirror.EditorWithMatchingTags} cm */
+	/**
+	 * 搜索并高亮匹配的标签
+	 * @param {CodeMirror.EditorWithMatchingTags} cm
+	 */
 	function doMatchTags(cm) {
 		cm.operation(() => {
 			clear(cm);

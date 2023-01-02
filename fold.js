@@ -11,8 +11,8 @@
 
 	/**
 	 * 只用于`title`属性的消息，不存在时fallback到键名
-	 * @param {string} key
-	 * @param {string|undefined} argKey
+	 * @param {string} key 消息键
+	 * @param {string|undefined} argKey 额外参数的消息键
 	 * @returns {string}
 	 */
 	const msg = (key, argKey) => {
@@ -46,7 +46,10 @@
 			},
 		);
 
-	/** @param {JQuery<HTMLElement>} $tooltip */
+	/**
+	 * 隐藏tooltip
+	 * @param {JQuery<HTMLElement>} $tooltip tooltip
+	 */
 	function hideTooltip($tooltip) {
 		let timeout = -1,
 			executeTime = 0;
@@ -63,9 +66,10 @@
 	}
 
 	/**
+	 * 搜索括号
 	 * @param {CodeMirror.Editor} cm
-	 * @param {CodeMirror.Position} where
-	 * @param {1|-1} dir
+	 * @param {CodeMirror.Position} where 当前位置
+	 * @param {1|-1} dir 搜索方向
 	 * @returns {CodeMirror.MarkerRange}
 	 */
 	function scanForDelimiterAndBracket(cm, where, dir) {
@@ -117,8 +121,9 @@
 	}
 
 	/**
+	 * 搜索模板
 	 * @param {CodeMirror.Editor} cm
-	 * @param {CodeMirror.Position} cursor
+	 * @param {CodeMirror.Position} cursor 当前位置
 	 * @returns {CodeMirror.MarkerRange}
 	 */
 	function findEnclosingTemplate(cm, cursor) {
@@ -138,8 +143,9 @@
 	}
 
 	/**
+	 * 搜索注释
 	 * @param {CodeMirror.Editor} cm
-	 * @param {CodeMirror.Position} cursor
+	 * @param {CodeMirror.Position} cursor 当前位置
 	 * @returns {CodeMirror.MarkerRange|undefined}
 	 */
 	function findEnclosingComment(cm, cursor) {
@@ -159,7 +165,10 @@
 		return {from: cm.posFromIndex(fromIndex + 4), to: cm.posFromIndex(toIndex)};
 	}
 
-	/** @param {CodeMirror.EditorFoldable} cm */
+	/**
+	 * 显示tooltip
+	 * @param {CodeMirror.EditorFoldable} cm
+	 */
 	function showTooltip(cm) {
 		const {state: {fold: {$tooltip, hide}}} = cm;
 		cm.operation(() => {

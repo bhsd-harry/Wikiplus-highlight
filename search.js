@@ -6,7 +6,10 @@
 (() => {
 	'use strict';
 
-	/** @param {string} key */
+	/**
+	 * I18N消息
+	 * @param {string} key 消息键
+	 */
 	const msg = key => mw.msg(`wphl-${key}`);
 
 	// Prepare elements
@@ -21,15 +24,20 @@
 		$searchBtn = $('<span>', {class: 'Wikiplus-Btn', html: msg('addon-search')});
 
 	const escapeRegExp = mw.util.escapeRegExp || mw.RegExp.escape;
-	const /** @type {CodeMirror.Mode<undefined>} */ overlay = {token: () => {}};
+	const /** @type {CodeMirror.Mode<undefined>} */ overlay = {token: /** @override */ () => {}};
 
 	/**
 	 * 根据搜索字符串生成高亮
-	 * @param {string|RegExp} str
+	 * @param {string|RegExp} str 搜索字符串
 	 */
 	const token = str => {
 		const initial = typeof str === 'string' ? new RegExp(`[^${escapeRegExp(str[0])}]`, 'iu') : null;
-		return /** @param {CodeMirror.StringStream} stream */ stream => {
+
+		/**
+		 * @override
+		 * @param {CodeMirror.StringStream} stream
+		 */
+		return stream => {
 			if (stream.match(str, true, true)) {
 				return 'search';
 			}
@@ -51,7 +59,7 @@
 	/**
 	 * keyboard event handler of `$search`
 	 * @param {CodeMirror.Editor} cm
-	 * @param {boolean} dir
+	 * @param {boolean} dir 搜索方向
 	 */
 	const findNext = (cm, dir) => {
 		let /** @type {string|RegExp} */ ptn = $search.val();
@@ -110,10 +118,10 @@
 		lastPtn = '';
 	};
 
-	CodeMirror.commands.findForward = doc => {
+	CodeMirror.commands.findForward = /** 向后搜索 */ doc => {
 		findNext(doc, true);
 	};
-	CodeMirror.commands.findBackward = doc => {
+	CodeMirror.commands.findBackward = /** 向前搜索 */ doc => {
 		findNext(doc, false);
 	};
 

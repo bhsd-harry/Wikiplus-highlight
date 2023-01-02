@@ -638,6 +638,9 @@
 					"VariableDeclarator > FunctionExpression",
 					"MethodDefinition > FunctionExpression",
 					"VariableDeclarator > ArrowFunctionExpression"
+				],
+				"exceptions": [
+					"cm"
 				]
 			}
 		],
