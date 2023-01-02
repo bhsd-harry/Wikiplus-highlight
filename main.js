@@ -906,7 +906,7 @@
 		const wikiplusLoaded = typeof window.Wikiplus === 'object' || typeof window.Pages === 'object';
 		searchWidget.setDisabled(!wikiplusLoaded);
 		wikiEditorWidget.setDisabled(!wikiplusLoaded || !mw.loader.getState('ext.wikiEditor'));
-		dialog.open({
+		const data = await dialog.open({
 			title: msg('addon-title'),
 			message: field.$element.add(indentField.$element).add(
 				$('<p>', {html: msg('feedback')}),
@@ -916,17 +916,18 @@
 				{action: 'accept', label: mw.msg('ooui-dialog-message-accept'), flags: 'progressive'},
 			],
 			size: i18nLang === 'en' || skin === 'minerva' ? 'medium' : 'small',
-		}).closing.then(data => {
-			field.$element.detach();
-			indentField.$element.detach();
-			if (typeof data === 'object' && data.action === 'accept') {
-				const value = widget.getValue();
-				addons = new Set(value);
-				indent = Number(indentWidget.getValue());
-				storage.setObject('Wikiplus-highlight-addons', value);
-				storage.setObject('Wikiplus-highlight-indent', indent);
-			}
-		}, () => {});
+		}).closing;
+		field.$element.detach();
+		indentField.$element.detach();
+		if (typeof data === 'object' && data.action === 'accept') {
+			/* eslint-disable require-atomic-updates */
+			const value = widget.getValue();
+			addons = new Set(value);
+			indent = Number(indentWidget.getValue());
+			storage.setObject('Wikiplus-highlight-addons', value);
+			storage.setObject('Wikiplus-highlight-indent', indent);
+			/* eslint-enable require-atomic-updates */
+		}
 	});
 	if (skin === 'minerva') {
 		$portlet.find('.mw-ui-icon').addClass('mw-ui-icon-minerva-settings');

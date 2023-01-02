@@ -420,19 +420,20 @@
 			2,
 			"inside"
 		],
-		"promise/no-multiple-resolved": 2,
-		"promise/catch-or-return": [
-			2,
-			{
-				"allowThen": true
-			}
-		],
 		"promise/always-return": [
 			2,
 			{
 				"ignoreLastCallback": true
 			}
 		],
+		"promise/catch-or-return": [
+			2,
+			{
+				"allowThen": true
+			}
+		],
+		"promise/no-multiple-resolved": 2,
+		"promise/prefer-await-to-then": 2,
 		"es-x/no-regexp-lookbehind-assertions": 2,
 		"regexp/no-contradiction-with-assertion": 2,
 		"regexp/no-dupe-disjunctions": [
