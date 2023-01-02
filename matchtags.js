@@ -5,7 +5,6 @@
  */
 
 (() => {
-	/* eslint-disable func-style */
 	'use strict';
 
 	const {Pos, cmpPos, Init} = CodeMirror;
@@ -267,21 +266,21 @@
 		 */
 		function(pos, tag) {
 			const iter = new Iter(this, pos),
-				op = iter.findMatchingOpen(tag);
-			if (!op) {
+				open = iter.findMatchingOpen(tag);
+			if (!open) {
 				return undefined;
 			}
 			const forward = new Iter(this, pos),
-				cl = forward.findMatchingClose(op.tag);
-			if (cl) {
-				return {open: op, close: cl};
+				close = forward.findMatchingClose(open.tag);
+			if (close) {
+				return {open, close};
 			}
 			return undefined;
 		},
 	);
 
 	/** Used by addon/edit/closetag.js */
-	CodeMirror.scanForClosingTag = function(cm, pos, tagName) {
+	CodeMirror.scanForClosingTag = (cm, pos, tagName) => {
 		const iter = new Iter(cm, pos);
 		return iter.findMatchingClose(tagName);
 	};
@@ -301,7 +300,7 @@
 	 * 清除高亮
 	 * @param {CodeMirror.EditorWithMatchingTags} cm
 	 */
-	function clear(cm) {
+	const clear = cm => {
 		if (cm.state.tagHit) {
 			cm.state.tagHit.clear();
 		}
@@ -310,13 +309,13 @@
 		}
 		cm.state.tagHit = null;
 		cm.state.tagOther = null;
-	}
+	};
 
 	/**
 	 * 搜索并高亮匹配的标签
 	 * @param {CodeMirror.EditorWithMatchingTags} cm
 	 */
-	function doMatchTags(cm) {
+	const doMatchTags = cm => {
 		cm.operation(() => {
 			clear(cm);
 			if (cm.somethingSelected()) {
@@ -339,7 +338,7 @@
 				cm.state.tagOther = cm.markText(other.from, other.to, {className: 'cm-matchingtag'});
 			}
 		});
-	}
+	};
 
 	mw.loader.addStyleTag(
 		'.cm-matchingtag{background-color:#c9ffc8}'

@@ -179,12 +179,12 @@
 
 	/**
 	 * @typedef {object} addon
-	 * @property {string} option
-	 * @property {string|string[]} addon
-	 * @property {string} download
-	 * @property {(mode: string, json: boolean) => any} complex
-	 * @property {string[]} modes
-	 * @property {boolean} only
+	 * @property {string} option 对应的CodeMirror选项
+	 * @property {string|string[]} addon 对应的Wikiplus-highlight插件
+	 * @property {string} download 需要下载的CodeMirror扩展
+	 * @property {(mode: string, json: boolean) => any} complex 插件加载条件
+	 * @property {string[]} modes 使用的高亮模式
+	 * @property {boolean} only 是否仅用于Wikiplus
 	 */
 
 	const /** @type {addon[]} */ options = [
@@ -364,16 +364,16 @@
 	 * @param {boolean|undefined} local 是否先从本地下载
 	 */
 	const getScript = async (urls, local) => {
-		const intern = urls.filter(url => !url.includes('/')),
-			extern = urls.filter(url => url.includes('/'));
+		const internal = urls.filter(url => !url.includes('/')),
+			external = urls.filter(url => url.includes('/'));
 		if (local === true) {
-			await getInternalScript(intern);
-			return getExternalScript(extern);
+			await getInternalScript(internal);
+			return getExternalScript(external);
 		} else if (local === false) {
-			await getExternalScript(extern);
-			return getInternalScript(intern);
+			await getExternalScript(external);
+			return getInternalScript(internal);
 		}
-		return Promise.all([getInternalScript(intern), getExternalScript(extern)]);
+		return Promise.all([getInternalScript(internal), getExternalScript(external)]);
 	};
 
 	// 以下进入CodeMirror相关内容
@@ -429,7 +429,7 @@
 		// modes
 		if (type === 'mediawiki' && SITE_SETTINGS.config && SITE_SETTINGS.config.tags.html) {
 			// NamespaceHTML扩展自由度过高，所以这里一律当作允许<html>标签
-			type = 'html';
+			type = 'html'; // eslint-disable-line no-param-reassign
 		}
 		if ((type === 'mediawiki' || type === 'widget') && !CM.modes.mediawiki) {
 			// 总是外部样式表和外部脚本
@@ -484,7 +484,7 @@
 	 * @returns {{alias: string, name: string}[]}
 	 */
 	const getAliases = words => flatten(
-		words.map(({aliases, name: n}) => aliases.map(alias => ({alias, name: n}))),
+		words.map(({aliases, name}) => aliases.map(alias => ({alias, name}))),
 	);
 
 	/**
@@ -493,7 +493,7 @@
 	 * @returns {Record<string, string>}
 	 */
 	const getConfig = aliases => fromEntries(
-		aliases.map(({alias, name: n}) => [alias.replace(/:$/u, ''), n]),
+		aliases.map(({alias, name}) => [alias.replace(/:$/u, ''), name]),
 	);
 
 	/**
@@ -540,9 +540,9 @@
 		if (config) { // 情形2或3
 			const {functionSynonyms: [insensitive]} = config;
 			if (!insensitive.subst) {
-				const aliases = getAliases(magicwords.filter(({name: n}) => otherMagicwords.includes(n)));
-				for (const {alias, name: n} of aliases) {
-					insensitive[alias.replace(/:$/u, '')] = n;
+				const aliases = getAliases(magicwords.filter(({name}) => otherMagicwords.includes(name)));
+				for (const {alias, name} of aliases) {
+					insensitive[alias.replace(/:$/u, '')] = name;
 				}
 			}
 		} else { // 情形4：`config === null`
@@ -559,14 +559,14 @@
 			};
 			const realMagicwords = new Set([...functionhooks, ...variables, ...otherMagicwords]),
 				allMagicwords = magicwords.filter(
-					({name: n, aliases}) => aliases.some(alias => /^__.+__$/u.test(alias)) || realMagicwords.has(n),
+					({name, aliases}) => aliases.some(alias => /^__.+__$/u.test(alias)) || realMagicwords.has(name),
 				),
 				sensitive = getAliases(
 					allMagicwords.filter(word => word['case-sensitive']),
 				),
 				insensitive = getAliases(
 					allMagicwords.filter(word => !word['case-sensitive']),
-				).map(({alias, name: n}) => ({alias: alias.toLowerCase(), name: n}));
+				).map(({alias, name}) => ({alias: alias.toLowerCase(), name}));
 			config.doubleUnderscore = [
 				getConfig(insensitive.filter(({alias}) => /^__.+__$/u.test(alias))),
 				getConfig(sensitive.filter(({alias}) => /^__.+__$/u.test(alias))),
@@ -576,9 +576,9 @@
 				getConfig(sensitive.filter(({alias}) => !/^__.+__|^#$/u.test(alias))),
 			];
 		}
-		config.redirect = magicwords.find(({name: n}) => n === 'redirect').aliases;
+		config.redirect = magicwords.find(({name}) => name === 'redirect').aliases;
 		config.img = getConfig(
-			getAliases(magicwords.filter(({name: n}) => n.startsWith('img_'))),
+			getAliases(magicwords.filter(({name}) => name.startsWith('img_'))),
 		);
 		mw.config.set('extCodeMirrorConfig', config);
 		updateCachedConfig(config);
@@ -734,7 +734,7 @@
 		$('#Wikiplus-Quickedit-Jump').children('a').attr('href', '#Wikiplus-CodeMirror');
 
 		if (!setting) { // 普通Wikiplus编辑区
-			const /** @type {Wikiplus} */ Wp = typeof window.Wikiplus === 'object'
+			const /** @type {Wikiplus} */ Wikiplus = typeof window.Wikiplus === 'object'
 					? window.Wikiplus
 					: {
 						/** @override */ getSetting(key) {
@@ -742,7 +742,7 @@
 							return settings && settings[key];
 						},
 					},
-				escToExitQuickEdit = Wp.getSetting('esc_to_exit_quickedit'),
+				escToExitQuickEdit = Wikiplus.getSetting('esc_to_exit_quickedit'),
 				submit = /** 提交编辑 */ () => {
 					$('#Wikiplus-Quickedit-Submit').triggerHandler('click');
 				},
@@ -819,10 +819,8 @@
 	 * @type {{get: (elem: HTMLTextAreaElement) => string, set: (elem: HTMLTextAreaElement, value: string) => void}}
 	 */
 	const {
-		get = function(elem) {
-			return elem.value;
-		},
-		set = function(elem, value) {
+		get = elem => elem.value,
+		set = (elem, value) => {
 			elem.value = value;
 		},
 	} = $.valHooks.textarea || {};

@@ -4,7 +4,6 @@
  */
 
 (() => {
-	/* eslint-disable func-style */
 	'use strict';
 
 	const {Pos, cmpPos, Init} = CodeMirror;
@@ -50,7 +49,7 @@
 	 * 隐藏tooltip
 	 * @param {JQuery<HTMLElement>} $tooltip tooltip
 	 */
-	function hideTooltip($tooltip) {
+	const hideTooltip = $tooltip => {
 		let timeout = -1,
 			executeTime = 0;
 		return /** @param {number} wait */ (wait, update = true) => {
@@ -63,7 +62,7 @@
 				executeTime = Date.now() + wait;
 			}
 		};
-	}
+	};
 
 	/**
 	 * 搜索括号
@@ -72,53 +71,54 @@
 	 * @param {1|-1} dir 搜索方向
 	 * @returns {CodeMirror.MarkerRange}
 	 */
-	function scanForDelimiterAndBracket(cm, where, dir) {
+	const scanForDelimiterAndBracket = (cm, where, dir) => {
 		const maxScanLen = 10000,
 			maxScanLines = 1000,
+			{line, ch} = where,
 			lineEnd = dir > 0
-				? Math.min(cm.lastLine() + 1, where.line + maxScanLines)
-				: Math.max(cm.firstLine() - 1, where.line - maxScanLines);
+				? Math.min(cm.lastLine() + 1, line + maxScanLines)
+				: Math.max(cm.firstLine() - 1, line - maxScanLines);
 		let stack = 0,
 			hasDelimiter = dir < 0,
 			/** @type {CodeMirror.Position} */ delimiter;
-		for (let {line, ch: chWhere} = where; line !== lineEnd; line += dir) {
-			const curLine = cm.getLine(line);
+		for (let {line: l} = where; l !== lineEnd; l += dir) {
+			const curLine = cm.getLine(l);
 			if (!curLine) {
 				continue;
 			}
-			const {length: l} = curLine;
-			if (l > maxScanLen) {
+			const {length} = curLine;
+			if (length > maxScanLen) {
 				continue;
 			}
-			const end = dir > 0 ? l : -1;
-			let pos = dir > 0 ? 0 : l - 1;
-			if (line === where.line) { // eslint-disable-line unicorn/consistent-destructuring
-				pos = chWhere - (dir > 0 ? 0 : 1); // `dir = 1`时不包含当前字符，`dir = -1`时包含当前字符
+			const end = dir > 0 ? length : -1;
+			let pos = dir > 0 ? 0 : length - 1;
+			if (l === line) {
+				pos = ch - (dir > 0 ? 0 : 1); // `dir = 1`时不包含当前字符，`dir = -1`时包含当前字符
 			}
 			for (; pos !== end; pos += dir) {
-				const ch = curLine.charAt(pos);
-				if (!hasDelimiter && /[^\s|]/u.test(ch)) {
-					delimiter = Pos(line, pos + 1);
+				const char = curLine.charAt(pos);
+				if (!hasDelimiter && /[^\s|]/u.test(char)) {
+					delimiter = Pos(l, pos + 1);
 				}
-				if (!(hasDelimiter ? /[{}]/u : /[{}|]/u).test(ch)) {
+				if (!(hasDelimiter ? /[{}]/u : /[{}|]/u).test(char)) {
 					continue;
 				}
-				const type = cm.getTokenTypeAt(Pos(line, pos + 1)) || '';
-				if (ch === '|' && stack === 0 && /\bmw-template-delimiter\b/u.test(type)) {
+				const type = cm.getTokenTypeAt(Pos(l, pos + 1)) || '';
+				if (char === '|' && stack === 0 && /\bmw-template-delimiter\b/u.test(type)) {
 					hasDelimiter = true;
-				} else if (ch === '|' || !braceRegex.test(type)) {
+				} else if (char === '|' || !braceRegex.test(type)) {
 					continue;
-				} else if (dir > 0 && ch === '{' || dir < 0 && ch === '}') {
+				} else if (dir > 0 && char === '{' || dir < 0 && char === '}') {
 					stack++;
 				} else if (stack > 0) {
 					stack--;
 				} else {
-					return {from: hasDelimiter && delimiter, to: Pos(line, pos + (dir > 0 ? 0 : 1))};
+					return {from: hasDelimiter && delimiter, to: Pos(l, pos + (dir > 0 ? 0 : 1))};
 				}
 			}
 		}
 		return {};
-	}
+	};
 
 	/**
 	 * 搜索模板
@@ -126,7 +126,7 @@
 	 * @param {CodeMirror.Position} cursor 当前位置
 	 * @returns {CodeMirror.MarkerRange}
 	 */
-	function findEnclosingTemplate(cm, cursor) {
+	const findEnclosingTemplate = (cm, cursor) => {
 		const type = cm.getTokenTypeAt(cursor) || '';
 		if (!/\bmw-template\d*-ground\b/u.test(type) || /\bmw-template-(?:bracket|name)\b/u.test(type)) {
 			return undefined;
@@ -140,7 +140,7 @@
 			return {from, to};
 		}
 		return undefined;
-	}
+	};
 
 	/**
 	 * 搜索注释
@@ -148,7 +148,7 @@
 	 * @param {CodeMirror.Position} cursor 当前位置
 	 * @returns {CodeMirror.MarkerRange|undefined}
 	 */
-	function findEnclosingComment(cm, cursor) {
+	const findEnclosingComment = (cm, cursor) => {
 		const {type, string, start, end} = cm.getTokenAt(cursor),
 			{ch} = cursor;
 		if (!/\bmw-comment\b/u.test(type)
@@ -163,13 +163,13 @@
 		let toIndex = text.slice(index).indexOf('-->');
 		toIndex = toIndex === -1 ? text.length : toIndex + index;
 		return {from: cm.posFromIndex(fromIndex + 4), to: cm.posFromIndex(toIndex)};
-	}
+	};
 
 	/**
 	 * 显示tooltip
 	 * @param {CodeMirror.EditorFoldable} cm
 	 */
-	function showTooltip(cm) {
+	const showTooltip = cm => {
 		const {state: {fold: {$tooltip, hide}}} = cm;
 		cm.operation(() => {
 			if (cm.somethingSelected()) {
@@ -196,19 +196,19 @@
 					type = tags.open.tag;
 				}
 			}
-			const {top: t, left} = cm.charCoords(cursor, 'local'),
+			const {top, left} = cm.charCoords(cursor, 'local'),
 				height = $tooltip.outerHeight(),
 				notTag = type === 'template' || type === 'comment';
 			$tooltip.attr('title', msg('fold', notTag ? `fold-${type}` : `<${type}>`))
 				.toggleClass('cm-mw-htmltag-name', !notTag)
 				.toggleClass('cm-mw-template-name', type === 'template')
 				.toggleClass('cm-mw-comment', type === 'comment')
-				.css({top: t > height ? t - height : t + 17, left})
+				.css({top: top > height ? top - height : top + 17, left})
 				.data({...range, type})
 				.show();
 			hide(5000);
 		});
-	}
+	};
 
 	CodeMirror.defineExtension(
 		'scanForDelimiterAndBracket',

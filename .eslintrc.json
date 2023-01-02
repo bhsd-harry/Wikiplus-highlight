@@ -186,6 +186,7 @@
 		"no-new-object": 2,
 		"no-new-wrappers": 2,
 		"no-octal-escape": 2,
+		"no-param-reassign": 2,
 		"no-return-assign": [
 			2,
 			"always"
@@ -198,12 +199,7 @@
 				"allowInParentheses": false
 			}
 		],
-		"no-shadow": [
-			2,
-			{
-				"builtinGlobals": true
-			}
-		],
+		"no-shadow": 2,
 		"no-throw-literal": 2,
 		"no-undef-init": 2,
 		"no-underscore-dangle": [
@@ -571,32 +567,33 @@
 			"avoid"
 		],
 		"unicorn/template-indent": 0,
-		"jsdoc/check-alignment": 2,
-		"jsdoc/check-indentation": 2,
+		"jsdoc/check-alignment": 1,
+		"jsdoc/check-indentation": 1,
+		"jsdoc/check-property-names": 1,
 		"jsdoc/check-tag-names": [
-			2,
+			1,
 			{
 				"definedTags": [
 					"template"
 				]
 			}
 		],
-		"jsdoc/check-types": 2,
-		"jsdoc/multiline-blocks": 2,
+		"jsdoc/check-types": 1,
+		"jsdoc/multiline-blocks": 1,
 		"jsdoc/newline-after-description": [
-			2,
+			1,
 			"never"
 		],
 		"jsdoc/no-bad-blocks": [
-			2,
+			1,
 			{
 				"preventAllMultiAsteriskBlocks": true
 			}
 		],
-		"jsdoc/no-multi-asterisks": 2,
-		"jsdoc/require-asterisk-prefix": 2,
+		"jsdoc/no-multi-asterisks": 1,
+		"jsdoc/require-asterisk-prefix": 1,
 		"jsdoc/require-description": [
-			2,
+			1,
 			{
 				"contexts": [
 					"FunctionDeclaration",
@@ -612,11 +609,11 @@
 			}
 		],
 		"jsdoc/require-hyphen-before-param-description": [
-			2,
+			1,
 			"never"
 		],
 		"jsdoc/require-jsdoc": [
-			2,
+			1,
 			{
 				"require": {
 					"ArrowFunctionExpression": true,
@@ -631,7 +628,7 @@
 			}
 		],
 		"jsdoc/require-param-description": [
-			2,
+			1,
 			{
 				"contexts": [
 					"FunctionDeclaration",
@@ -645,7 +642,7 @@
 			}
 		],
 		"jsdoc/require-param-name": [
-			2,
+			1,
 			{
 				"contexts": [
 					"FunctionDeclaration",
@@ -655,9 +652,9 @@
 				]
 			}
 		],
-		"jsdoc/require-param-type": 2,
+		"jsdoc/require-param-type": 1,
 		"jsdoc/require-param": [
-			2,
+			1,
 			{
 				"exceptions": [
 					"_"
@@ -670,13 +667,17 @@
 				]
 			}
 		],
+		"jsdoc/require-property": 1,
+		"jsdoc/require-property-description": 1,
+		"jsdoc/require-property-name": 1,
+		"jsdoc/require-property-type": 1,
 		"jsdoc/require-returns-check": [
-			2,
+			1,
 			{
 				"exemptAsync": false
 			}
 		],
-		"jsdoc/require-returns-type": 2,
-		"jsdoc/require-throws": 2
+		"jsdoc/require-returns-type": 1,
+		"jsdoc/require-throws": 1
 	}
 }
