@@ -713,7 +713,6 @@
 				},
 		));
 		cm.setSize(null, height);
-		cm.refresh();
 		cm.getWrapperElement().id = 'Wikiplus-CodeMirror';
 
 		if ($.fn.textSelection) {
@@ -764,6 +763,7 @@
 			));
 		}
 
+		cm.refresh();
 		mw.hook('wiki-codemirror').fire(cm);
 	};
 
