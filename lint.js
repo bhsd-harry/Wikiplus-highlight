@@ -83,7 +83,9 @@
 			}
 		});
 	};
-	mw.hook('wiki-codemirror').add(lint);
+	mw.hook('wiki-codemirror').add(cm => {
+		lint(cm);
+	});
 	mw.hook('InPageEdit.quickEdit.codemirror').add(/** @param {{cm: CodeMirror.Editor}} */ ({cm}) => {
 		lint(cm);
 	});
