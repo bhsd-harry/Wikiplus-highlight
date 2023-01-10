@@ -53,7 +53,7 @@
 	 * @param {CodeMirror.Editor} cm
 	 */
 	const lint = async cm => {
-		if (cm.getOption('mode') !== 'mediawiki') {
+		if (!['mediawiki', 'text/mediawiki'].includes(cm.getOption('mode'))) {
 			return;
 		}
 		cm.setOption('scrollButtonHeight', 0);
