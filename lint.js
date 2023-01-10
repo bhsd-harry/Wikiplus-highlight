@@ -41,7 +41,7 @@
 			`//cdn.jsdelivr.net/combine/${[
 				'npm/codemirror@5.65.3/addon/lint/lint.min.js',
 				'npm/codemirror@5.65.3/addon/scroll/annotatescrollbar.min.js',
-				'gh/bhsd-harry/wikiparser-node@0.4.8-b/bundle/bundle.min.js',
+				'gh/bhsd-harry/wikiparser-node@0.4.9-b/bundle/bundle.min.js',
 			].join()}`,
 			{dataType: 'script', cache: true},
 		);
