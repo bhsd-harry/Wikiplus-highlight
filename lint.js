@@ -30,11 +30,11 @@
 	const loadLinter = async () => {
 		mw.loader.load('//cdn.jsdelivr.net/npm/codemirror@5.65.3/addon/lint/lint.min.css', 'text/css');
 		mw.loader.addStyleTag(
-			'.CodeMirror-lint-scroll-error{'
-				+ 'background:#d33;border-top:1px solid #d33;border-bottom:1px solid #d33;box-sizing:border-box'
-			+ '}'
-			+ '.CodeMirror-lint-scroll-warn{'
+			'.CodeMirror-lint-scroll-warn{'
 				+ 'background:#fc3;border-top:1px solid #fc3;border-bottom:1px solid #fc3;box-sizing:border-box'
+			+ '}'
+			+ '.CodeMirror-lint-scroll-error{'
+				+ 'background:#d33;border-top:1px solid #d33;border-bottom:1px solid #d33;box-sizing:border-box'
 			+ '}',
 		);
 		await $.ajax(
