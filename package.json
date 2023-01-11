@@ -13,7 +13,16 @@
   },
   "license": "GPL-3.0",
   "author": "Bhsd",
-  "browser": "main.js",
+  "files": [
+    "/dist/",
+    "/i18n/",
+    "/fold.js",
+    "/lint.js",
+    "/main.js",
+    "/matchtag.js",
+    "/search.js"
+  ],
+  "browser": "/main.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bhsd-harry/Wikiplus-highlight.git"

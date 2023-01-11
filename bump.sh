@@ -2,7 +2,7 @@
 if [[ $2 == 'npm' ]]
 then
 	sed -i '' 's|gh/bhsd-harry/Wikiplus-highlight@|npm/wikiplus-highlight@|' main.js
-	uglifyjs main.js -c -m --comments --source-map 'url=main.min.js.map,root="../"' -o dist/main.min.js
+	uglifyjs main.js -c -m --comments --webkit --source-map 'url=main.min.js.map,root="../"' -o dist/main.min.js
 	perl -pi -e "s|wikiplus-highlight@\d+\..+?(['/])|wikiplus-highlight\@$1\$1|" README.md
 	sed -i '' -E "s/\"version\": \".+\"/\"version\": \"$1\"/" package.json
 	git add -A
