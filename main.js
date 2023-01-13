@@ -854,6 +854,7 @@
 		/** @type {OOUI.CheckboxMultiselectInputWidget} */ widget,
 		/** @type {OOUI.CheckboxMultioptionWidget} */ searchWidget,
 		/** @type {OOUI.CheckboxMultioptionWidget} */ wikiEditorWidget,
+		/** @type {OOUI.CheckboxMultioptionWidget} */ lintWidget,
 		/** @type {OOUI.NumberInputWidget} */ indentWidget,
 		/** @type {OOUI.FieldLayout} */ field,
 		/** @type {OOUI.FieldLayout} */ indentField;
@@ -897,6 +898,7 @@
 			const {checkboxMultiselectWidget} = widget;
 			searchWidget = checkboxMultiselectWidget.findItemFromData('search');
 			wikiEditorWidget = checkboxMultiselectWidget.findItemFromData('wikiEditor');
+			lintWidget = checkboxMultiselectWidget.findItemFromData('lint');
 			indentWidget = new OO.ui.NumberInputWidget({min: 0, value: indent});
 			field = new OO.ui.FieldLayout(widget, {
 				label: msg('addon-label'),
@@ -910,6 +912,7 @@
 		const wikiplusLoaded = typeof window.Wikiplus === 'object' || typeof window.Pages === 'object';
 		searchWidget.setDisabled(!wikiplusLoaded);
 		wikiEditorWidget.setDisabled(!wikiplusLoaded || !mw.loader.getState('ext.wikiEditor'));
+		lintWidget.setDisabled(!wikiplusLoaded);
 		const data = await dialog.open({
 			title: msg('addon-title'),
 			message: field.$element.add(indentField.$element).add(
@@ -982,6 +985,11 @@
 		/** @param {{cm: CodeMirror.Editor}} */ ({cm: doc}) => handleOtherEditors(doc),
 	);
 	mw.hook('inspector').add(/** @param {CodeMirror.Editor} doc */ doc => handleOtherEditors(doc));
+	mw.hook('wiki-codemirror').add(/** @param {CodeMirror.Editor} doc */ doc => {
+		if (!doc.getTextArea || !isWikiplus(doc.getTextArea())) {
+			handleOtherEditors(doc);
+		}
+	});
 
 	mw.libs.wphl = {
 		version,

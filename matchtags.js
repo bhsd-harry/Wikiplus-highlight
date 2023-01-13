@@ -109,11 +109,10 @@
 						return undefined;
 					}
 				}
+				this.ch = found.index + found[0].length;
 				if (this.bracketAt(found.index)) {
-					this.ch = found.index + found[0].length;
 					return found;
 				}
-				this.ch = found.index + found[0].length;
 			}
 		}
 

@@ -95,19 +95,7 @@
 	};
 
 	mw.hook('wiki-codemirror').add(/** @param {CodeMirror.Editor} cm */ cm => {
-		if (mw.libs.wphl.addons.has('lint')
-			&& (cm.getTextArea().id === 'Wikiplus-Quickedit' || mw.libs.wphl.addons.has('otherEditors'))
-		) {
-			lint(cm);
-		}
-	});
-	mw.hook('inspector').add(/** @param {CodeMirror.Editor} cm */ cm => {
-		if (mw.libs.wphl.addons.has('lint') && mw.libs.wphl.addons.has('otherEditors')) {
-			lint(cm);
-		}
-	});
-	mw.hook('InPageEdit.quickEdit.codemirror').add(/** @param {{cm: CodeMirror.Editor}} */ ({cm}) => {
-		if (mw.libs.wphl.addons.has('lint') && mw.libs.wphl.addons.has('otherEditors')) {
+		if (mw.libs.wphl.addons.has('lint') && cm.getTextArea && cm.getTextArea().id === 'Wikiplus-Quickedit') {
 			lint(cm);
 		}
 	});
