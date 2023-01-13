@@ -36,23 +36,6 @@
 			+ 'background:#d33;border-top:1px solid #d33;border-bottom:1px solid #d33;box-sizing:border-box'
 		+ '}',
 	);
-	const {config: {values: {
-			extCodeMirrorConfig: {tags, functionSynonyms: [insensitive, sensitive], doubleUnderscore, urlProtocols},
-			wgFormattedNamespaces, wgNamespaceIds,
-		}}} = mw,
-		{minConfig: {parserFunction}} = Parser;
-	Parser.config = {
-		ext: Object.keys(tags),
-		namespaces: wgFormattedNamespaces,
-		nsid: wgNamespaceIds,
-		parserFunction: [
-			mw.loader.getState('ext.CodeMirror.data') === 'ready' ? Object.keys(insensitive) : parserFunction[0],
-			Object.keys(sensitive),
-			...parserFunction.slice(2),
-		],
-		doubleUnderscore: doubleUnderscore.map(Object.keys),
-		protocol: urlProtocols.replaceAll('\\:', ':'),
-	};
 	CodeMirror.registerHelper('lint', 'mediawiki', annotate);
 
 	/**
@@ -62,6 +45,26 @@
 	const lint = cm => {
 		if (!['mediawiki', 'text/mediawiki'].includes(cm.getOption('mode'))) {
 			return;
+		} else if (!Parser.config) {
+			const {config: {values: {wgFormattedNamespaces, wgNamespaceIds}}} = mw,
+				{minConfig: {parserFunction}} = Parser,
+				{
+					tags, functionSynonyms: [insensitive, sensitive], doubleUnderscore, urlProtocols,
+				} = cm.getOption('mwConfig');
+			Parser.config = {
+				ext: Object.keys(tags),
+				namespaces: wgFormattedNamespaces,
+				nsid: wgNamespaceIds,
+				parserFunction: [
+					mw.loader.getState('ext.CodeMirror.data') === 'ready'
+						? Object.keys(insensitive)
+						: parserFunction[0],
+					Object.keys(sensitive),
+					...parserFunction.slice(2),
+				],
+				doubleUnderscore: doubleUnderscore.map(Object.keys),
+				protocol: urlProtocols.replaceAll('\\:', ':'),
+			};
 		}
 		cm.setOption('scrollButtonHeight', 0);
 		const annotateScrollError = cm.annotateScrollbar('CodeMirror-lint-scroll-error'),

@@ -85,8 +85,7 @@
 				const lt = this.ch ? this.text.lastIndexOf('<', this.ch - 1) : -1;
 				if (lt === -1) {
 					return undefined;
-				}
-				if (!this.bracketAt(lt)) {
+				} else if (!this.bracketAt(lt)) {
 					this.ch = lt;
 					continue;
 				}
@@ -160,11 +159,9 @@
 					tagName = next[2].toLowerCase();
 				if (!end) {
 					return undefined;
-				}
-				if (end === 'selfClose' || voidTags.includes(tagName)) {
+				} else if (end === 'selfClose' || voidTags.includes(tagName)) {
 					continue;
-				}
-				if (next[1]) { // closing tag
+				} else if (next[1]) { // closing tag
 					let i = stack.length - 1;
 					for (; i >= 0; --i) {
 						if (stack[i] === tagName) {
@@ -202,8 +199,7 @@
 				const tagName = start[2].toLowerCase();
 				if (prev === 'selfClose' || voidTags.includes(tagName)) {
 					continue;
-				}
-				if (start[1]) { // closing tag
+				} else if (start[1]) { // closing tag
 					stack.push(tagName);
 				} else { // opening tag
 					let i = stack.length - 1;
@@ -324,8 +320,7 @@
 			const match = cm.findMatchingTag(cm.getCursor());
 			if (!match) {
 				return;
-			}
-			if (match.at === 'self') {
+			} else if (match.at === 'self') {
 				cm.state.tagHit = cm.markText(match.open.from, match.open.to, {className: 'cm-matchingtag'});
 				return;
 			}
