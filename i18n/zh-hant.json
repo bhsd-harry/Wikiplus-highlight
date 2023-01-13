@@ -14,6 +14,7 @@
 	"wphl-addon-indentwithspace": "代碼縮排使用空格而非Tab",
 	"wphl-addon-indent": "縮排",
 	"wphl-addon-othereditors": "將選中的外掛程式用於其他編輯器",
+	"wphl-addon-lint": "維基語法檢查（測試版）",
 	"wphl-addon-label": "請選擇您希望載入的外掛程式",
 	"wphl-addon-notice": "更改將於打開新的Wikiplus編輯區時生效。",
 	"wphl-addon-title": "Wikiplus突顯外掛程式",

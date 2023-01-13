@@ -15,7 +15,7 @@
 	mw.libs.wphl = {}; // 开始加载
 
 	const version = '2.22.8',
-		newAddon = 0;
+		newAddon = 1;
 
 	/** @type {typeof mw.storage} */
 	const storage = typeof mw.storage === 'object' && typeof mw.storage.getObject === 'function'
@@ -55,18 +55,6 @@
 		}
 		return obj;
 	});
-
-	/**
-	 * polyfill for `Array.prototype.flat`
-	 * @type {(arr: HTMLElement[][]) => HTMLElement[]}
-	 */
-	const flatten = arr => {
-		if (typeof arr.flat === 'function') {
-			return arr.flat();
-		}
-		// eslint-disable-next-line unicorn/no-array-reduce
-		return arr.reduce((acc, cur) => acc.concat(cur), []);
-	};
 
 	/**
 	 * 解析版本号
@@ -116,6 +104,7 @@
 	const CDN = '//fastly.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.65.3',
 		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.6',
+		PARSER_CDN = 'gh/bhsd-harry/wikiparser-node@0.5.2-b',
 		REPO_CDN = `gh/bhsd-harry/Wikiplus-highlight@${majorVersion}`;
 
 	const {config: {values: {
@@ -176,6 +165,10 @@
 		fold: `${REPO_CDN}/fold.min.js`,
 		wikiEditor: 'ext.wikiEditor',
 		contextmenu: 'mediawiki.Title',
+		lint: `${CM_CDN}/addon/lint/lint.min.js`,
+		annotateScrollbar: `${CM_CDN}/addon/scroll/annotatescrollbar.min.js`,
+		parser: `${PARSER_CDN}/bundle/bundle.min.js`,
+		lintWikitext: `${REPO_CDN}/lint.min.js`,
 	};
 
 	/**
@@ -451,8 +444,21 @@
 		if (!CM.prototype.getSearchCursor && addons.has('search') && !addons.has('wikiEditor')) {
 			scripts.push(ADDON_LIST.searchcursor);
 		}
+		if (!CM.prototype.annotateScrollbar && type === 'mediawiki' && addons.has('lint')) {
+			scripts.push(ADDON_LIST.annotateScrollbar);
+		}
 		if (!CM.commands.findForward && addons.has('search') && !addons.has('wikiEditor')) {
 			scripts.push(ADDON_LIST.search);
+		}
+		if (!window.Parser && type === 'mediawiki' && addons.has('lint')) {
+			scripts.push(ADDON_LIST.parser);
+		}
+		if (!CM.optionHandlers.lint && type === 'mediawiki' && addons.has('lint')) {
+			mw.loader.load(`${CDN}/${CM_CDN}/addon/lint/lint.min.css`, 'text/css');
+			scripts.push(ADDON_LIST.lint);
+		}
+		if (!(CM.helpers.lint && CM.helpers.lint.mediawiki) && type === 'mediawiki' && addons.has('lint')) {
+			scripts.push(ADDON_LIST.lintWikitext);
 		}
 		if (addons.has('wikiEditor')) {
 			const state = mw.loader.getState('ext.wikiEditor');
@@ -484,9 +490,7 @@
 	 * @param {{aliases: string[], name: string}[]} words 原名
 	 * @returns {{alias: string, name: string}[]}
 	 */
-	const getAliases = words => flatten(
-		words.map(({aliases, name}) => aliases.map(alias => ({alias, name}))),
-	);
+	const getAliases = words => words.map(({aliases, name}) => aliases.map(alias => ({alias, name}))).flat();
 
 	/**
 	 * 将别名信息转换为CodeMirror接受的设置
@@ -772,9 +776,8 @@
 
 	// 监视 Wikiplus 编辑框
 	const observer = new MutationObserver(records => {
-		const $editArea = $(flatten(
-			records.map(({addedNodes}) => [...addedNodes]),
-		)).find('#Wikiplus-Quickedit, #Wikiplus-Setting-Input');
+		const $editArea = $(records.map(({addedNodes}) => [...addedNodes]).flat())
+			.find('#Wikiplus-Quickedit, #Wikiplus-Setting-Input');
 		if ($editArea.length === 0) {
 			return;
 		}
@@ -886,7 +889,7 @@
 						const mainAddon = Array.isArray(addon) ? addon[0] : addon;
 						return {data: mainAddon, label: htmlMsg(`addon-${mainAddon.toLowerCase()}`)};
 					}),
-					...['wikiEditor', 'escape', 'contextmenu', 'indentWithSpace', 'otherEditors']
+					...['wikiEditor', 'escape', 'contextmenu', 'lint', 'indentWithSpace', 'otherEditors']
 						.map(addon => ({data: addon, label: htmlMsg(`addon-${addon.toLowerCase()}`)})),
 				],
 				value: [...addons],

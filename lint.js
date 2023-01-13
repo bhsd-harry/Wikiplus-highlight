@@ -26,57 +26,44 @@
 		});
 	};
 
-	/** download */
-	const loadLinter = async () => {
-		mw.loader.load('//cdn.jsdelivr.net/npm/codemirror@5.65.3/addon/lint/lint.min.css', 'text/css');
-		mw.loader.addStyleTag(
-			'.CodeMirror-line .CodeMirror-lint-mark-warning{background:#ffbf00;color:#fff}'
-			+ '.CodeMirror-line .CodeMirror-lint-mark-error{background:#d33;color:#fff}'
-			+ '.CodeMirror-lint-scroll-warn{'
-				+ 'background:#fc3;border-top:1px solid #fc3;border-bottom:1px solid #fc3;box-sizing:border-box'
-			+ '}'
-			+ '.CodeMirror-lint-scroll-error{'
-				+ 'background:#d33;border-top:1px solid #d33;border-bottom:1px solid #d33;box-sizing:border-box'
-			+ '}',
-		);
-		await $.ajax(
-			`//cdn.jsdelivr.net/combine/${[
-				'npm/codemirror@5.65.3/addon/lint/lint.min.js',
-				'npm/codemirror@5.65.3/addon/scroll/annotatescrollbar.min.js',
-				'gh/bhsd-harry/wikiparser-node@0.5.2-b/bundle/bundle.min.js',
-			].join()}`,
-			{dataType: 'script', cache: true},
-		);
-		const {config: {values: {
-				extCodeMirrorConfig: {tags, functionSynonyms: [insensitive, sensitive], doubleUnderscore, urlProtocols},
-				wgFormattedNamespaces, wgNamespaceIds,
-			}}} = mw,
-			{minConfig: {parserFunction}} = Parser;
-		Parser.config = {
-			ext: Object.keys(tags),
-			namespaces: wgFormattedNamespaces,
-			nsid: wgNamespaceIds,
-			parserFunction: [
-				mw.loader.getState('ext.CodeMirror.data') === 'ready' ? Object.keys(insensitive) : parserFunction[0],
-				Object.keys(sensitive),
-				...parserFunction.slice(2),
-			],
-			doubleUnderscore: doubleUnderscore.map(Object.keys),
-			protocol: urlProtocols.replaceAll('\\:', ':'),
-		};
-		CodeMirror.registerHelper('lint', 'mediawiki', annotate);
+	mw.loader.addStyleTag(
+		'.CodeMirror-line .CodeMirror-lint-mark-warning{background:#ffbf00;color:#fff}'
+		+ '.CodeMirror-line .CodeMirror-lint-mark-error{background:#d33;color:#fff}'
+		+ '.CodeMirror-lint-scroll-warn{'
+			+ 'background:#fc3;border-top:1px solid #fc3;border-bottom:1px solid #fc3;box-sizing:border-box'
+		+ '}'
+		+ '.CodeMirror-lint-scroll-error{'
+			+ 'background:#d33;border-top:1px solid #d33;border-bottom:1px solid #d33;box-sizing:border-box'
+		+ '}',
+	);
+	const {config: {values: {
+			extCodeMirrorConfig: {tags, functionSynonyms: [insensitive, sensitive], doubleUnderscore, urlProtocols},
+			wgFormattedNamespaces, wgNamespaceIds,
+		}}} = mw,
+		{minConfig: {parserFunction}} = Parser;
+	Parser.config = {
+		ext: Object.keys(tags),
+		namespaces: wgFormattedNamespaces,
+		nsid: wgNamespaceIds,
+		parserFunction: [
+			mw.loader.getState('ext.CodeMirror.data') === 'ready' ? Object.keys(insensitive) : parserFunction[0],
+			Object.keys(sensitive),
+			...parserFunction.slice(2),
+		],
+		doubleUnderscore: doubleUnderscore.map(Object.keys),
+		protocol: urlProtocols.replaceAll('\\:', ':'),
 	};
+	CodeMirror.registerHelper('lint', 'mediawiki', annotate);
 
 	/**
 	 * start linting
 	 * @param {CodeMirror.Editor} cm
 	 */
-	const lint = async cm => {
+	const lint = cm => {
 		if (!['mediawiki', 'text/mediawiki'].includes(cm.getOption('mode'))) {
 			return;
 		}
 		cm.setOption('scrollButtonHeight', 0);
-		await ('lint' in CodeMirror.optionHandlers ? null : loadLinter());
 		const annotateScrollError = cm.annotateScrollbar('CodeMirror-lint-scroll-error'),
 			annotateScrollWarn = cm.annotateScrollbar('CodeMirror-lint-scroll-warn');
 
@@ -102,10 +89,22 @@
 			}
 		});
 	};
-	mw.hook('wiki-codemirror').add(cm => {
-		lint(cm);
+
+	mw.hook('wiki-codemirror').add(/** @param {CodeMirror.Editor} cm */ cm => {
+		if (mw.libs.wphl.addons.has('lint')
+			&& (cm.getTextArea().id === 'Wikiplus-Quickedit' || mw.libs.wphl.addons.has('otherEditors'))
+		) {
+			lint(cm);
+		}
+	});
+	mw.hook('inspector').add(/** @param {CodeMirror.Editor} cm */ cm => {
+		if (mw.libs.wphl.addons.has('lint') && mw.libs.wphl.addons.has('otherEditors')) {
+			lint(cm);
+		}
 	});
 	mw.hook('InPageEdit.quickEdit.codemirror').add(/** @param {{cm: CodeMirror.Editor}} */ ({cm}) => {
-		lint(cm);
+		if (mw.libs.wphl.addons.has('lint') && mw.libs.wphl.addons.has('otherEditors')) {
+			lint(cm);
+		}
 	});
 })();
