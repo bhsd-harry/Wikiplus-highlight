@@ -526,8 +526,6 @@
 		}
 		if (config && config.redirect && config.img) { // 情形1：config已更新，可能来自localStorage
 			return config;
-		} else if (config) { /** @todo 暂不需要`redirect`和`img`相关设置 */
-			return config;
 		}
 
 		/*
