@@ -14,6 +14,9 @@
 		"eslint:recommended",
 		"plugin:promise/recommended",
 		"plugin:es-x/no-new-in-es2019",
+		"plugin:es-x/no-new-in-es2020",
+		"plugin:es-x/no-new-in-es2021",
+		"plugin:es-x/no-new-in-es2022",
 		"plugin:regexp/recommended"
 	],
 	"parserOptions": {
@@ -251,7 +254,6 @@
 		],
 		"prefer-exponentiation-operator": 2,
 		"prefer-numeric-literals": 2,
-		"prefer-object-has-own": 2,
 		"prefer-object-spread": 2,
 		"prefer-regex-literals": [
 			2,
