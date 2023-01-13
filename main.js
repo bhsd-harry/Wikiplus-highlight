@@ -209,9 +209,9 @@
 	];
 
 	const defaultAddons = ['search'],
-		defaultIndent = 4;
-	let /** @type {Set<string>} */ addons = new Set(storage.getObject('Wikiplus-highlight-addons') || defaultAddons),
-		/** @type {number} */ indent = storage.getObject('Wikiplus-highlight-indent') || defaultIndent;
+		defaultIndent = 4,
+		/** @type {Set<string>} */ addons = new Set(storage.getObject('Wikiplus-highlight-addons') || defaultAddons);
+	let /** @type {number} */ indent = storage.getObject('Wikiplus-highlight-indent') || defaultIndent;
 
 	/** @type {Record<string, string>} */
 	const entity = {'"': 'quot', "'": 'apos', '<': 'lt', '>': 'gt', '&': 'amp', ' ': 'nbsp'},
@@ -296,10 +296,9 @@
 		});
 	};
 
-	let /** @type {Record<string, string>} */ i18n = storage.getObject('Wikiplus-highlight-i18n'),
-		/** @type {() => JQuery<HTMLElement>} */ welcome;
-	if (!i18n) { // 首次安装
-		i18n = {};
+	const /** @type {Record<string, string>} */ i18n = storage.getObject('Wikiplus-highlight-i18n') || {};
+	let /** @type {() => JQuery<HTMLElement>} */ welcome;
+	if (!i18n['wphl-version']) { // 首次安装
 		welcome = notify('welcome');
 	} else if (cmpVersion(i18n['wphl-version'], version)) { // 更新版本
 		welcome = notify(`welcome-${newAddon ? 'new-addon' : 'upgrade'}`, version, newAddon);
@@ -324,10 +323,10 @@
 	/** 加载 I18N */
 	const setI18N = async () => {
 		if (!isLatest || i18n['wphl-lang'] !== i18nLang) {
-			i18n = await $.ajax(`${I18N_CDN}`, { // eslint-disable-line require-atomic-updates
+			Object.assign(i18n, await $.ajax(`${I18N_CDN}`, { // eslint-disable-line require-atomic-updates
 				dataType: 'json',
 				cache: true,
-			});
+			}));
 			storage.setObject('Wikiplus-highlight-i18n', i18n);
 		}
 		mw.messages.set(i18n);
@@ -928,7 +927,10 @@
 		if (typeof data === 'object' && data.action === 'accept') {
 			/* eslint-disable require-atomic-updates */
 			const value = widget.getValue();
-			addons = new Set(value);
+			addons.clear();
+			for (const addon of value) {
+				addons.add(addon);
+			}
 			indent = Number(indentWidget.getValue());
 			storage.setObject('Wikiplus-highlight-addons', value);
 			storage.setObject('Wikiplus-highlight-indent', indent);
