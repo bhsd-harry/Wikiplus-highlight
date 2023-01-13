@@ -410,7 +410,9 @@
 		 * 代替`CodeMirror`的局部变量
 		 * @type {typeof CodeMirror}
 		 */
-		const CM = loaded ? window.CodeMirror : {modes: {}, prototype: {}, commands: {}, optionHandlers: {}};
+		const CM = loaded
+			? window.CodeMirror
+			: {modes: {}, prototype: {}, commands: {}, optionHandlers: {}, helpers: {}};
 
 		// lib
 		if (!loaded) {
