@@ -30,12 +30,8 @@
 	const loadLinter = async () => {
 		mw.loader.load('//cdn.jsdelivr.net/npm/codemirror@5.65.3/addon/lint/lint.min.css', 'text/css');
 		mw.loader.addStyleTag(
-			'.CodeMirror-line span.CodeMirror-lint-mark-warning{'
-				+ 'background:#ffbf00;color:#fff'
-			+ '}'
-			+ '.CodeMirror-line span.CodeMirror-lint-mark-error{'
-				+ 'background:#d33;color:#fff'
-			+ '}'
+			'.CodeMirror-line .CodeMirror-lint-mark-warning{background:#ffbf00;color:#fff}'
+			+ '.CodeMirror-line .CodeMirror-lint-mark-error{background:#d33;color:#fff}'
 			+ '.CodeMirror-lint-scroll-warn{'
 				+ 'background:#fc3;border-top:1px solid #fc3;border-bottom:1px solid #fc3;box-sizing:border-box'
 			+ '}'
@@ -47,10 +43,27 @@
 			`//cdn.jsdelivr.net/combine/${[
 				'npm/codemirror@5.65.3/addon/lint/lint.min.js',
 				'npm/codemirror@5.65.3/addon/scroll/annotatescrollbar.min.js',
-				'gh/bhsd-harry/wikiparser-node@0.5.1-b/bundle/bundle.min.js',
+				'gh/bhsd-harry/wikiparser-node@0.5.2-b/bundle/bundle.min.js',
 			].join()}`,
 			{dataType: 'script', cache: true},
 		);
+		const {config: {values: {
+				extCodeMirrorConfig: {tags, functionSynonyms: [insensitive, sensitive], doubleUnderscore, urlProtocols},
+				wgFormattedNamespaces, wgNamespaceIds,
+			}}} = mw,
+			{minConfig: {parserFunction}} = Parser;
+		Parser.config = {
+			ext: Object.keys(tags),
+			namespaces: wgFormattedNamespaces,
+			nsid: wgNamespaceIds,
+			parserFunction: [
+				mw.loader.getState('ext.CodeMirror.data') === 'ready' ? Object.keys(insensitive) : parserFunction[0],
+				Object.keys(sensitive),
+				...parserFunction.slice(2),
+			],
+			doubleUnderscore: doubleUnderscore.map(Object.keys),
+			protocol: urlProtocols.replaceAll('\\:', ':'),
+		};
 		CodeMirror.registerHelper('lint', 'mediawiki', annotate);
 	};
 
