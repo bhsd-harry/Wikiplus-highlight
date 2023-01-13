@@ -43,18 +43,23 @@
 			},
 		};
 
-	/**
-	 * polyfill for `Object.fromEntries`
-	 * @type {(entries: Iterable<[string, T]>) => Record<string, T>}
-	 * @template T
-	 */
-	const fromEntries = Object.fromEntries || (entries => { // eslint-disable-line es-x/no-object-fromentries
+	Object.fromEntries = Object.fromEntries || (entries => {
 		const /** @type {Record<string, T>} */ obj = {};
 		for (const [key, value] of entries) {
 			obj[key] = value;
 		}
 		return obj;
 	});
+
+	/**
+	 * polyfill for `Array.prototype.flat`
+	 * @template {*} T
+	 * @param {(T|T[])[]} arr 任意数组
+	 * @returns {T[]}
+	 */
+	const flatten = arr => typeof arr.flat === 'function'
+		? arr.flat()
+		: arr.reduce((acc, cur) => acc.concat(cur), []); // eslint-disable-line unicorn/no-array-reduce
 
 	/**
 	 * 解析版本号
@@ -489,16 +494,15 @@
 	/**
 	 * 展开别名列表
 	 * @param {{aliases: string[], name: string}[]} words 原名
-	 * @returns {{alias: string, name: string}[]}
 	 */
-	const getAliases = words => words.map(({aliases, name}) => aliases.map(alias => ({alias, name}))).flat();
+	const getAliases = words => flatten(words.map(({aliases, name}) => aliases.map(alias => ({alias, name}))));
 
 	/**
 	 * 将别名信息转换为CodeMirror接受的设置
 	 * @param {{alias: string, name: string}[]} aliases 别名
 	 * @returns {Record<string, string>}
 	 */
-	const getConfig = aliases => fromEntries(
+	const getConfig = aliases => Object.fromEntries(
 		aliases.map(({alias, name}) => [alias.replace(/:$/, ''), name]),
 	);
 
@@ -556,7 +560,7 @@
 					nowiki: 'mw-tag-nowiki',
 					ref: 'text/mediawiki',
 				},
-				tags: fromEntries(
+				tags: Object.fromEntries(
 					extensiontags.map(tag => [tag.slice(1, -1), true]),
 				),
 				urlProtocols: mw.config.get('wgUrlProtocols'),
@@ -591,17 +595,17 @@
 
 	/** 检查页面语言类型 */
 	const getPageMode = async () => {
-		if ((ns === 274 || ns === 828) && !page.endsWith('/doc')) {
-			const pageMode = ns === 274 ? 'Widget' : 'Lua';
-			await mw.loader.using(['oojs-ui-windows', 'oojs-ui.styles.icons-content']);
-			const bool = await OO.ui.confirm(msg('contentmodel'), {
-				actions: [{label: pageMode}, {label: 'Wikitext', action: 'accept'}],
-			});
-			return bool ? 'mediawiki' : pageMode.toLowerCase();
-		} else if (page.endsWith('/doc')) {
+		if (page.endsWith('/doc')) {
 			return 'mediawiki';
+		} else if (ns !== 274 && ns !== 828) {
+			return CONTENTMODEL[contentmodel];
 		}
-		return CONTENTMODEL[contentmodel];
+		const pageMode = ns === 274 ? 'Widget' : 'Lua';
+		await mw.loader.using(['oojs-ui-windows', 'oojs-ui.styles.icons-content']);
+		const bool = await OO.ui.confirm(msg('contentmodel'), {
+			actions: [{label: pageMode}, {label: 'Wikitext', action: 'accept'}],
+		});
+		return bool ? 'mediawiki' : pageMode.toLowerCase();
 	};
 
 	/**
@@ -634,10 +638,7 @@
 		/** @override */ getCaretPosition(option) {
 			const caretPos = cm.indexFromPos(cm.getCursor('from')),
 				endPos = cm.indexFromPos(cm.getCursor('to'));
-			if (option.startAndEnd) {
-				return [caretPos, endPos];
-			}
-			return caretPos;
+			return option.startAndEnd ? [caretPos, endPos] : caretPos;
 		},
 		/** @override */ scrollToCaretPosition() {
 			cm.scrollIntoView();
@@ -701,7 +702,7 @@
 				mwConfig,
 				json,
 			},
-			fromEntries(
+			Object.fromEntries(
 				options.map(({option, addon = option, modes, complex = mod => !modes || modes.includes(mod)}) => {
 					const mainAddon = Array.isArray(addon) ? addon[0] : addon;
 					return [option, addons.has(mainAddon) && complex(mode, json)];
@@ -775,7 +776,7 @@
 
 	// 监视 Wikiplus 编辑框
 	const observer = new MutationObserver(records => {
-		const $editArea = $(records.map(({addedNodes}) => [...addedNodes]).flat())
+		const $editArea = $(flatten(records.map(({addedNodes}) => [...addedNodes])))
 			.find('#Wikiplus-Quickedit, #Wikiplus-Setting-Input');
 		if ($editArea.length === 0) {
 			return;
@@ -968,11 +969,11 @@
 				doc.setOption(option, complex(mode, json));
 			}
 		}
-		if (mode !== 'mediawiki' && addons.has('indentWithSpace')) {
+		if (mode === 'mediawiki' && addons.has('escape')) {
+			doc.addKeyMap(isPc(CodeMirror) ? extraKeysPc : extraKeysMac, true);
+		} else if (mode !== 'mediawiki' && addons.has('indentWithSpace')) {
 			doc.setOption('indentUnit', indent);
 			doc.setOption('indentWithTabs', false);
-		} else if (mode === 'mediawiki' && addons.has('escape')) {
-			doc.addKeyMap(isPc(CodeMirror) ? extraKeysPc : extraKeysMac, true);
 		}
 		handleContextMenu(doc, mode);
 	};

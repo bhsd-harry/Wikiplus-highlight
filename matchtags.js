@@ -72,10 +72,9 @@
 					return undefined;
 				}
 				this.ch = gt + 1;
-				if (!this.bracketAt(gt)) {
-					continue;
+				if (this.bracketAt(gt)) {
+					return this.text[gt - 1] === '/' ? 'selfClose' : 'regular';
 				}
-				return this.text[gt - 1] === '/' ? 'selfClose' : 'regular';
 			}
 		}
 
@@ -110,12 +109,11 @@
 						return undefined;
 					}
 				}
-				if (!this.bracketAt(found.index)) {
+				if (this.bracketAt(found.index)) {
 					this.ch = found.index + found[0].length;
-					continue;
+					return found;
 				}
 				this.ch = found.index + found[0].length;
-				return found;
 			}
 		}
 
@@ -130,14 +128,13 @@
 						return undefined;
 					}
 				}
-				if (!this.bracketAt(gt)) {
-					this.ch = gt;
-					continue;
+				if (this.bracketAt(gt)) {
+					const lastSlash = this.text.lastIndexOf('/', gt);
+					const selfClose = lastSlash > -1 && !/\S/u.test(this.text.slice(lastSlash + 1, gt));
+					this.ch = gt + 1;
+					return selfClose ? 'selfClose' : 'regular';
 				}
-				const lastSlash = this.text.lastIndexOf('/', gt);
-				const selfClose = lastSlash > -1 && !/\S/u.test(this.text.slice(lastSlash + 1, gt));
-				this.ch = gt + 1;
-				return selfClose ? 'selfClose' : 'regular';
+				this.ch = gt;
 			}
 		}
 
@@ -268,10 +265,7 @@
 			}
 			const forward = new Iter(this, pos),
 				close = forward.findMatchingClose(open.tag);
-			if (close) {
-				return {open, close};
-			}
-			return undefined;
+			return close ? {open, close} : undefined;
 		},
 	);
 

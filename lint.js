@@ -49,7 +49,7 @@
 			const {config: {values: {wgFormattedNamespaces, wgNamespaceIds}}} = mw,
 				{minConfig: {parserFunction}} = Parser,
 				{
-					tags, functionSynonyms: [insensitive, sensitive], doubleUnderscore, urlProtocols,
+					tags, functionSynonyms: [insensitive, sensitive], doubleUnderscore, urlProtocols, img,
 				} = cm.getOption('mwConfig');
 			Parser.config = {
 				ext: Object.keys(tags),
@@ -64,6 +64,7 @@
 				],
 				doubleUnderscore: doubleUnderscore.map(Object.keys),
 				protocol: urlProtocols.replaceAll('\\:', ':'),
+				img: Object.fromEntries(Object.entries(img).map(([k, v]) => [k, v.slice(4)])),
 			};
 		}
 		cm.setOption('scrollButtonHeight', 0);

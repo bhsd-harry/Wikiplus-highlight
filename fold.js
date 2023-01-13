@@ -132,12 +132,9 @@
 			return undefined;
 		}
 		const {to: bracket} = scanForDelimiterAndBracket(cm, cursor, -1);
-		if (!bracket) {
-			return undefined;
-		}
-		const {from, to} = scanForDelimiterAndBracket(cm, bracket, 1);
-		if (typeof from === 'object' && (from.line < to.line || from.ch < to.ch - 2)) {
-			return {from, to};
+		if (bracket) {
+			const {from, to} = scanForDelimiterAndBracket(cm, bracket, 1);
+			return typeof from === 'object' && (from.line < to.line || from.ch < to.ch - 2) ? {from, to} : undefined;
 		}
 		return undefined;
 	};
