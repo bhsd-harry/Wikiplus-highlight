@@ -1,6 +1,6 @@
 {
   "name": "wikiplus-highlight",
-  "version": "2.25.2",
+  "version": "2.25.3",
   "description": "A plugin for the MediaWiki front-end add-on \"Wikiplus\"",
   "keywords": [
     "mediawiki",
@@ -16,11 +16,7 @@
   "files": [
     "/dist/",
     "/i18n/",
-    "/fold.js",
-    "/lint.js",
-    "/main.js",
-    "/matchtag.js",
-    "/search.js"
+    "/*.js"
   ],
   "browser": "/main.js",
   "repository": {
