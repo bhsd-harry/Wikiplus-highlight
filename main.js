@@ -1012,5 +1012,6 @@
 		getMwConfig,
 		renderEditor,
 		handleOtherEditors,
+		isPc,
 	}; // 加载完毕
 })();

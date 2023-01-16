@@ -7,13 +7,15 @@
 	/* global Parser */
 	'use strict';
 
+	const include = mw.config.get('wgNamespaceNumber') === 10 && !mw.config.get('wgPageName').endsWith('/doc');
+
 	/**
 	 * annotationSource
 	 * @param {string} str wikitext
 	 * @returns {CodeMirror.LintAnnotation}
 	 */
 	const annotate = str => {
-		const errors = Parser.parse(str).lint();
+		const errors = Parser.parse(str, include).lint();
 		return errors.map(error => {
 			const {startLine, startCol, endLine, endCol, message, severity} = error,
 				lineErrors = errors.filter(({startLine: line}) => line === startLine);
@@ -76,20 +78,29 @@
 		 * @param {CodeMirror.LintAnnotation[]} annotations all annotations
 		 */
 		const onUpdateLinting = annotations => {
-			annotateScrollError.update(annotations.filter(({severity}) => severity !== 'warning'));
-			annotateScrollWarn.update(annotations.filter(({severity}) => severity === 'warning'));
-		};
+				annotateScrollError.update(annotations.filter(({severity}) => severity !== 'warning'));
+				annotateScrollWarn.update(annotations.filter(({severity}) => severity === 'warning'));
+			},
+			performLint = () => {
+				cm.performLint();
+			},
+			option = {delay: 5000, selfContain: true, onUpdateLinting},
+			switchOption = () => {
+				if (cm.state.lint) {
+					cm.setOption('lint', false);
+				} else {
+					cm.setOption('lint', option);
+				}
+			};
 		cm.setOption('gutters', ['CodeMirror-lint-markers']);
-		cm.setOption('lint', {delay: 5000, selfContain: true, onUpdateLinting});
-		cm.addKeyMap({'Cmd-K': /** immediately lint */ () => {
-			cm.performLint();
-		}});
+		cm.setOption('lint', option);
+		cm.addKeyMap(mw.libs.wphl.isPc(CodeMirror)
+			? {'Ctrl-K': performLint(), 'Ctrl-L': switchOption}
+			: {'Cmd-K': performLint(), 'Cmd-L': switchOption});
 		cm.on('viewportChange', () => {
 			if (cm.state.lint) {
 				clearTimeout(cm.state.lint.timeout);
-				cm.state.lint.timeout = setTimeout(() => {
-					cm.performLint();
-				}, cm.state.lint.options.delay);
+				cm.state.lint.timeout = setTimeout(performLint, cm.state.lint.options.delay);
 			}
 		});
 	};
