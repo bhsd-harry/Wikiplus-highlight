@@ -88,15 +88,18 @@
 			switchOption = () => {
 				if (cm.state.lint) {
 					cm.setOption('lint', false);
+					annotateScrollError.clear();
+					annotateScrollWarn.clear();
 				} else {
 					cm.setOption('lint', option);
+					performLint();
 				}
 			};
 		cm.setOption('gutters', ['CodeMirror-lint-markers']);
 		cm.setOption('lint', option);
 		cm.addKeyMap(mw.libs.wphl.isPc(CodeMirror)
-			? {'Ctrl-K': performLint(), 'Ctrl-L': switchOption}
-			: {'Cmd-K': performLint(), 'Cmd-L': switchOption});
+			? {'Ctrl-K': performLint, 'Ctrl-L': switchOption}
+			: {'Cmd-K': performLint, 'Cmd-L': switchOption});
 		cm.on('viewportChange', () => {
 			if (cm.state.lint) {
 				clearTimeout(cm.state.lint.timeout);

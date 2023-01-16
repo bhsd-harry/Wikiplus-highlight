@@ -128,7 +128,9 @@
 	 */
 	const findEnclosingTemplate = (cm, cursor) => {
 		const type = cm.getTokenTypeAt(cursor) || '';
-		if (!/\bmw-template\d*-ground\b/u.test(type) || /\bmw-template-(?:bracket|name)\b/u.test(type)) {
+		if (!/\bmw-template\d*(?:-ext\d*)?(?:-link\d*)?-ground\b/u.test(type)
+			|| /\bmw-template-(?:bracket|name)\b/u.test(type)
+		) {
 			return undefined;
 		}
 		const {to: bracket} = scanForDelimiterAndBracket(cm, cursor, -1);

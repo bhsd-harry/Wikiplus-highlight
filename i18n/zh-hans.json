@@ -14,7 +14,7 @@
 	"wphl-addon-indentwithspace": "代码缩进使用空格而非Tab",
 	"wphl-addon-indent": "缩进",
 	"wphl-addon-othereditors": "将选中的插件用于其他编辑器",
-	"wphl-addon-lint": "维基语法检查（测试版）",
+	"wphl-addon-lint": "<span title=\"Ctrl/Cmd + L 开关\">维基语法检查（测试版）</span>",
 	"wphl-addon-label": "请选择您希望加载的插件",
 	"wphl-addon-notice": "更改将于打开新的Wikiplus编辑区时生效。",
 	"wphl-addon-title": "Wikiplus高亮插件",
