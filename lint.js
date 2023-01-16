@@ -88,8 +88,8 @@
 			switchOption = () => {
 				if (cm.state.lint) {
 					cm.setOption('lint', false);
-					annotateScrollError.clear();
-					annotateScrollWarn.clear();
+					annotateScrollError.update([]);
+					annotateScrollWarn.update([]);
 				} else {
 					cm.setOption('lint', option);
 					performLint();
