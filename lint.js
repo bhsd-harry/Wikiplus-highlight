@@ -56,7 +56,7 @@
 					tags, functionSynonyms: [insensitive, sensitive], doubleUnderscore, urlProtocols, img,
 				} = cm.getOption('mwConfig');
 			for (const [k, v] of Object.entries(insensitive)) {
-				if (valuesWithPound.has(v)) {
+				if (valuesWithPound.has(v) && !k.startsWith('#')) {
 					delete insensitive[k];
 					insensitive[`#${k}`] = v;
 				}
