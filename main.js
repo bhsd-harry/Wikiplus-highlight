@@ -109,7 +109,7 @@
 	const CDN = '//fastly.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.65.3',
 		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.6',
-		PARSER_CDN = 'gh/bhsd-harry/wikiparser-node@0.6.2-b',
+		PARSER_CDN = 'gh/bhsd-harry/wikiparser-node@0.6.3-b',
 		REPO_CDN = `gh/bhsd-harry/Wikiplus-highlight@${majorVersion}`;
 
 	const {config: {values: {
@@ -182,7 +182,7 @@
 	 * @property {string|string[]} addon 对应的Wikiplus-highlight插件
 	 * @property {string} download 需要下载的CodeMirror扩展
 	 * @property {(mode: string, json: boolean) => any} complex 插件加载条件
-	 * @property {string[]} modes 使用的高亮模式
+	 * @property {Set<string>} modes 使用的高亮模式
 	 * @property {boolean} only 是否仅用于Wikiplus
 	 */
 
@@ -209,8 +209,8 @@
 				? '()[]{}""'
 				: true,
 		},
-		{option: 'matchTags', addon: ['matchTags', 'fold'], modes: ['mediawiki', 'widget']},
-		{option: 'fold', modes: ['mediawiki', 'widget']},
+		{option: 'matchTags', addon: ['matchTags', 'fold'], modes: new Set(['mediawiki', 'widget'])},
+		{option: 'fold', modes: new Set(['mediawiki', 'widget'])},
 	];
 
 	const defaultAddons = ['search'],
@@ -253,8 +253,8 @@
 		 * 生成别名映射表
 		 * @param {string} str 别名
 		 */
-		const getSysnonyms = str => Object.keys(synonyms).filter(key => synonyms[key] === str)
-			.map(key => key.startsWith('#') ? key : `#${key}`);
+		const getSysnonyms = str => new Set(Object.keys(synonyms).filter(key => synonyms[key] === str)
+			.map(key => key.startsWith('#') ? key : `#${key}`));
 		const invoke = getSysnonyms('invoke'),
 			widget = getSysnonyms('widget');
 
@@ -290,9 +290,9 @@
 				return undefined;
 			}
 			const parserFunction = tokens[index - 2].string.trim().toLowerCase();
-			if (invoke.includes(parserFunction)) {
+			if (invoke.has(parserFunction)) {
 				open(mw.util.getUrl(`Module:${text}`), '_blank');
-			} else if (widget.includes(parserFunction)) {
+			} else if (widget.has(parserFunction)) {
 				open(mw.util.getUrl(`Widget:${text}`, {action: 'edit'}), '_blank');
 			} else {
 				return undefined;
@@ -543,12 +543,12 @@
 			siprop: config ? 'magicwords' : 'magicwords|extensiontags|functionhooks|variables',
 			formatversion: 2,
 		});
-		const otherMagicwords = ['msg', 'raw', 'msgnw', 'subst', 'safesubst'];
+		const otherMagicwords = new Set(['msg', 'raw', 'msgnw', 'subst', 'safesubst']);
 
 		if (config) { // 情形2或3
 			const {functionSynonyms: [insensitive]} = config;
 			if (!insensitive.subst) {
-				const aliases = getAliases(magicwords.filter(({name}) => otherMagicwords.includes(name)));
+				const aliases = getAliases(magicwords.filter(({name}) => otherMagicwords.has(name)));
 				for (const {alias, name} of aliases) {
 					insensitive[alias.replace(/:$/, '')] = name;
 				}
@@ -703,7 +703,7 @@
 				json,
 			},
 			Object.fromEntries(
-				options.map(({option, addon = option, modes, complex = mod => !modes || modes.includes(mod)}) => {
+				options.map(({option, addon = option, modes, complex = mod => !modes || modes.has(mod)}) => {
 					const mainAddon = Array.isArray(addon) ? addon[0] : addon;
 					return [option, addons.has(mainAddon) && complex(mode, json)];
 				}),
@@ -778,10 +778,9 @@
 	const observer = new MutationObserver(records => {
 		const $editArea = $(flatten(records.map(({addedNodes}) => [...addedNodes])))
 			.find('#Wikiplus-Quickedit, #Wikiplus-Setting-Input');
-		if ($editArea.length === 0) {
-			return;
+		if ($editArea.length > 0) {
+			renderEditor($editArea, $editArea.attr('id') === 'Wikiplus-Setting-Input');
 		}
-		renderEditor($editArea, $editArea.attr('id') === 'Wikiplus-Setting-Input');
 	});
 	observer.observe(body, {childList: true});
 
@@ -965,7 +964,7 @@
 			json = doc.getOption('json');
 		await getScript(addonScript);
 		for (const {
-			option, addon = option, modes, complex = (/** @type {string} */ mod) => !modes || modes.includes(mod),
+			option, addon = option, modes, complex = (/** @type {string} */ mod) => !modes || modes.has(mod),
 		} of options.filter(({only}) => !only)) {
 			const mainAddon = Array.isArray(addon) ? addon[0] : addon;
 			if (doc.getOption(option) === undefined && addons.has(mainAddon)) {

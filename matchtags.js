@@ -10,7 +10,7 @@
 	const {Pos, cmpPos, Init} = CodeMirror;
 
 	const tagStart = /<(\/?)([_a-z]\w*)/giu,
-		voidTags = ['br', 'wbr', 'hr', 'img'],
+		voidTags = new Set(['br', 'wbr', 'hr', 'img']),
 		maxScanLines = 1000;
 
 	/** @ignore */
@@ -155,7 +155,7 @@
 					tagName = next[2].toLowerCase();
 				if (!end) {
 					return undefined;
-				} else if (end === 'selfClose' || voidTags.includes(tagName)) {
+				} else if (end === 'selfClose' || voidTags.has(tagName)) {
 					continue;
 				} else if (next[1]) { // closing tag
 					let i = stack.length - 1;
@@ -193,7 +193,7 @@
 					return undefined;
 				}
 				const tagName = start[2].toLowerCase();
-				if (prev === 'selfClose' || voidTags.includes(tagName)) {
+				if (prev === 'selfClose' || voidTags.has(tagName)) {
 					continue;
 				} else if (start[1]) { // closing tag
 					stack.push(tagName);
@@ -235,7 +235,7 @@
 			}
 			const tag = start[2].toLowerCase(),
 				here = {from: Pos(iter.line, iter.ch), to, tag};
-			if (end === 'selfClose' || voidTags.includes(tag)) {
+			if (end === 'selfClose' || voidTags.has(tag)) {
 				return {open: here, close: null, at: 'self'};
 			}
 

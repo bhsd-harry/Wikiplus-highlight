@@ -45,24 +45,30 @@
 	 * @param {CodeMirror.Editor} cm
 	 */
 	const lint = cm => {
-		if (!['mediawiki', 'text/mediawiki'].includes(cm.getOption('mode'))) {
+		const mode = cm.getOption('mode');
+		if (mode !== 'mediawiki' && mode !== 'text/mediawiki') {
 			return;
 		} else if (!Parser.config) {
 			const {config: {values: {wgFormattedNamespaces, wgNamespaceIds}}} = mw,
-				{minConfig: {parserFunction}} = Parser,
+				{minConfig: {parserFunction: [withPound,, ...modifiers]}} = Parser,
+				valuesWithPound = new Set(Object.values(withPound)),
 				{
 					tags, functionSynonyms: [insensitive, sensitive], doubleUnderscore, urlProtocols, img,
 				} = cm.getOption('mwConfig');
+			for (const [k, v] of Object.entries(insensitive)) {
+				if (valuesWithPound.has(v)) {
+					delete insensitive[k];
+					insensitive[`#${k}`] = v;
+				}
+			}
 			Parser.config = {
 				ext: Object.keys(tags),
 				namespaces: wgFormattedNamespaces,
 				nsid: wgNamespaceIds,
 				parserFunction: [
-					mw.loader.getState('ext.CodeMirror.data') === 'ready'
-						? Object.keys(insensitive)
-						: parserFunction[0],
+					insensitive,
 					Object.keys(sensitive),
-					...parserFunction.slice(2),
+					...modifiers,
 				],
 				doubleUnderscore: doubleUnderscore.map(Object.keys),
 				protocol: urlProtocols.replaceAll('\\:', ':'),
