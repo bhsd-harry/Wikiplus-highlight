@@ -71,7 +71,7 @@
 					...modifiers,
 				],
 				doubleUnderscore: doubleUnderscore.map(Object.keys),
-				protocol: urlProtocols.replaceAll('\\:', ':'),
+				protocol: urlProtocols.replace(/\\:/gu, ':'),
 				img: Object.fromEntries(Object.entries(img).map(([k, v]) => [k, v.slice(4)])),
 			};
 		}

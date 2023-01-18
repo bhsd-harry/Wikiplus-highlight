@@ -206,7 +206,6 @@
 						}
 					}
 					if (i < 0 && (!tag || tag === tagName)) {
-						// eslint-disable-next-line unicorn/consistent-destructuring
 						return {tag: tagName, from: Pos(this.line, this.ch), to: Pos(this.line, end)};
 					}
 				}
@@ -236,14 +235,14 @@
 			const tag = start[2].toLowerCase(),
 				here = {from: Pos(iter.line, iter.ch), to, tag};
 			if (end === 'selfClose' || voidTags.has(tag)) {
-				return {open: here, close: null, at: 'self'};
+				return {open: here, close: null, loc: 'self'};
 			}
 
 			if (start[1]) { // closing tag
-				return {open: iter.findMatchingOpen(tag), close: here, at: 'close'};
+				return {open: iter.findMatchingOpen(tag), close: here, loc: 'close'};
 			} // opening tag
 			iter = new Iter(this, to);
-			return {open: here, close: iter.findMatchingClose(tag), at: 'open'};
+			return {open: here, close: iter.findMatchingClose(tag), loc: 'open'};
 		},
 	);
 
@@ -313,12 +312,12 @@
 			const match = cm.findMatchingTag(cm.getCursor());
 			if (!match) {
 				return;
-			} else if (match.at === 'self') {
+			} else if (match.loc === 'self') {
 				cm.state.tagHit = cm.markText(match.open.from, match.open.to, {className: 'cm-matchingtag'});
 				return;
 			}
-			const hit = match.at === 'open' ? match.open : match.close,
-				other = match.at === 'close' ? match.open : match.close;
+			const hit = match.loc === 'open' ? match.open : match.close,
+				other = match.loc === 'close' ? match.open : match.close;
 			if (hit) {
 				cm.state.tagHit = cm.markText(hit.from, hit.to, {className: `cm-${other ? '' : 'non'}matchingtag`});
 			}

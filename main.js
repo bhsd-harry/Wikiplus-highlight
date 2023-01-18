@@ -52,16 +52,6 @@
 	});
 
 	/**
-	 * polyfill for `Array.prototype.flat`
-	 * @template {*} T
-	 * @param {(T|T[])[]} arr 任意数组
-	 * @returns {T[]}
-	 */
-	const flatten = arr => typeof arr.flat === 'function'
-		? arr.flat()
-		: arr.reduce((acc, cur) => acc.concat(cur), []); // eslint-disable-line unicorn/no-array-reduce
-
-	/**
 	 * 解析版本号
 	 * @param {string} str 版本号
 	 */
@@ -495,7 +485,7 @@
 	 * 展开别名列表
 	 * @param {{aliases: string[], name: string}[]} words 原名
 	 */
-	const getAliases = words => flatten(words.map(({aliases, name}) => aliases.map(alias => ({alias, name}))));
+	const getAliases = words => words.flatMap(({aliases, name}) => aliases.map(alias => ({alias, name})));
 
 	/**
 	 * 将别名信息转换为CodeMirror接受的设置
@@ -776,7 +766,7 @@
 
 	// 监视 Wikiplus 编辑框
 	const observer = new MutationObserver(records => {
-		const $editArea = $(flatten(records.map(({addedNodes}) => [...addedNodes])))
+		const $editArea = $(records.flatMap(({addedNodes}) => [...addedNodes]))
 			.find('#Wikiplus-Quickedit, #Wikiplus-Setting-Input');
 		if ($editArea.length > 0) {
 			renderEditor($editArea, $editArea.attr('id') === 'Wikiplus-Setting-Input');

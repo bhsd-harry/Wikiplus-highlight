@@ -13,10 +13,7 @@
 	"extends": [
 		"eslint:recommended",
 		"plugin:promise/recommended",
-		"plugin:es-x/no-new-in-es2019",
-		"plugin:es-x/no-new-in-es2020",
-		"plugin:es-x/no-new-in-es2021",
-		"plugin:es-x/no-new-in-es2022",
+		"plugin:es-x/restrict-to-es2018",
 		"plugin:regexp/recommended"
 	],
 	"parserOptions": {
@@ -434,6 +431,7 @@
 		],
 		"promise/no-multiple-resolved": 2,
 		"promise/prefer-await-to-then": 2,
+		"es-x/no-array-prototype-flat": 0,
 		"es-x/no-regexp-lookbehind-assertions": 2,
 		"es-x/no-object-fromentries": 0,
 		"regexp/no-contradiction-with-assertion": 2,
@@ -520,9 +518,10 @@
 				"checkFromLast": true
 			}
 		],
+		"unicorn/prefer-array-flat": 2,
+		"unicorn/prefer-array-flat-map": 2,
 		"unicorn/prefer-array-index-of": 2,
 		"unicorn/prefer-array-some": 2,
-		"unicorn/prefer-at": 2,
 		"unicorn/prefer-code-point": 2,
 		"unicorn/prefer-default-parameters": 2,
 		"unicorn/prefer-dom-node-text-content": 2,
@@ -660,5 +659,10 @@
 		],
 		"jsdoc/require-returns-type": 1,
 		"jsdoc/require-throws": 1
+	},
+	"settings": {
+		"es-x": {
+			"aggressive": true
+		}
 	}
 }
