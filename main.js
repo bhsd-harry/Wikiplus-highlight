@@ -14,7 +14,7 @@
 	}
 	mw.libs.wphl = {}; // 开始加载
 
-	const version = '2.30',
+	const version = '2.30.1',
 		newAddon = 0;
 
 	/** @type {typeof mw.storage} */
@@ -100,7 +100,7 @@
 		CM_CDN = 'npm/codemirror@5.65.3',
 		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.6',
 		PARSER_CDN = 'gh/bhsd-harry/wikiparser-node@0.6.6-b',
-		REPO_CDN = `npm/wikiplus-highlight@${majorVersion}`;
+		REPO_CDN = `gh/bhsd-harry/Wikiplus-highlight@${majorVersion}`;
 
 	const {config: {values: {
 		wgPageName: page,
