@@ -99,7 +99,7 @@
 	const CDN = '//fastly.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.65.3',
 		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.6',
-		PARSER_CDN = 'npm/wikiparser-node@0.6.5-b',
+		PARSER_CDN = 'gh/bhsd-harry/wikiparser-node@0.6.6-b',
 		REPO_CDN = `npm/wikiplus-highlight@${majorVersion}`;
 
 	const {config: {values: {
@@ -497,6 +497,19 @@
 	);
 
 	/**
+	 * 高亮扩展标签内部
+	 * @param {mwConfig} config 设置
+	 */
+	const setPlainMode = config => {
+		const tags = ['indicator', 'poem', 'ref', 'tabs', 'tab', 'poll'];
+		for (const tag of tags) {
+			if (config.tags[tag]) {
+				config.tagModes[tag] = 'text/mediawiki';
+			}
+		}
+	};
+
+	/**
 	 * 加载CodeMirror的mediawiki模块需要的设置数据
 	 * @param {string} type 高亮模式
 	 * @param {Promise<void>} initModePromise 使用本地CodeMirror扩展时大部分数据来自ext.CodeMirror.data模块
@@ -513,9 +526,7 @@
 		let config = mw.config.get('extCodeMirrorConfig');
 		if (!config && !EXPIRED && isLatest) {
 			({config} = SITE_SETTINGS);
-			if (config.tags.ref) { // fix a bug in InPageEdit-v2
-				config.tagModes.ref = 'text/mediawiki';
-			}
+			setPlainMode(config);
 			mw.config.set('extCodeMirrorConfig', config);
 		}
 		if (config && config.redirect && config.img) { // 情形1：config已更新，可能来自localStorage
@@ -578,6 +589,7 @@
 		config.img = getConfig(
 			getAliases(magicwords.filter(({name}) => name.startsWith('img_'))),
 		);
+		setPlainMode(config);
 		mw.config.set('extCodeMirrorConfig', config);
 		updateCachedConfig(config);
 		return config;
