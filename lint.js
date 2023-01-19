@@ -52,9 +52,7 @@
 			const {config: {values: {wgFormattedNamespaces, wgNamespaceIds}}} = mw,
 				{minConfig: {parserFunction: [withPound,, ...modifiers]}} = Parser,
 				valuesWithPound = new Set(Object.values(withPound)),
-				{
-					tags, functionSynonyms: [insensitive, sensitive], doubleUnderscore, urlProtocols, img,
-				} = cm.getOption('mwConfig');
+				{tags, functionSynonyms: [insensitive, sensitive], doubleUnderscore, img} = cm.getOption('mwConfig');
 			for (const [k, v] of Object.entries(insensitive)) {
 				if (valuesWithPound.has(v) && !k.startsWith('#')) {
 					delete insensitive[k];
@@ -71,7 +69,6 @@
 					...modifiers,
 				],
 				doubleUnderscore: doubleUnderscore.map(Object.keys),
-				protocol: urlProtocols.replace(/\\:/gu, ':'),
 				img: Object.fromEntries(Object.entries(img).map(([k, v]) => [k, v.slice(4)])),
 			};
 		}
