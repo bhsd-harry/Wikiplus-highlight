@@ -67,11 +67,23 @@
 			return;
 		}
 
+		/* eslint-disable require-unicode-regexp */
 		if (typeof ptn === 'string' && /^\/.+\/i?$/u.test(ptn)) {
-			ptn = ptn.endsWith('i')
-				? new RegExp(ptn.slice(1, -2), 'iu')
-				: new RegExp(ptn.slice(1, -1), 'u');
+			if (ptn.endsWith('i')) {
+				try {
+					ptn = new RegExp(ptn.slice(1, -2), 'iu');
+				} catch (e) {
+					ptn = new RegExp(ptn.slice(1, -2), 'i');
+				}
+			} else {
+				try {
+					ptn = new RegExp(ptn.slice(1, -1), 'u');
+				} catch (e) {
+					ptn = new RegExp(ptn.slice(1, -1));
+				}
+			}
 		}
+		/* eslint-enable require-unicode-regexp */
 		if (ptn !== lastPtn) {
 			cm.removeOverlay(overlay);
 			overlay.token = token(ptn);

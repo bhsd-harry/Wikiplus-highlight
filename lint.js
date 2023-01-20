@@ -81,8 +81,8 @@
 		 * @param {CodeMirror.LintAnnotation[]} annotations all annotations
 		 */
 		const onUpdateLinting = annotations => {
-				annotateScrollError.update(annotations.filter(({severity}) => severity !== 'warning'));
 				annotateScrollWarn.update(annotations.filter(({severity}) => severity === 'warning'));
+				annotateScrollError.update(annotations.filter(({severity}) => severity !== 'warning'));
 			},
 			performLint = () => {
 				cm.performLint();
