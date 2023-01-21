@@ -10,15 +10,19 @@ then
 	git push
 	npm publish
 else
-	sed -i '' -E "s/version = '.+'/version = '$1'/" main.js
-	sed -i '' 's|npm/wikiplus-highlight@|gh/bhsd-harry/Wikiplus-highlight@|' main.js
-	for file in i18n/*
-	do
-		sed -i '' -E "s/\"wphl-version\": \".+\"/\"wphl-version\": \"$1\"/" $file
-	done
-	git add -A
-	git commit -m "chore: bump version to $1"
-	git push
-	git tag $1
-	git push origin $1
+	eslint .
+	if [[ $? -eq 0 ]]
+	then
+		sed -i '' -E "s/version = '.+'/version = '$1'/" main.js
+		sed -i '' 's|npm/wikiplus-highlight@|gh/bhsd-harry/Wikiplus-highlight@|' main.js
+		for file in i18n/*
+		do
+			sed -i '' -E "s/\"wphl-version\": \".+\"/\"wphl-version\": \"$1\"/" $file
+		done
+		git add -A
+		git commit -m "chore: bump version to $1"
+		git push
+		git tag $1
+		git push origin $1
+	fi
 fi
