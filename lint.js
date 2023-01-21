@@ -73,8 +73,8 @@
 			};
 		}
 		cm.setOption('scrollButtonHeight', 0);
-		const annotateScrollError = cm.annotateScrollbar('CodeMirror-lint-scroll-error'),
-			annotateScrollWarn = cm.annotateScrollbar('CodeMirror-lint-scroll-warn');
+		const annotateScrollWarn = cm.annotateScrollbar('CodeMirror-lint-scroll-warn'),
+			annotateScrollError = cm.annotateScrollbar('CodeMirror-lint-scroll-error');
 
 		/**
 		 * update linting
@@ -91,8 +91,8 @@
 			switchOption = () => {
 				if (cm.state.lint) {
 					cm.setOption('lint', false);
-					annotateScrollError.update([]);
 					annotateScrollWarn.update([]);
+					annotateScrollError.update([]);
 				} else {
 					cm.setOption('lint', option);
 					performLint();
