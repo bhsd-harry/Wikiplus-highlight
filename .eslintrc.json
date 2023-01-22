@@ -140,12 +140,7 @@
 		"no-bitwise": 2,
 		"no-caller": 2,
 		"no-else-return": 2,
-		"no-empty": [
-			2,
-			{
-				"allowEmptyCatch": true
-			}
-		],
+		"no-empty": 2,
 		"no-empty-function": [
 			2,
 			{
