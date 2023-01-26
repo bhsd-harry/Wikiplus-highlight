@@ -78,15 +78,15 @@
 		if (typeof ptn === 'string' && /^\/.+\/i?$/u.test(ptn)) {
 			if (ptn.endsWith('i')) {
 				try {
-					ptn = new RegExp(ptn.slice(1, -2), 'iu');
+					ptn = new RegExp(ptn.slice(1, -2), 'imu');
 				} catch (e) {
-					ptn = new RegExp(ptn.slice(1, -2), 'i');
+					ptn = new RegExp(ptn.slice(1, -2), 'im');
 				}
 			} else {
 				try {
-					ptn = new RegExp(ptn.slice(1, -1), 'u');
+					ptn = new RegExp(ptn.slice(1, -1), 'mu');
 				} catch (e) {
-					ptn = new RegExp(ptn.slice(1, -1));
+					ptn = new RegExp(ptn.slice(1, -1), 'm');
 				}
 			}
 		}
@@ -134,15 +134,15 @@
 		if (typeof ptn === 'string' && /^\/.+\/i?$/u.test(ptn)) {
 			if (ptn.endsWith('i')) {
 				try {
-					ptn = new RegExp(ptn.slice(1, -2), 'iu');
+					ptn = new RegExp(ptn.slice(1, -2), 'imu');
 				} catch (e) {
-					ptn = new RegExp(ptn.slice(1, -2), 'i');
+					ptn = new RegExp(ptn.slice(1, -2), 'im');
 				}
 			} else {
 				try {
-					ptn = new RegExp(ptn.slice(1, -1), 'u');
+					ptn = new RegExp(ptn.slice(1, -1), 'mu');
 				} catch (e) {
-					ptn = new RegExp(ptn.slice(1, -1));
+					ptn = new RegExp(ptn.slice(1, -1), 'm');
 				}
 			}
 		}
@@ -155,12 +155,12 @@
 			cursor = cm.getSearchCursor(ptn, cm.getCursor(), {caseFold: true});
 		}
 		const replacePtn = typeof ptn === 'string'
-				? new RegExp(escapeRegExp(ptn), 'gu')
-				: new RegExp(ptn, `i${ptn.flags}`),
+				? new RegExp(escapeRegExp(ptn), 'gmu')
+				: new RegExp(ptn, `g${ptn.flags}`),
 			val = cm.getValue(),
-			{length} = val.match(replacePtn);
-		if (length > 0) {
-			const bool = await OO.ui.confirm(mw.libs.wphl.msg('replace-count', length));
+			mt = val.match(replacePtn);
+		if (mt) {
+			const bool = await OO.ui.confirm(mw.libs.wphl.msg('replace-count', mt.length));
 			if (bool) {
 				cm.setValue(val.replace(replacePtn, $replace.val()));
 			}
