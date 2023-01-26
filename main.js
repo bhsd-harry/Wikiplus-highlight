@@ -14,7 +14,7 @@
 	}
 	mw.libs.wphl = {}; // 开始加载
 
-	const version = '2.33.3',
+	const version = '2.33.4',
 		newAddon = 0;
 
 	/** @type {typeof mw.storage} */
@@ -98,8 +98,8 @@
 	// 路径
 	const CDN = '//fastly.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.65.3',
-		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.8',
-		PARSER_CDN = 'gh/bhsd-harry/wikiparser-node@0.6.12-b',
+		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.6',
+		PARSER_CDN = 'gh/bhsd-harry/wikiparser-node@0.6.14-b',
 		REPO_CDN = `gh/bhsd-harry/Wikiplus-highlight@${majorVersion}`;
 
 	const {config: {values: {
@@ -165,16 +165,6 @@
 		parser: `${PARSER_CDN}/bundle/bundle.min.js`,
 		lintWikitext: `${REPO_CDN}/lint.min.js`,
 	};
-
-	/**
-	 * @typedef {object} addon
-	 * @property {string} option 对应的CodeMirror选项
-	 * @property {string|string[]} addon 对应的Wikiplus-highlight插件
-	 * @property {string} download 需要下载的CodeMirror扩展
-	 * @property {(mode: string, json: boolean) => any} complex 插件加载条件
-	 * @property {Set<string>} modes 使用的高亮模式
-	 * @property {boolean} only 是否仅用于Wikiplus
-	 */
 
 	const /** @type {addon[]} */ options = [
 		{

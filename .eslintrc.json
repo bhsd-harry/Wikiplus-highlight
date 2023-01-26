@@ -105,7 +105,6 @@
 		"camelcase": 2,
 		"class-methods-use-this": 2,
 		"consistent-return": 2,
-		"consistent-this": 2,
 		"curly": 2,
 		"default-case": 2,
 		"default-case-last": 2,
@@ -140,7 +139,12 @@
 		"no-bitwise": 2,
 		"no-caller": 2,
 		"no-else-return": 2,
-		"no-empty": 2,
+		"no-empty": [
+			2,
+			{
+				"allowEmptyCatch": true
+			}
+		],
 		"no-empty-function": [
 			2,
 			{
