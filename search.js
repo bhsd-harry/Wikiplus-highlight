@@ -174,6 +174,14 @@
 			.scrollIntoView({behavior: 'smooth'});
 	};
 
+	/** click event handler of `$replaceBtn` */
+	const replaceNew = () => {
+		$replaceContainer.show();
+		if ($searchContainer.is(':hidden')) {
+			findNew();
+		}
+	};
+
 	/**
 	 * click event handler of `$searchClose`
 	 * @param {CodeMirror.Editor} cm
@@ -224,12 +232,7 @@
 			}
 		});
 		$replaceContainer.hide().insertBefore($textarea);
-		$replaceBtn.click(() => {
-			$replaceContainer.show();
-			if ($searchContainer.is(':hidden')) {
-				findNew();
-			}
-		}).insertAfter($searchBtn);
+		$replaceBtn.click(replaceNew).insertAfter($searchBtn);
 		$replaceClose.click(() => {
 			$replaceContainer.hide();
 		});
@@ -248,12 +251,14 @@
 					'Ctrl-F': findNew,
 					'Ctrl-G': 'findForward',
 					'Shift-Ctrl-G': 'findBackward',
+					'Shift-Ctrl-F': replaceNew,
 					'Shift-Ctrl-R': 'replace',
 				}
 				: {
 					'Cmd-F': findNew,
 					'Cmd-G': 'findForward',
 					'Shift-Cmd-G': 'findBackward',
+					'Cmd-Alt-F': replaceNew,
 					'Shift-Cmd-Alt-F': 'replace',
 				},
 		);
