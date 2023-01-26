@@ -805,7 +805,8 @@
 		+ '#Wikiplus-highlight-dialog .oo-ui-messageDialog-title{margin-bottom:0.28571429em}'
 		+ '#Wikiplus-highlight-dialog .oo-ui-flaggedElement-notice{font-weight:normal;margin:0}'
 		+ '.CodeMirror-contextmenu .cm-mw-template-name{cursor:pointer}'
-		+ '.skin-moeskin #ca-more-actions li>a{display:inline-block;padding:0.4rem 0.8rem;line-height:1.5}',
+		+ '.skin-moeskin #ca-more-actions li>a{display:inline-block;padding:0.4rem 0.8rem;line-height:1.5}'
+		+ '.skin-moeskin .oo-ui-windowManager-modal>.oo-ui-dialog{z-index:101}',
 	);
 	wphlStyle.id = 'wphl-style';
 

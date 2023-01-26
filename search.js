@@ -13,15 +13,22 @@
 	const msg = key => mw.msg(`wphl-${key}`);
 
 	// Prepare elements
-	const $search = $('<input>', {id: 'Wikiplus-Quickedit-Search', placeholder: msg('search-placeholder')}),
+	const $search = $('<input>', {class: 'Wikiplus-Quickedit-Search', placeholder: msg('search-placeholder')}),
 		$searchClose = $('<span>', {text: '×', id: 'Wikiplus-Quickedit-Search-Close', class: 'Wikiplus-Symbol-Btn'}),
 		$searchNext = $('<span>', {text: '▼', id: 'Wikiplus-Quickedit-Search-Next', class: 'Wikiplus-Symbol-Btn'}),
 		$searchPrev = $('<span>', {text: '▲', id: 'Wikiplus-Quickedit-Search-Prev', class: 'Wikiplus-Symbol-Btn'}),
 		$searchContainer = $('<div>', {
-			id: 'Wikiplus-Quickedit-Search-Div',
+			class: 'Wikiplus-Quickedit-Search-Div',
 			html: [$search, $searchNext, $searchPrev, $searchClose],
 		}),
-		$searchBtn = $('<span>', {class: 'Wikiplus-Btn', html: msg('addon-search')});
+		$searchBtn = $('<span>', {class: 'Wikiplus-Btn', html: msg('addon-search')}),
+		$replace = $('<input>', {class: 'Wikiplus-Quickedit-Search', placeholder: msg('replace-placeholder')}),
+		$replaceClose = $('<span>', {text: '×', id: 'Wikiplus-Quickedit-Replace-Close', class: 'Wikiplus-Symbol-Btn'}),
+		$replaceContainer = $('<div>', {
+			class: 'Wikiplus-Quickedit-Search-Div',
+			html: [$replace, $replaceClose],
+		}),
+		$replaceBtn = $('<span>', {class: 'Wikiplus-Btn', html: msg('search-replace')});
 
 	const escapeRegExp = mw.util.escapeRegExp || mw.RegExp.escape;
 	const /** @type {CodeMirror.Mode<undefined>} */ overlay = {token: /** @override */ () => {}};
@@ -113,6 +120,53 @@
 		}
 	};
 
+	/**
+	 * keyboard event handler of `$replace`
+	 * @param {CodeMirror.Editor} cm
+	 */
+	const replace = async cm => {
+		let /** @type {string|RegExp} */ ptn = $search.val();
+		if (!ptn) {
+			return;
+		}
+
+		/* eslint-disable require-unicode-regexp */
+		if (typeof ptn === 'string' && /^\/.+\/i?$/u.test(ptn)) {
+			if (ptn.endsWith('i')) {
+				try {
+					ptn = new RegExp(ptn.slice(1, -2), 'iu');
+				} catch (e) {
+					ptn = new RegExp(ptn.slice(1, -2), 'i');
+				}
+			} else {
+				try {
+					ptn = new RegExp(ptn.slice(1, -1), 'u');
+				} catch (e) {
+					ptn = new RegExp(ptn.slice(1, -1));
+				}
+			}
+		}
+		/* eslint-enable require-unicode-regexp */
+		if (ptn !== lastPtn) {
+			cm.removeOverlay(overlay);
+			overlay.token = token(ptn);
+			cm.addOverlay(overlay);
+			lastPtn = ptn;
+			cursor = cm.getSearchCursor(ptn, cm.getCursor(), {caseFold: true});
+		}
+		const replacePtn = typeof ptn === 'string'
+				? new RegExp(escapeRegExp(ptn), 'gu')
+				: new RegExp(ptn, `i${ptn.flags}`),
+			val = cm.getValue(),
+			{length} = val.match(replacePtn);
+		if (length > 0) {
+			const bool = await OO.ui.confirm(mw.libs.wphl.msg('replace-count', length));
+			if (bool) {
+				cm.setValue(val.replace(replacePtn, $replace.val()));
+			}
+		}
+	};
+
 	/** click event handler of `$searchBtn` */
 	const findNew = () => {
 		$searchContainer.show();
@@ -127,6 +181,7 @@
 	const reset = cm => {
 		cm.removeOverlay(overlay);
 		$searchContainer.hide();
+		$replaceContainer.hide();
 		lastPtn = '';
 	};
 
@@ -135,6 +190,9 @@
 	};
 	CodeMirror.commands.findBackward = /** 向前搜索 */ doc => {
 		findNext(doc, false);
+	};
+	CodeMirror.commands.replace = /** 全部替换 */ doc => {
+		replace(doc);
 	};
 
 	mw.hook('wiki-codemirror').add(/** @param {CodeMirror.Editor} cm */ cm => {
@@ -165,18 +223,47 @@
 				reset(cm);
 			}
 		});
+		$replaceContainer.hide().insertBefore($textarea);
+		$replaceBtn.click(() => {
+			$replaceContainer.show();
+			if ($searchContainer.is(':hidden')) {
+				findNew();
+			}
+		}).insertAfter($searchBtn);
+		$replaceClose.click(() => {
+			$replaceContainer.hide();
+		});
+		$replace.val('').keydown(e => {
+			if (e.key === 'Enter') {
+				e.preventDefault();
+				replace(cm);
+			} else if (e.key === 'Escape') {
+				e.stopPropagation();
+				$replaceContainer.hide();
+			}
+		});
 		cm.addKeyMap(
 			CodeMirror.keyMap.default === CodeMirror.keyMap.pcDefault
-				? {'Ctrl-F': findNew, 'Ctrl-G': 'findForward', 'Shift-Ctrl-G': 'findBackward'}
-				: {'Cmd-F': findNew, 'Cmd-G': 'findForward', 'Shift-Cmd-G': 'findBackward'},
+				? {
+					'Ctrl-F': findNew,
+					'Ctrl-G': 'findForward',
+					'Shift-Ctrl-G': 'findBackward',
+					'Shift-Ctrl-R': 'replace',
+				}
+				: {
+					'Cmd-F': findNew,
+					'Cmd-G': 'findForward',
+					'Shift-Cmd-G': 'findBackward',
+					'Shift-Cmd-Alt-F': 'replace',
+				},
 		);
 	});
 
 	mw.loader.addStyleTag(
 		'.Wikiplus-Btn{line-height:1.4}'
-		+ '#Wikiplus-Quickedit-Search-Div{margin:7px 0 5px;}'
+		+ '.Wikiplus-Quickedit-Search-Div{margin:7px 0 5px;}'
 		+ '.Wikiplus-Symbol-Btn{font-size:20px;margin:7px;vertical-align:middle;cursor:pointer;}'
-		+ '#Wikiplus-Quickedit-Search{width:50%;padding:revert;border:revert;background:revert;vertical-align:middle}'
+		+ '.Wikiplus-Quickedit-Search{width:50%;padding:revert;border:revert;background:revert;vertical-align:middle}'
 		+ '.cm-search{background-color:#ffc0cb83;}'
 		+ 'span.CodeMirror-selectedtext{background:#d7d4f0}',
 	);
