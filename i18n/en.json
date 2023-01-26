@@ -14,7 +14,7 @@
 	"wphl-addon-indentwithspace": "Indent JavaScript/CSS/Lua codes with spaces instead of tabs",
 	"wphl-addon-indent": "Indent",
 	"wphl-addon-othereditors": "Apply selected addons to other editors",
-	"wphl-addon-lint": "<span title=\"Switch on/off by Ctrl/Cmd + L\">Wikitext linter (Beta)",
+	"wphl-addon-lint": "Wikitext linter (Switch on/off by <code>Ctrl/Cmd + L</code>)",
 	"wphl-addon-label": "Please select the addons you wish to load",
 	"wphl-addon-notice": "Changes will apply when opening a new Wikiplus dialog.",
 	"wphl-addon-title": "Wikiplus Highlight Addons",
