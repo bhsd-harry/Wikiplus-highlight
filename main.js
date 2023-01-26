@@ -14,8 +14,8 @@
 	}
 	mw.libs.wphl = {}; // 开始加载
 
-	const version = '2.33.4',
-		newAddon = 0;
+	const version = '2.33.5',
+		newAddon = 1;
 
 	/** @type {typeof mw.storage} */
 	const storage = typeof mw.storage === 'object' && typeof mw.storage.getObject === 'function'
@@ -639,6 +639,30 @@
 	};
 
 	/**
+	 * 使用wikiparser-node渲染编辑器
+	 * @param {HTMLTextAreaElement} target 目标编辑框
+	 * @param {mwConfig} mwConfig CodeMirror式的设置
+	 */
+	const renderWikiparse = async (target, {tags, functionSynonyms: [i, s], doubleUnderscore, img}) => {
+		const include = ns === 10 && !page.endsWith('/doc'),
+			/** @type {ParserConfig} */ config = {
+				ext: Object.keys(tags),
+				namespaces: mw.config.get('wgFormattedNamespaces'),
+				nsid: mw.config.get('wgNamespaceIds'),
+				parserFunction: [i, Object.keys(s), ['msg', '原始', 'raw'], ['替代', 'subst', '安全替代', 'safesubst']],
+				doubleUnderscore: doubleUnderscore.map(Object.keys),
+				img: Object.fromEntries(Object.entries(img).map(([k, v]) => [k, v.slice(4)])),
+			};
+		mw.loader.load(
+			`${CDN}/combine/${PARSER_CDN}/extensions/ui.min.css,${PARSER_CDN}/extensions/editor.min.css`, 'text/css',
+		);
+		await getExternalScript([`${PARSER_CDN}/extensions/editor.min.js`]);
+		const /** @type {{wikiparse: wikiparse}} */ {wikiparse} = window;
+		wikiparse.setConfig(config);
+		wikiparse(target, include);
+	};
+
+	/**
 	 * 渲染编辑器
 	 * @param {JQuery<HTMLTextAreaElement>} $target 目标编辑框
 	 * @param {boolean} setting 是否是Wikiplus设置（使用json语法）
@@ -650,6 +674,11 @@
 				getMwConfig(mode, initModePromise),
 				initModePromise,
 			]);
+
+		if (mode === 'mediawiki' && addons.has('new')) {
+			renderWikiparse($target[0], mwConfig);
+			return;
+		}
 
 		if (!setting && addons.has('wikiEditor')) {
 			try {
@@ -805,7 +834,8 @@
 		+ '#Wikiplus-highlight-dialog .oo-ui-messageDialog-title{margin-bottom:0.28571429em}'
 		+ '#Wikiplus-highlight-dialog .oo-ui-flaggedElement-notice{font-weight:normal;margin:0}'
 		+ '.CodeMirror-contextmenu .cm-mw-template-name{cursor:pointer}'
-		+ '.skin-moeskin #ca-more-actions li>a{display:inline-block;padding:0.4rem 0.8rem;line-height:1.5}',
+		+ '.skin-moeskin #ca-more-actions li>a{display:inline-block;padding:0.4rem 0.8rem;line-height:1.5}'
+		+ '#Wikiplus-Quickedit.wikiparsed{word-break:normal}',
 	);
 	wphlStyle.id = 'wphl-style';
 
@@ -846,6 +876,7 @@
 		/** @type {OOUI.CheckboxMultioptionWidget} */ searchWidget,
 		/** @type {OOUI.CheckboxMultioptionWidget} */ wikiEditorWidget,
 		/** @type {OOUI.CheckboxMultioptionWidget} */ lintWidget,
+		/** @type {OOUI.CheckboxMultioptionWidget} */ newWidget,
 		/** @type {OOUI.NumberInputWidget} */ indentWidget,
 		/** @type {OOUI.FieldLayout} */ field,
 		/** @type {OOUI.FieldLayout} */ indentField;
@@ -881,7 +912,7 @@
 						const mainAddon = Array.isArray(addon) ? addon[0] : addon;
 						return {data: mainAddon, label: htmlMsg(`addon-${mainAddon.toLowerCase()}`)};
 					}),
-					...['wikiEditor', 'escape', 'contextmenu', 'lint', 'indentWithSpace', 'otherEditors']
+					...['wikiEditor', 'escape', 'contextmenu', 'lint', 'indentWithSpace', 'otherEditors', 'new']
 						.map(addon => ({data: addon, label: htmlMsg(`addon-${addon.toLowerCase()}`)})),
 				],
 				value: [...addons],
@@ -890,6 +921,7 @@
 			searchWidget = checkboxMultiselectWidget.findItemFromData('search');
 			wikiEditorWidget = checkboxMultiselectWidget.findItemFromData('wikiEditor');
 			lintWidget = checkboxMultiselectWidget.findItemFromData('lint');
+			newWidget = checkboxMultiselectWidget.findItemFromData('new');
 			indentWidget = new OO.ui.NumberInputWidget({min: 0, value: indent});
 			field = new OO.ui.FieldLayout(widget, {
 				label: msg('addon-label'),
@@ -904,6 +936,7 @@
 		searchWidget.setDisabled(!wikiplusLoaded);
 		wikiEditorWidget.setDisabled(!wikiplusLoaded || !mw.loader.getState('ext.wikiEditor'));
 		lintWidget.setDisabled(!wikiplusLoaded);
+		newWidget.setDisabled(!wikiplusLoaded);
 		const data = await dialog.open({
 			title: msg('addon-title'),
 			message: field.$element.add(indentField.$element).add(
