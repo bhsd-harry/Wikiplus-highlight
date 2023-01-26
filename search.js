@@ -163,6 +163,7 @@
 			const bool = await OO.ui.confirm(mw.libs.wphl.msg('replace-count', mt.length));
 			if (bool) {
 				cm.setValue(val.replace(replacePtn, $replace.val()));
+				$replaceContainer.hide();
 			}
 		}
 	};
