@@ -2,7 +2,7 @@
  * @author Bhsd <https://github.com/bhsd-harry>
  * @license GPL-3.0
  */
-
+/* eslint-disable require-unicode-regexp */
 (() => {
 	'use strict';
 
@@ -38,7 +38,7 @@
 	 * @param {string|RegExp} str 搜索字符串
 	 */
 	const token = str => {
-		const initial = typeof str === 'string' ? new RegExp(`[^${escapeRegExp(str[0])}]`, 'iu') : null;
+		const initial = typeof str === 'string' ? new RegExp(`[^${escapeRegExp(str[0])}]`, 'i') : null;
 
 		/**
 		 * @override
@@ -72,25 +72,9 @@
 		let /** @type {string|RegExp} */ ptn = $search.val();
 		if (!ptn) {
 			return;
+		} else if (typeof ptn === 'string' && /^\/.+\/i?$/u.test(ptn)) {
+			ptn = new RegExp(ptn.slice(1, -2), ptn.endsWith('i') ? 'im' : 'm');
 		}
-
-		/* eslint-disable require-unicode-regexp */
-		if (typeof ptn === 'string' && /^\/.+\/i?$/u.test(ptn)) {
-			if (ptn.endsWith('i')) {
-				try {
-					ptn = new RegExp(ptn.slice(1, -2), 'imu');
-				} catch (e) {
-					ptn = new RegExp(ptn.slice(1, -2), 'im');
-				}
-			} else {
-				try {
-					ptn = new RegExp(ptn.slice(1, -1), 'mu');
-				} catch (e) {
-					ptn = new RegExp(ptn.slice(1, -1), 'm');
-				}
-			}
-		}
-		/* eslint-enable require-unicode-regexp */
 		if (ptn !== lastPtn) {
 			cm.removeOverlay(overlay);
 			overlay.token = token(ptn);
@@ -128,25 +112,9 @@
 		let /** @type {string|RegExp} */ ptn = $search.val();
 		if (!ptn) {
 			return;
+		} else if (typeof ptn === 'string' && /^\/.+\/i?$/u.test(ptn)) {
+			ptn = new RegExp(ptn.slice(1, -2), ptn.endsWith('i') ? 'im' : 'm');
 		}
-
-		/* eslint-disable require-unicode-regexp */
-		if (typeof ptn === 'string' && /^\/.+\/i?$/u.test(ptn)) {
-			if (ptn.endsWith('i')) {
-				try {
-					ptn = new RegExp(ptn.slice(1, -2), 'imu');
-				} catch (e) {
-					ptn = new RegExp(ptn.slice(1, -2), 'im');
-				}
-			} else {
-				try {
-					ptn = new RegExp(ptn.slice(1, -1), 'mu');
-				} catch (e) {
-					ptn = new RegExp(ptn.slice(1, -1), 'm');
-				}
-			}
-		}
-		/* eslint-enable require-unicode-regexp */
 		if (ptn !== lastPtn) {
 			cm.removeOverlay(overlay);
 			overlay.token = token(ptn);
@@ -155,7 +123,7 @@
 			cursor = cm.getSearchCursor(ptn, cm.getCursor(), {caseFold: true});
 		}
 		const replacePtn = typeof ptn === 'string'
-				? new RegExp(escapeRegExp(ptn), 'gmu')
+				? new RegExp(escapeRegExp(ptn), 'gim')
 				: new RegExp(ptn, `g${ptn.flags}`),
 			val = cm.getValue(),
 			mt = val.match(replacePtn);
