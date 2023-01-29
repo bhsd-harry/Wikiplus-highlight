@@ -94,12 +94,12 @@
 					annotateScrollWarn.update([]);
 					annotateScrollError.update([]);
 				} else {
-					cm.setOption('lint', {...lintOptions, onUpdateLinting});
+					cm.setOption('lint', {...lintOptions, ...mw.libs.wphl.lintOptions, onUpdateLinting});
 					performLint();
 				}
 			};
 		cm.setOption('gutters', ['CodeMirror-lint-markers']);
-		cm.setOption('lint', {...lintOptions, onUpdateLinting});
+		cm.setOption('lint', {...lintOptions, ...mw.libs.wphl.lintOptions, onUpdateLinting});
 		cm.addKeyMap(mw.libs.wphl.isPc(CodeMirror)
 			? {'Ctrl-K': performLint, 'Ctrl-L': switchOption}
 			: {'Cmd-K': performLint, 'Cmd-L': switchOption});
@@ -116,6 +116,4 @@
 			lint(cm);
 		}
 	});
-
-	mw.libs.wphl.lintOptions = lintOptions;
 })();
