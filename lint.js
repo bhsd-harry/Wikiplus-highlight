@@ -7,7 +7,8 @@
 	/* global Parser */
 	'use strict';
 
-	const include = mw.config.get('wgNamespaceNumber') === 10 && !mw.config.get('wgPageName').endsWith('/doc');
+	const include = mw.config.get('wgNamespaceNumber') === 10 && !mw.config.get('wgPageName').endsWith('/doc'),
+		lintOptions = {delay: 5000, selfContain: true};
 
 	/**
 	 * annotationSource
@@ -87,19 +88,18 @@
 			performLint = () => {
 				cm.performLint();
 			},
-			option = {delay: 5000, selfContain: true, onUpdateLinting},
 			switchOption = () => {
 				if (cm.state.lint) {
 					cm.setOption('lint', false);
 					annotateScrollWarn.update([]);
 					annotateScrollError.update([]);
 				} else {
-					cm.setOption('lint', option);
+					cm.setOption('lint', {...lintOptions, onUpdateLinting});
 					performLint();
 				}
 			};
 		cm.setOption('gutters', ['CodeMirror-lint-markers']);
-		cm.setOption('lint', option);
+		cm.setOption('lint', {...lintOptions, onUpdateLinting});
 		cm.addKeyMap(mw.libs.wphl.isPc(CodeMirror)
 			? {'Ctrl-K': performLint, 'Ctrl-L': switchOption}
 			: {'Cmd-K': performLint, 'Cmd-L': switchOption});
@@ -116,4 +116,6 @@
 			lint(cm);
 		}
 	});
+
+	mw.libs.wphl.lintOptions = lintOptions;
 })();
