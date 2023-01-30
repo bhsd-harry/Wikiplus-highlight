@@ -99,7 +99,7 @@
 	const CDN = '//fastly.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.65.3',
 		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.6',
-		PARSER_CDN = 'gh/bhsd-harry/wikiparser-node@0.6.20-b',
+		PARSER_CDN = 'gh/bhsd-harry/wikiparser-node@0.6.21-b',
 		REPO_CDN = `gh/bhsd-harry/Wikiplus-highlight@${majorVersion}`;
 
 	const {config: {values: {
