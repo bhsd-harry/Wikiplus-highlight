@@ -4,20 +4,20 @@
  */
 
 (() => {
-	/* global Parser */
+	/* global wikiparse */
 	'use strict';
 
 	const include = mw.config.get('wgNamespaceNumber') === 10 && !mw.config.get('wgPageName').endsWith('/doc'),
-		lintOptions = {delay: 5000, selfContain: true},
+		lintOptions = {selfContain: true},
 		{cmpPos, Pos} = CodeMirror;
 
 	/**
 	 * annotationSource
 	 * @param {string} str wikitext
-	 * @returns {CodeMirror.LintAnnotation}
+	 * @returns {Promise<CodeMirror.LintAnnotation>}
 	 */
-	const annotate = str => {
-		const errors = Parser.parse(str, include).lint();
+	const annotate = async str => {
+		const errors = await wikiparse.lint(str, include);
 		return errors.map(error => {
 			const {startLine, startCol, endLine, endCol, message, severity} = error,
 				lineErrors = errors.filter(({startLine: line}) => line === startLine);
@@ -49,13 +49,13 @@
 	 * start linting
 	 * @param {CodeMirror.Editor} cm
 	 */
-	const lint = cm => {
+	const lint = async cm => {
 		const mode = cm.getOption('mode');
 		if (mode !== 'mediawiki' && mode !== 'text/mediawiki') {
 			return;
-		} else if (!Parser.config) {
+		} else if (!wikiparse.config) {
 			const {config: {values: {wgFormattedNamespaces, wgNamespaceIds}}} = mw,
-				{minConfig: {parserFunction: [withPound,, ...modifiers]}} = Parser,
+				{parserFunction: [withPound,, ...modifiers]} = await wikiparse.getConfig(),
 				valuesWithPound = new Set(Object.values(withPound)),
 				{tags, functionSynonyms: [insensitive, sensitive], doubleUnderscore, img} = cm.getOption('mwConfig');
 			for (const [k, v] of Object.entries(insensitive)) {
@@ -64,7 +64,7 @@
 					insensitive[`#${k}`] = v;
 				}
 			}
-			Parser.config = {
+			wikiparse.config = {
 				ext: Object.keys(tags),
 				namespaces: wgFormattedNamespaces,
 				nsid: wgNamespaceIds,
@@ -76,6 +76,7 @@
 				doubleUnderscore: doubleUnderscore.map(Object.keys),
 				img: Object.fromEntries(Object.entries(img).map(([k, v]) => [k, v.slice(4)])),
 			};
+			await wikiparse.setConfig(wikiparse.config);
 		}
 		cm.setOption('scrollButtonHeight', 0);
 		let /** @type {CodeMirror.LintAnnotation[]} */ errors, /** @type {CodeMirror.LintAnnotation[]} */ warnings;
@@ -143,12 +144,6 @@
 		cm.addKeyMap(mw.libs.wphl.isPc(CodeMirror)
 			? {'Ctrl-K': performLint, 'Ctrl-L': switchOption}
 			: {'Cmd-K': performLint, 'Cmd-L': switchOption});
-		cm.on('viewportChange', () => {
-			if (cm.state.lint) {
-				clearTimeout(cm.state.lint.timeout);
-				cm.state.lint.timeout = setTimeout(performLint, cm.state.lint.options.delay);
-			}
-		});
 		cm.on('cursorActivity', () => {
 			positionMap.clear();
 		});

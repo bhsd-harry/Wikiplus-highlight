@@ -99,7 +99,7 @@
 	const CDN = '//fastly.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.65.3',
 		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.6',
-		PARSER_CDN = 'gh/bhsd-harry/wikiparser-node@0.6.21-b',
+		PARSER_CDN = 'gh/bhsd-harry/wikiparser-node@0.6.23-b',
 		REPO_CDN = `npm/wikiplus-highlight@${majorVersion}`;
 
 	const {config: {values: {
@@ -162,7 +162,7 @@
 		contextmenu: 'mediawiki.Title',
 		lint: `${CM_CDN}/addon/lint/lint.min.js`,
 		annotateScrollbar: `${CM_CDN}/addon/scroll/annotatescrollbar.min.js`,
-		parser: `${PARSER_CDN}/bundle/bundle.min.js`,
+		parser: `${PARSER_CDN}/extensions/editor.min.js`,
 		lintWikitext: `${REPO_CDN}/lint.min.js`,
 	};
 
@@ -436,7 +436,7 @@
 		if (!CM.commands.findForward && addons.has('search') && !addons.has('wikiEditor')) {
 			scripts.push(ADDON_LIST.search);
 		}
-		if (!window.Parser && type === 'mediawiki' && addons.has('lint')) {
+		if (!window.wikiparse && type === 'mediawiki' && addons.has('lint')) {
 			scripts.push(ADDON_LIST.parser);
 		}
 		if (!CM.optionHandlers.lint && type === 'mediawiki' && addons.has('lint')) {
