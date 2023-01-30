@@ -8,16 +8,16 @@
 	'use strict';
 
 	const include = mw.config.get('wgNamespaceNumber') === 10 && !mw.config.get('wgPageName').endsWith('/doc'),
-		lintOptions = {selfContain: true},
 		{cmpPos, Pos} = CodeMirror;
 
 	/**
 	 * annotationSource
 	 * @param {string} str wikitext
+	 * @param {CodeMirror.Editor} cm 编辑器
 	 * @returns {Promise<CodeMirror.LintAnnotation>}
 	 */
-	const annotate = async str => {
-		const errors = await wikiparse.lint(str, include);
+	const annotate = async (str, _, cm) => {
+		const errors = await cm.Linter.queue(str);
 		return errors.map(error => {
 			const {startLine, startCol, endLine, endCol, message, severity} = error,
 				lineErrors = errors.filter(({startLine: line}) => line === startLine);
@@ -76,8 +76,9 @@
 				doubleUnderscore: doubleUnderscore.map(Object.keys),
 				img: Object.fromEntries(Object.entries(img).map(([k, v]) => [k, v.slice(4)])),
 			};
-			await wikiparse.setConfig(wikiparse.config);
+			wikiparse.setConfig(wikiparse.config);
 		}
+		cm.Linter = new wikiparse.Linter(include);
 		cm.setOption('scrollButtonHeight', 0);
 		let /** @type {CodeMirror.LintAnnotation[]} */ errors, /** @type {CodeMirror.LintAnnotation[]} */ warnings;
 		const /** @type {Map<CodeMirror.LintAnnotation[], number>} */ positionMap = new Map();
@@ -89,7 +90,8 @@
 		const nextMark = annotations => {
 			const {length} = annotations;
 			if (length > 0) {
-				const iNext = annotations.findIndex(({from}) => cmpPos(from, cm.getCursor()) >= 0),
+				const cursor = cm.getCursor(),
+					iNext = annotations.findIndex(({from}) => cmpPos(from, cursor) >= 0),
 					offset = positionMap.get(annotations) || 0;
 				cm.scrollIntoView(annotations[(iNext + offset) % length].from);
 				positionMap.set(annotations, offset + 1);
@@ -135,7 +137,7 @@
 					annotateScrollError.update([]);
 					$panelElement.detach();
 				} else {
-					cm.setOption('lint', {...lintOptions, ...mw.libs.wphl.lintOptions, onUpdateLinting});
+					cm.setOption('lint', {...mw.libs.wphl.lintOptions, selfContain: true, onUpdateLinting});
 					$panelElement.insertAfter(cm.getWrapperElement());
 				}
 			};
