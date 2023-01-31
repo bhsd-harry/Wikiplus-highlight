@@ -211,9 +211,17 @@
 			const code = c.codePointAt();
 			return code < 256 ? `&#${code};` : `&#x${code.toString(16)};`;
 		}).join('')),
+		escapeURI = convert(str => {
+			if (str.includes('%')) {
+				try {
+					return decodeURIComponent(str);
+				} catch (e) {}
+			}
+			return encodeURIComponent(str);
+		}),
 		/** @type {function(typeof CodeMirror): boolean} */ isPc = ({keyMap}) => keyMap.default === keyMap.pcDefault,
-		extraKeysPc = {'Ctrl-/': escapeHTML, 'Ctrl-\\': convert(encodeURIComponent)},
-		extraKeysMac = {'Cmd-/': escapeHTML, 'Cmd-\\': convert(encodeURIComponent)};
+		extraKeysPc = {'Ctrl-/': escapeHTML, 'Ctrl-\\': convert(escapeURI)},
+		extraKeysMac = {'Cmd-/': escapeHTML, 'Cmd-\\': convert(escapeURI)};
 
 	/**
 	 * contextMenu插件
