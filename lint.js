@@ -41,7 +41,7 @@
 		+ '}'
 		+ '#wphl-lint-panel{background:#f7f7f7;border:1px solid #c8ccd1}'
 		+ '.wphl-lint-subpanel{margin-left:1ch;cursor:pointer}'
-		+ '.wphl-lint-count{display:inline-block;width:5ch;padding:1px 0 1px 1ch;vertical-align:text-bottom}',
+		+ '.wphl-lint-count{display:inline-block;width:5ch;padding:1px 0 1px 1ch}',
 	);
 	CodeMirror.registerHelper('lint', 'mediawiki', annotate);
 
