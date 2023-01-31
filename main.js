@@ -220,8 +220,8 @@
 			return encodeURIComponent(str);
 		}),
 		/** @type {function(typeof CodeMirror): boolean} */ isPc = ({keyMap}) => keyMap.default === keyMap.pcDefault,
-		extraKeysPc = {'Ctrl-/': escapeHTML, 'Ctrl-\\': convert(escapeURI)},
-		extraKeysMac = {'Cmd-/': escapeHTML, 'Cmd-\\': convert(escapeURI)};
+		extraKeysPc = {'Ctrl-/': escapeHTML, 'Ctrl-\\': escapeURI},
+		extraKeysMac = {'Cmd-/': escapeHTML, 'Cmd-\\': escapeURI};
 
 	/**
 	 * contextMenu插件
