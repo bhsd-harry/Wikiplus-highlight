@@ -91,7 +91,7 @@
 			const {length} = annotations;
 			if (length > 0) {
 				const cursor = cm.getCursor(),
-					iNext = annotations.findIndex(({from}) => cmpPos(from, cursor) >= 0),
+					iNext = Math.max(0, annotations.findIndex(({from}) => cmpPos(from, cursor) >= 0)),
 					offset = positionMap.get(annotations) || 0;
 				cm.scrollIntoView(annotations[(iNext + offset) % length].from);
 				positionMap.set(annotations, offset + 1);
