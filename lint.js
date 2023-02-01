@@ -137,7 +137,9 @@
 					annotateScrollError.update([]);
 					$panelElement.detach();
 				} else {
-					cm.setOption('lint', {...mw.libs.wphl.lintOptions, selfContain: true, onUpdateLinting});
+					cm.setOption('lint', {
+						delay: 1000, ...mw.libs.wphl.lintOptions, selfContain: true, onUpdateLinting,
+					});
 					$panelElement.insertAfter(cm.getWrapperElement());
 				}
 			};
