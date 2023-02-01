@@ -9,10 +9,10 @@
 	/* eslint-disable require-unicode-regexp */
 	'use strict';
 
-	if (mw.libs.wphl) {
+	if (mw.libs.wphl && mw.libs.wphl.version) {
 		return;
 	}
-	mw.libs.wphl = {}; // 开始加载
+	mw.libs.wphl = mw.libs.wphl || {}; // 开始加载
 
 	const version = '2.44.1',
 		newAddon = 0;
@@ -991,7 +991,7 @@
 		}
 	});
 
-	mw.libs.wphl = {
+	Object.assign(mw.libs.wphl, {
 		version,
 		options,
 		addons,
@@ -1013,5 +1013,5 @@
 		renderEditor,
 		handleOtherEditors,
 		isPc,
-	}; // 加载完毕
+	}); // 加载完毕
 })();
