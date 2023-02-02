@@ -60,25 +60,42 @@
 	};
 
 	let /** @type {string} */ lastSource,
+		/** @type {string|RegExp} */ lastPtn,
 		/** @type {CodeMirror.SearchCursor} */ cursor;
+
+	/**
+	 * 更新搜索字符串
+	 * @param {CodeMirror.Editor} cm
+	 */
+	const updatePtn = cm => {
+		const /** @type {string} */ source = $search.val();
+		if (!source) {
+			return undefined;
+		} else if (source === lastSource) {
+			return lastPtn;
+		}
+		const caseFold = source.endsWith('i'),
+			ptn = /^\/.+\/i?$/u.test(source)
+				? new RegExp(source.slice(1, caseFold ? -2 : -1), caseFold ? 'im' : 'm')
+				: source;
+		cm.removeOverlay(overlay);
+		overlay.token = token(ptn);
+		cm.addOverlay(overlay);
+		lastSource = source;
+		lastPtn = ptn;
+		cursor = cm.getSearchCursor(ptn, cm.getCursor(), {caseFold: true});
+		return ptn;
+	};
+
 	/**
 	 * keyboard event handler of `$search`
 	 * @param {CodeMirror.Editor} cm
 	 * @param {boolean} dir 搜索方向
+	 * @param {boolean} update 是否先更新搜索字符串
 	 */
-	const findNext = (cm, dir) => {
-		const /** @type {string} */ source = $search.val();
-		if (!source) {
+	const findNext = (cm, dir, update = true) => {
+		if (update && !updatePtn(cm)) {
 			return;
-		} else if (source !== lastSource) {
-			const ptn = /^\/.+\/i?$/u.test(source)
-				? new RegExp(source.slice(1, -2), source.endsWith('i') ? 'im' : 'm')
-				: source;
-			cm.removeOverlay(overlay);
-			overlay.token = token(ptn);
-			cm.addOverlay(overlay);
-			lastSource = source;
-			cursor = cm.getSearchCursor(ptn, cm.getCursor(), {caseFold: true});
 		}
 		let result = dir ? cursor.findNext() : cursor.findPrevious();
 		if (!result) {
@@ -110,45 +127,14 @@
 	 * @param {boolean} dir 搜索方向
 	 */
 	const replaceNext = (cm, dir) => {
-		const /** @type {string} */ source = $search.val();
-		if (!source) {
+		const ptn = updatePtn(cm);
+		if (!ptn) {
 			return;
-		}
-		const ptn = /^\/.+\/i?$/u.test(source)
-			? new RegExp(source.slice(1, -2), source.endsWith('i') ? 'im' : 'm')
-			: source;
-		if (source !== lastSource) {
-			cm.removeOverlay(overlay);
-			overlay.token = token(ptn);
-			cm.addOverlay(overlay);
-			lastSource = source;
-			cursor = cm.getSearchCursor(ptn, cm.getCursor(), {caseFold: true});
 		} else if (cursor.atOccurrence) {
 			const replace = $replace.val();
 			cursor.replace(typeof ptn === 'string' ? replace : cursor.pos.match[0].replace(ptn, replace));
 		}
-		let result = dir ? cursor.findNext() : cursor.findPrevious();
-		if (!result) {
-			let pos;
-			if (dir) {
-				pos = Pos(0, 0);
-			} else {
-				const lastLine = cm.lastLine();
-				pos = Pos(lastLine, cm.getLine(lastLine).length);
-			}
-			cursor.pos = {from: pos, to: pos};
-			cursor.atOccurrence = false;
-			result = dir ? cursor.findNext() : cursor.findPrevious();
-		}
-		if (result) {
-			const from = cursor.from(),
-				to = cursor.to();
-			cm.setSelection(from, to);
-			cm.scrollIntoView({from, to});
-			onInput();
-		} else {
-			$search.css('background-color', 'pink').on('input', onInput);
-		}
+		findNext(cm, dir, false);
 	};
 
 	/**
@@ -156,25 +142,15 @@
 	 * @param {CodeMirror.Editor} cm
 	 */
 	const replace = async cm => {
-		const /** @type {string} */ source = $search.val();
-		if (!source) {
+		const ptn = updatePtn(cm);
+		if (!ptn) {
 			return;
-		}
-		const ptn = /^\/.+\/i?$/u.test(source)
-			? new RegExp(source.slice(1, -2), source.endsWith('i') ? 'im' : 'm')
-			: source;
-		if (source !== lastSource) {
-			cm.removeOverlay(overlay);
-			overlay.token = token(ptn);
-			cm.addOverlay(overlay);
-			lastSource = source;
-			cursor = cm.getSearchCursor(ptn, cm.getCursor(), {caseFold: true});
 		}
 		const replacePtn = typeof ptn === 'string'
 				? new RegExp(escapeRegExp(ptn), 'gim')
 				: new RegExp(ptn, `g${ptn.flags}`),
 			val = cm.getValue(),
-			mt = replacePtn.exec(val);
+			mt = val.match(replacePtn);
 		if (mt && await OO.ui.confirm(msg('replace-count', mt.length))) {
 			cm.setValue(val.replace(replacePtn, $replace.val()));
 			$replaceContainer.hide();
