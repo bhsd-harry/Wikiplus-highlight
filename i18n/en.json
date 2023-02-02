@@ -9,7 +9,7 @@
 	"wphl-addon-matchtags": "Highlight matching/nonmatching tags",
 	"wphl-addon-fold": "Fold template arguments and tags' innerHTML",
 	"wphl-addon-wikieditor": "Add WikiEditor toolbar",
-	"wphl-addon-escape": "<span title=\"Ctrl/Cmd + / : HTML encoding\nCtrl/Cmd + \\ : URL encoding\">Keyboard shortcuts for HTML/URL encoding</span>",
+	"wphl-addon-escape": "<span title=\"Ctrl/Cmd + / : HTML encoding\nCtrl/Cmd + \\ : URL decoding or encoding\">Keyboard shortcuts for HTML/URL encoding</span>",
 	"wphl-addon-contextmenu": "Open the template or module page when right clicking",
 	"wphl-addon-indentwithspace": "Indent JavaScript/CSS/Lua codes with spaces instead of tabs",
 	"wphl-addon-indent": "Indent",

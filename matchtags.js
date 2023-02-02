@@ -8,7 +8,7 @@
 	'use strict';
 
 	const {Pos, cmpPos, Init} = CodeMirror,
-		tagStart = /<(\/?)([a-z]\w*)(?=[\s/>])/giu,
+		tagStart = /<(\/?)([a-z]\w*)(?=[\s/>]|$)/giu,
 		voidTags = new Set(['br', 'wbr', 'hr', 'img']),
 		maxScanLines = 1000;
 
