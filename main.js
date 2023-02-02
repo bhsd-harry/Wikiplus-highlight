@@ -754,7 +754,7 @@
 					$('#Wikiplus-Quickedit-MinorEdit').click();
 					$('#Wikiplus-Quickedit-Submit').triggerHandler('click');
 				};
-			const ctrl = isPc(CodeMirror) ? 'ctrl' : 'cmd';
+			const ctrl = isPc(CodeMirror) ? 'Ctrl' : 'Cmd';
 			cm.addKeyMap($.extend(
 				{[`${ctrl}-S`]: submit, [`Shift-${ctrl}-S`]: submitMinor},
 				escToExitQuickEdit === true || escToExitQuickEdit === 'true'
