@@ -5,28 +5,26 @@
 /* eslint-disable require-unicode-regexp */
 (() => {
 	'use strict';
-
-	/**
-	 * I18N消息
-	 * @param {string} key 消息键
-	 */
-	const msg = key => mw.msg(`wphl-${key}`);
+	const {Pos} = CodeMirror,
+		{libs: {wphl: {msg, isPc, addons}}} = mw;
 
 	// Prepare elements
 	const $search = $('<input>', {class: 'Wikiplus-Quickedit-Search', placeholder: msg('search-placeholder')}),
-		$searchClose = $('<span>', {text: '×', id: 'Wikiplus-Quickedit-Search-Close', class: 'Wikiplus-Symbol-Btn'}),
-		$searchNext = $('<span>', {text: '▼', id: 'Wikiplus-Quickedit-Search-Next', class: 'Wikiplus-Symbol-Btn'}),
-		$searchPrev = $('<span>', {text: '▲', id: 'Wikiplus-Quickedit-Search-Prev', class: 'Wikiplus-Symbol-Btn'}),
+		$searchClose = $('<span>', {text: '×', class: 'Wikiplus-Symbol-Btn'}),
+		$searchNext = $('<span>', {text: '▼', class: 'Wikiplus-Symbol-Btn'}),
+		$searchPrev = $('<span>', {text: '▲', class: 'Wikiplus-Symbol-Btn'}),
 		$searchContainer = $('<div>', {
 			class: 'Wikiplus-Quickedit-Search-Div',
 			html: [$search, $searchNext, $searchPrev, $searchClose],
 		}),
 		$searchBtn = $('<span>', {class: 'Wikiplus-Btn', html: msg('addon-search')}),
 		$replace = $('<input>', {class: 'Wikiplus-Quickedit-Search', placeholder: msg('replace-placeholder')}),
-		$replaceClose = $('<span>', {text: '×', id: 'Wikiplus-Quickedit-Replace-Close', class: 'Wikiplus-Symbol-Btn'}),
+		$replaceClose = $('<span>', {text: '×', class: 'Wikiplus-Symbol-Btn'}),
+		$replaceNext = $('<span>', {text: '▼', class: 'Wikiplus-Symbol-Btn'}),
+		$replacePrev = $('<span>', {text: '▲', class: 'Wikiplus-Symbol-Btn'}),
 		$replaceContainer = $('<div>', {
 			class: 'Wikiplus-Quickedit-Search-Div',
-			html: [$replace, $replaceClose],
+			html: [$replace, $replaceNext, $replacePrev, $replaceClose],
 		}),
 		$replaceBtn = $('<span>', {class: 'Wikiplus-Btn', html: msg('search-replace')});
 
@@ -61,7 +59,7 @@
 		$search.css('background-color', '').off('input', onInput);
 	};
 
-	let /** @type {string|RegExp} */ lastPtn,
+	let /** @type {string} */ lastSource,
 		/** @type {CodeMirror.SearchCursor} */ cursor;
 	/**
 	 * keyboard event handler of `$search`
@@ -69,28 +67,77 @@
 	 * @param {boolean} dir 搜索方向
 	 */
 	const findNext = (cm, dir) => {
-		let /** @type {string|RegExp} */ ptn = $search.val();
-		if (!ptn) {
+		const /** @type {string} */ source = $search.val();
+		if (!source) {
 			return;
-		} else if (typeof ptn === 'string' && /^\/.+\/i?$/u.test(ptn)) {
-			ptn = new RegExp(ptn.slice(1, -2), ptn.endsWith('i') ? 'im' : 'm');
-		}
-		if (ptn !== lastPtn) {
+		} else if (source !== lastSource) {
+			const ptn = /^\/.+\/i?$/u.test(source)
+				? new RegExp(source.slice(1, -2), source.endsWith('i') ? 'im' : 'm')
+				: source;
 			cm.removeOverlay(overlay);
 			overlay.token = token(ptn);
 			cm.addOverlay(overlay);
-			lastPtn = ptn;
+			lastSource = source;
 			cursor = cm.getSearchCursor(ptn, cm.getCursor(), {caseFold: true});
 		}
 		let result = dir ? cursor.findNext() : cursor.findPrevious();
 		if (!result) {
+			let pos;
 			if (dir) {
-				cursor = cm.getSearchCursor(ptn, {line: 0, ch: 0}, {caseFold: true});
+				pos = Pos(0, 0);
 			} else {
-				const lastLine = cm.lastLine(),
-					{length: lastCh} = cm.getLine(lastLine);
-				cursor = cm.getSearchCursor(ptn, {line: lastLine, ch: lastCh}, {caseFold: true});
+				const lastLine = cm.lastLine();
+				pos = Pos(lastLine, cm.getLine(lastLine).length);
 			}
+			cursor.pos = {from: pos, to: pos};
+			cursor.atOccurrence = false;
+			result = dir ? cursor.findNext() : cursor.findPrevious();
+		}
+		if (result) {
+			const from = cursor.from(),
+				to = cursor.to();
+			cm.setSelection(from, to);
+			cm.scrollIntoView({from, to});
+			onInput();
+		} else {
+			$search.css('background-color', 'pink').on('input', onInput);
+		}
+	};
+
+	/**
+	 * replace one by one
+	 * @param {CodeMirror.Editor} cm
+	 * @param {boolean} dir 搜索方向
+	 */
+	const replaceNext = (cm, dir) => {
+		const /** @type {string} */ source = $search.val();
+		if (!source) {
+			return;
+		}
+		const ptn = /^\/.+\/i?$/u.test(source)
+			? new RegExp(source.slice(1, -2), source.endsWith('i') ? 'im' : 'm')
+			: source;
+		if (source !== lastSource) {
+			cm.removeOverlay(overlay);
+			overlay.token = token(ptn);
+			cm.addOverlay(overlay);
+			lastSource = source;
+			cursor = cm.getSearchCursor(ptn, cm.getCursor(), {caseFold: true});
+		} else if (cursor.atOccurrence) {
+			const replace = $replace.val();
+			cursor.replace(typeof ptn === 'string' ? replace : cursor.pos.match[0].replace(ptn, replace));
+		}
+		let result = dir ? cursor.findNext() : cursor.findPrevious();
+		if (!result) {
+			let pos;
+			if (dir) {
+				pos = Pos(0, 0);
+			} else {
+				const lastLine = cm.lastLine();
+				pos = Pos(lastLine, cm.getLine(lastLine).length);
+			}
+			cursor.pos = {from: pos, to: pos};
+			cursor.atOccurrence = false;
 			result = dir ? cursor.findNext() : cursor.findPrevious();
 		}
 		if (result) {
@@ -109,30 +156,28 @@
 	 * @param {CodeMirror.Editor} cm
 	 */
 	const replace = async cm => {
-		let /** @type {string|RegExp} */ ptn = $search.val();
-		if (!ptn) {
+		const /** @type {string} */ source = $search.val();
+		if (!source) {
 			return;
-		} else if (typeof ptn === 'string' && /^\/.+\/i?$/u.test(ptn)) {
-			ptn = new RegExp(ptn.slice(1, -2), ptn.endsWith('i') ? 'im' : 'm');
 		}
-		if (ptn !== lastPtn) {
+		const ptn = /^\/.+\/i?$/u.test(source)
+			? new RegExp(source.slice(1, -2), source.endsWith('i') ? 'im' : 'm')
+			: source;
+		if (source !== lastSource) {
 			cm.removeOverlay(overlay);
 			overlay.token = token(ptn);
 			cm.addOverlay(overlay);
-			lastPtn = ptn;
+			lastSource = source;
 			cursor = cm.getSearchCursor(ptn, cm.getCursor(), {caseFold: true});
 		}
 		const replacePtn = typeof ptn === 'string'
 				? new RegExp(escapeRegExp(ptn), 'gim')
 				: new RegExp(ptn, `g${ptn.flags}`),
 			val = cm.getValue(),
-			mt = val.match(replacePtn);
-		if (mt) {
-			const bool = await OO.ui.confirm(mw.libs.wphl.msg('replace-count', mt.length));
-			if (bool) {
-				cm.setValue(val.replace(replacePtn, $replace.val()));
-				$replaceContainer.hide();
-			}
+			mt = replacePtn.exec(val);
+		if (mt && await OO.ui.confirm(msg('replace-count', mt.length))) {
+			cm.setValue(val.replace(replacePtn, $replace.val()));
+			$replaceContainer.hide();
 		}
 	};
 
@@ -159,21 +204,26 @@
 		cm.removeOverlay(overlay);
 		$searchContainer.hide();
 		$replaceContainer.hide();
-		lastPtn = '';
+		lastSource = '';
 	};
 
-	CodeMirror.commands.findForward = /** 向后搜索 */ doc => {
+	CodeMirror.commands.find = findNew;
+	CodeMirror.commands.findNext = /** 向后搜索 */ doc => {
 		findNext(doc, true);
 	};
-	CodeMirror.commands.findBackward = /** 向前搜索 */ doc => {
+	CodeMirror.commands.findPrev = /** 向前搜索 */ doc => {
 		findNext(doc, false);
 	};
-	CodeMirror.commands.replace = /** 全部替换 */ doc => {
+	CodeMirror.commands.replace = replaceNew;
+	CodeMirror.commands.replaceNext = /** 向后替换 */ doc => {
+		replaceNext(doc, true);
+	};
+	CodeMirror.commands.replaceAll = /** 全文替换 */ doc => { // eslint-disable-line es-x/no-string-prototype-replaceall
 		replace(doc);
 	};
 
 	mw.hook('wiki-codemirror').add(/** @param {CodeMirror.Editor} cm */ cm => {
-		if (!cm.getOption('styleSelectedText') || mw.libs.wphl.addons.has('wikiEditor')) {
+		if (!cm.getOption('styleSelectedText') || addons.has('wikiEditor')) {
 			return;
 		}
 		const $textarea = $(cm.getWrapperElement()).prev('#Wikiplus-Quickedit');
@@ -205,6 +255,12 @@
 		$replaceClose.click(() => {
 			$replaceContainer.hide();
 		});
+		$replaceNext.click(() => {
+			replaceNext(cm, true);
+		});
+		$replacePrev.click(() => {
+			replaceNext(cm, false);
+		});
 		$replace.val('').keydown(e => {
 			if (e.key === 'Enter') {
 				e.preventDefault();
@@ -214,23 +270,12 @@
 				$replaceContainer.hide();
 			}
 		});
-		cm.addKeyMap(
-			CodeMirror.keyMap.default === CodeMirror.keyMap.pcDefault
-				? {
-					'Ctrl-F': findNew,
-					'Ctrl-G': 'findForward',
-					'Shift-Ctrl-G': 'findBackward',
-					'Shift-Ctrl-F': replaceNew,
-					'Shift-Ctrl-R': 'replace',
-				}
-				: {
-					'Cmd-F': findNew,
-					'Cmd-G': 'findForward',
-					'Shift-Cmd-G': 'findBackward',
-					'Cmd-Alt-F': replaceNew,
-					'Shift-Cmd-Alt-F': 'replace',
-				},
-		);
+		const ctrl = isPc(CodeMirror) ? 'Ctrl' : 'Cmd';
+		cm.addKeyMap({
+			[`${ctrl}-H`]: 'replace',
+			[`Shift-${ctrl}-H`]: 'replaceNext',
+			[`${ctrl}-Alt-Enter`]: 'replaceAll',
+		});
 	});
 
 	mw.loader.addStyleTag(

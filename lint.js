@@ -31,7 +31,7 @@
 	};
 
 	mw.loader.addStyleTag(
-		'.CodeMirror-line .CodeMirror-lint-mark-warning{background:#ffbf00;color:#fff}'
+		'.CodeMirror-line .CodeMirror-lint-mark-warning{background:#ffbf00;color:#fff;caret-color:#000}'
 		+ '.CodeMirror-line .CodeMirror-lint-mark-error{background:#d33;color:#fff}'
 		+ '.CodeMirror-lint-scroll-warn{'
 			+ 'background:#fc3;border-top:1px solid #fc3;border-bottom:1px solid #fc3;box-sizing:border-box'

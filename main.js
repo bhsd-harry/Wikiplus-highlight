@@ -219,9 +219,11 @@
 			}
 			return encodeURIComponent(str);
 		}),
-		/** @type {function(typeof CodeMirror): boolean} */ isPc = ({keyMap}) => keyMap.default === keyMap.pcDefault,
-		extraKeysPc = {'Ctrl-/': escapeHTML, 'Ctrl-\\': escapeURI},
-		extraKeysMac = {'Cmd-/': escapeHTML, 'Cmd-\\': escapeURI};
+		/** @type {(cm: typeof CodeMirror) => boolean} */ isPc = ({keyMap}) => keyMap.default === keyMap.pcDefault,
+		/** @type {(cm: typeof CodeMirror) => Record<string, (doc: CodeMirror.Editor) => void} */ extraKeys = CM => {
+			const ctrl = isPc(CM) ? 'Ctrl' : 'Cmd';
+			return {[`${ctrl}-/`]: escapeHTML, [`${ctrl}-\\`]: escapeURI};
+		};
 
 	/**
 	 * contextMenu插件
@@ -441,7 +443,7 @@
 		if (!CM.prototype.annotateScrollbar && type === 'mediawiki' && addons.has('lint')) {
 			scripts.push(ADDON_LIST.annotateScrollbar);
 		}
-		if (!CM.commands.findForward && addons.has('search') && !addons.has('wikiEditor')) {
+		if (!CM.commands.find && addons.has('search') && !addons.has('wikiEditor')) {
 			scripts.push(ADDON_LIST.search);
 		}
 		if (!window.wikiparse && type === 'mediawiki' && addons.has('lint')) {
@@ -710,7 +712,7 @@
 			),
 			mode === 'mediawiki'
 				? {
-					extraKeys: addons.has('escape') && (isPc(CodeMirror) ? extraKeysPc : extraKeysMac),
+					extraKeys: addons.has('escape') && extraKeys(CodeMirror),
 				}
 				: {
 					indentUnit: addons.has('indentWithSpace') ? indent : defaultIndent,
@@ -725,12 +727,10 @@
 		}
 
 		if (addons.has('wikiEditor')) {
-			const context = $target.data('wikiEditorContext'),
-				{keyMap} = CodeMirror,
-				callback = /** 替代CodeMirror的Ctrl/Cmd-F快捷键 */ () => {
-					$.wikiEditor.modules.dialogs.api.openDialog(context, 'search-and-replace');
-				};
-			cm.addKeyMap(keyMap.default === keyMap.pcDefault ? {'Ctrl-F': callback} : {'Cmd-F': callback});
+			const context = $target.data('wikiEditorContext');
+			CodeMirror.commands.find = /** 替代CodeMirror的搜索功能 */ () => {
+				$.wikiEditor.modules.dialogs.api.openDialog(context, 'search-and-replace');
+			};
 		}
 
 		handleContextMenu(cm, mode);
@@ -754,10 +754,9 @@
 					$('#Wikiplus-Quickedit-MinorEdit').click();
 					$('#Wikiplus-Quickedit-Submit').triggerHandler('click');
 				};
+			const ctrl = isPc(CodeMirror) ? 'ctrl' : 'cmd';
 			cm.addKeyMap($.extend(
-				isPc(CodeMirror)
-					? {'Ctrl-S': submit, 'Shift-Ctrl-S': submitMinor}
-					: {'Cmd-S': submit, 'Shift-Cmd-S': submitMinor},
+				{[`${ctrl}-S`]: submit, [`Shift-${ctrl}-S`]: submitMinor},
 				escToExitQuickEdit === true || escToExitQuickEdit === 'true'
 					? {
 						/** 按下Esc键退出编辑 */ Esc() {
@@ -973,7 +972,7 @@
 			}
 		}
 		if (mode === 'mediawiki' && addons.has('escape')) {
-			doc.addKeyMap(isPc(CodeMirror) ? extraKeysPc : extraKeysMac, true);
+			doc.addKeyMap(extraKeys(CodeMirror), true);
 		} else if (mode !== 'mediawiki' && addons.has('indentWithSpace')) {
 			doc.setOption('indentUnit', indent);
 			doc.setOption('indentWithTabs', false);
