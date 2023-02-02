@@ -128,6 +128,9 @@
 				$panelErrorCount.text(errors.length);
 				$panelWarnCount.text(warnings.length);
 			},
+			performLint = () => {
+				cm.performLint();
+			},
 			onInput = () => {
 				clearTimeout(cm.state.lint.timeout);
 			},
@@ -146,7 +149,8 @@
 			};
 		cm.setOption('gutters', ['CodeMirror-lint-markers']);
 		switchOption();
-		cm.addKeyMap({[`${mw.libs.wphl.isPc(CodeMirror) ? 'Ctrl' : 'Cmd'}-L`]: switchOption});
+		const ctrl = mw.libs.wphl.isPc(CodeMirror) ? 'Ctrl' : 'Cmd';
+		cm.addKeyMap({[`${ctrl}-K`]: performLint, [`${ctrl}-L`]: switchOption});
 		cm.on('cursorActivity', () => {
 			positionMap.clear();
 		});
