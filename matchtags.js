@@ -7,9 +7,8 @@
 (() => {
 	'use strict';
 
-	const {Pos, cmpPos, Init} = CodeMirror;
-
-	const tagStart = /<(\/?)([_a-z]\w*)/giu,
+	const {Pos, cmpPos, Init} = CodeMirror,
+		tagStart = /<(\/?)([a-z]\w*)(?=[\s/>])/giu,
 		voidTags = new Set(['br', 'wbr', 'hr', 'img']),
 		maxScanLines = 1000;
 
@@ -19,8 +18,7 @@
 		 * @param {CodeMirror.Editor} cm
 		 * @param {CodeMirror.Position} pos 当前位置
 		 */
-		constructor(cm, pos) {
-			const {line, ch} = pos;
+		constructor(cm, {line, ch}) {
 			this.line = line;
 			this.ch = ch;
 			this.cm = cm;
@@ -36,7 +34,7 @@
 		}
 
 		/**
-		 * 判断是否是括号
+		 * 判断是否是`<`或`>`
 		 * @param {number} ch 列号
 		 */
 		bracketAt(ch) {
@@ -69,6 +67,9 @@
 			for (;;) {
 				const gt = this.text.indexOf('>', this.ch);
 				if (gt === -1) {
+					if (this.nextLine()) {
+						continue;
+					}
 					return undefined;
 				}
 				this.ch = gt + 1;
@@ -81,8 +82,11 @@
 		/** Jump to a `<` towards the line start */
 		toTagStart() {
 			for (;;) {
-				const lt = this.ch ? this.text.lastIndexOf('<', this.ch - 1) : -1;
+				const lt = this.ch > 0 ? this.text.lastIndexOf('<', this.ch - 1) : -1;
 				if (lt === -1) {
+					if (this.prevLine()) {
+						continue;
+					}
 					return undefined;
 				} else if (!this.bracketAt(lt)) {
 					this.ch = lt;
@@ -105,9 +109,8 @@
 				if (!found) {
 					if (this.nextLine()) {
 						continue;
-					} else {
-						return undefined;
 					}
+					return undefined;
 				}
 				this.ch = found.index + found[0].length;
 				if (this.bracketAt(found.index)) {
@@ -119,19 +122,15 @@
 		/** Jump to the end of the first line, or a non-bracket `>`, or the letter after a tag bracket `>` */
 		toPrevTag() {
 			for (;;) {
-				const gt = this.ch ? this.text.lastIndexOf('>', this.ch - 1) : -1;
+				const gt = this.ch > 0 ? this.text.lastIndexOf('>', this.ch - 1) : -1;
 				if (gt === -1) {
 					if (this.prevLine()) {
 						continue;
-					} else {
-						return undefined;
 					}
-				}
-				if (this.bracketAt(gt)) {
-					const lastSlash = this.text.lastIndexOf('/', gt);
-					const selfClose = lastSlash > -1 && !/\S/u.test(this.text.slice(lastSlash + 1, gt));
+					return undefined;
+				} else if (this.bracketAt(gt)) {
 					this.ch = gt + 1;
-					return selfClose ? 'selfClose' : 'regular';
+					return this.text[gt - 1] === '/' ? 'selfClose' : 'regular';
 				}
 				this.ch = gt;
 			}
@@ -222,27 +221,25 @@
 		 * @returns {CodeMirror.MatchingTagPair}
 		 */
 		function(pos) {
-			let iter = new Iter(this, pos);
+			const iter = new Iter(this, pos);
 			if (!iter.isTag()) {
 				return undefined;
 			}
 			const end = iter.toTagEnd(),
-				to = end && Pos(iter.line, iter.ch);
-			const start = end && iter.toTagStart();
+				to = end && Pos(iter.line, iter.ch),
+				start = end && iter.toTagStart();
 			if (!start || cmpPos(iter, pos) > 0) {
 				return undefined;
 			}
 			const tag = start[2].toLowerCase(),
 				here = {from: Pos(iter.line, iter.ch), to, tag};
 			if (end === 'selfClose' || voidTags.has(tag)) {
-				return {open: here, close: null, loc: 'self'};
-			}
-
-			if (start[1]) { // closing tag
+				return {open: here, loc: 'self'};
+			} else if (start[1]) { // closing tag
 				return {open: iter.findMatchingOpen(tag), close: here, loc: 'close'};
-			} // opening tag
-			iter = new Iter(this, to);
-			return {open: here, close: iter.findMatchingClose(tag), loc: 'open'};
+			}
+			// opening tag
+			return {open: here, close: new Iter(this, to).findMatchingClose(tag), loc: 'open'};
 		},
 	);
 
@@ -256,22 +253,17 @@
 		 * @returns {CodeMirror.MatchingTagPair}
 		 */
 		function(pos, tag) {
-			const iter = new Iter(this, pos),
-				open = iter.findMatchingOpen(tag);
-			if (!open) {
-				return undefined;
+			const open = new Iter(this, pos).findMatchingOpen(tag);
+			if (open) {
+				const close = new Iter(this, pos).findMatchingClose(open.tag);
+				return close && {open, close};
 			}
-			const forward = new Iter(this, pos),
-				close = forward.findMatchingClose(open.tag);
-			return close ? {open, close} : undefined;
+			return undefined;
 		},
 	);
 
 	/** Used by addon/edit/closetag.js */
-	CodeMirror.scanForClosingTag = (cm, pos, tagName) => {
-		const iter = new Iter(cm, pos);
-		return iter.findMatchingClose(tagName);
-	};
+	CodeMirror.scanForClosingTag = (cm, pos, tagName) => new Iter(cm, pos).findMatchingClose(tagName);
 
 	CodeMirror.defineOption('matchTags', false, (cm, val, old) => {
 		if (old && old !== Init) {
@@ -291,12 +283,12 @@
 	const clear = cm => {
 		if (cm.state.tagHit) {
 			cm.state.tagHit.clear();
+			cm.state.tagHit = undefined;
 		}
 		if (cm.state.tagOther) {
 			cm.state.tagOther.clear();
+			cm.state.tagOther = undefined;
 		}
-		cm.state.tagHit = null;
-		cm.state.tagOther = null;
 	};
 
 	/**
@@ -320,9 +312,9 @@
 				other = match.loc === 'close' ? match.open : match.close;
 			if (hit) {
 				cm.state.tagHit = cm.markText(hit.from, hit.to, {className: `cm-${other ? '' : 'non'}matchingtag`});
-			}
-			if (other) {
-				cm.state.tagOther = cm.markText(other.from, other.to, {className: 'cm-matchingtag'});
+				if (other) {
+					cm.state.tagOther = cm.markText(other.from, other.to, {className: 'cm-matchingtag'});
+				}
 			}
 		});
 	};

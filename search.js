@@ -38,7 +38,7 @@
 	 * @param {string|RegExp} str 搜索字符串
 	 */
 	const token = str => {
-		const initial = typeof str === 'string' ? new RegExp(`[^${escapeRegExp(str[0])}]`, 'i') : null;
+		const initial = typeof str === 'string' && new RegExp(`[^${escapeRegExp(str[0])}]`, 'i');
 
 		/**
 		 * @override
