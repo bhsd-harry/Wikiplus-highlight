@@ -27,9 +27,14 @@
 			this.max = Math.min(line + maxScanLines - 1, cm.lastLine());
 		}
 
+		/** 提取当前位置 */
+		get pos() {
+			return Pos(this.line, this.ch);
+		}
+
 		/** 是否是标签 */
 		isTag() {
-			const type = this.cm.getTokenTypeAt(Pos(this.line, this.ch));
+			const type = this.cm.getTokenTypeAt(this.pos);
 			return /\b(?:mw-(?:html|ext)tag|tag\b)/u.test(type);
 		}
 
@@ -149,7 +154,7 @@
 				if (!next) {
 					return undefined;
 				}
-				const start = this.ch - next[0].length,
+				const from = Pos(this.line, this.ch - next[0].length),
 					end = this.toTagEnd(),
 					tagName = next[2].toLowerCase();
 				if (!end) {
@@ -165,7 +170,7 @@
 						}
 					}
 					if (i < 0 && (!tag || tag === tagName)) {
-						return {tag: tagName, from: Pos(this.line, start), to: Pos(this.line, this.ch)};
+						return {tag: tagName, from, to: this.pos};
 					}
 				} else { // opening tag
 					stack.push(tagName);
@@ -186,7 +191,7 @@
 				if (!prev) {
 					return undefined;
 				}
-				const {ch: end} = this,
+				const {pos: to} = this,
 					start = this.toTagStart();
 				if (!start) {
 					return undefined;
@@ -205,7 +210,7 @@
 						}
 					}
 					if (i < 0 && (!tag || tag === tagName)) {
-						return {tag: tagName, from: Pos(this.line, this.ch), to: Pos(this.line, end)};
+						return {tag: tagName, from: this.pos, to};
 					}
 				}
 			}
@@ -226,13 +231,13 @@
 				return undefined;
 			}
 			const end = iter.toTagEnd(),
-				to = end && Pos(iter.line, iter.ch),
+				to = end && iter.pos,
 				start = end && iter.toTagStart();
 			if (!start || cmpPos(iter, pos) > 0) {
 				return undefined;
 			}
 			const tag = start[2].toLowerCase(),
-				here = {from: Pos(iter.line, iter.ch), to, tag};
+				here = {from: iter.pos, to, tag};
 			if (end === 'selfClose' || voidTags.has(tag)) {
 				return {open: here, loc: 'self'};
 			} else if (start[1]) { // closing tag
