@@ -13,7 +13,7 @@
 	/**
 	 * annotationSource
 	 * @param {string} str wikitext
-	 * @param {CodeMirror.Editor} cm 编辑器
+	 * @param {CodeMirror.Editor} cm
 	 * @returns {Promise<CodeMirror.LintAnnotation>}
 	 */
 	const annotate = async (str, _, cm) => {
@@ -113,7 +113,8 @@
 			}).click(() => {
 				nextMark(warnings);
 			}),
-			$panelElement = $('<div>', {id: 'wphl-lint-panel', html: [$panelError, $panelWarn]});
+			$panelElement = $('<div>', {id: 'wphl-lint-panel', html: [$panelError, $panelWarn]}),
+			$lineDiv = $(cm.display.lineDiv);
 
 		/**
 		 * update linting
@@ -127,35 +128,39 @@
 				$panelErrorCount.text(errors.length);
 				$panelWarnCount.text(warnings.length);
 			},
-			performLint = () => {
-				cm.performLint();
+			onInput = () => {
+				clearTimeout(cm.state.lint.timeout);
 			},
 			switchOption = () => {
 				if (cm.state.lint) {
 					cm.setOption('lint', false);
+					$lineDiv.off('input', onInput);
 					annotateScrollWarn.update([]);
 					annotateScrollError.update([]);
 					$panelElement.detach();
 				} else {
-					cm.setOption('lint', {
-						delay: 1000, ...mw.libs.wphl.lintOptions, selfContain: true, onUpdateLinting,
-					});
+					cm.setOption('lint', {...mw.libs.wphl.lintOptions, selfContain: true, onUpdateLinting});
+					$lineDiv.on('input', onInput);
 					$panelElement.insertAfter(cm.getWrapperElement());
 				}
 			};
 		cm.setOption('gutters', ['CodeMirror-lint-markers']);
 		switchOption();
-		cm.addKeyMap(mw.libs.wphl.isPc(CodeMirror)
-			? {'Ctrl-K': performLint, 'Ctrl-L': switchOption}
-			: {'Cmd-K': performLint, 'Cmd-L': switchOption});
+		cm.addKeyMap({[`${mw.libs.wphl.isPc(CodeMirror) ? 'Ctrl' : 'Cmd'}-L`]: switchOption});
 		cm.on('cursorActivity', () => {
 			positionMap.clear();
 		});
 	};
 
-	mw.hook('wiki-codemirror').add(/** @param {CodeMirror.Editor} cm */ cm => {
+	/**
+	 * 分离hook函数以便调试
+	 * @param {CodeMirror.Editor} cm
+	 */
+	const hook = cm => {
 		if (mw.libs.wphl.addons.has('lint') && cm.getTextArea && cm.getTextArea().id === 'Wikiplus-Quickedit') {
 			lint(cm);
 		}
-	});
+	};
+	mw.hook('wiki-codemirror').add(hook);
+	mw.libs.wphl.lintHook = hook;
 })();
