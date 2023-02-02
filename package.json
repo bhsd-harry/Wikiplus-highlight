@@ -24,8 +24,7 @@
     "url": "git+https://github.com/bhsd-harry/Wikiplus-highlight.git"
   },
   "scripts": {
-    "test": "eslint . && http-server -c-1 --cors",
-    "ssl": "eslint . && http-server -c-1 -S -C cert.pem"
+    "test": "eslint . && http-server -c-1 --cors"
   },
   "devDependencies": {
     "eslint": "^8.8.0",
