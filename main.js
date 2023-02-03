@@ -14,7 +14,7 @@
 	}
 	mw.libs.wphl = mw.libs.wphl || {}; // 开始加载
 
-	const version = '2.48.3',
+	const version = '2.48.4',
 		newAddon = 0;
 
 	/** @type {typeof mw.storage} */
