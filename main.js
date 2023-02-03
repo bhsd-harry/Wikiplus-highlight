@@ -214,18 +214,22 @@
 		escapeURI = convert(str => {
 			if (str.includes('%')) {
 				try {
-					return decodeURIComponent(str.replace(/\.([\da-f]{2})/giu, '%$1'));
-				} catch (e) {}
-				try {
 					return decodeURIComponent(str);
 				} catch (e) {}
 			}
 			return encodeURIComponent(str);
 		}),
+		escapeHash = convert(str => {
+			try {
+				return decodeURIComponent(str.replace(/\.([\da-f]{2})/giu, '%$1'));
+			} catch (e) {
+				return str;
+			}
+		}),
 		/** @type {(cm: typeof CodeMirror) => boolean} */ isPc = ({keyMap}) => keyMap.default === keyMap.pcDefault,
 		/** @type {(cm: typeof CodeMirror) => Record<string, (doc: CodeMirror.Editor) => void} */ extraKeys = CM => {
 			const ctrl = isPc(CM) ? 'Ctrl' : 'Cmd';
-			return {[`${ctrl}-/`]: escapeHTML, [`${ctrl}-\\`]: escapeURI};
+			return {[`${ctrl}-/`]: escapeHTML, [`${ctrl}-\\`]: escapeURI, [`Shift-${ctrl}-\\`]: escapeHash};
 		};
 
 	/**
