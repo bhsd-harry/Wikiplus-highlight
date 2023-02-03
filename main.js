@@ -733,11 +733,12 @@
 			$target.textSelection('register', cmTextSelection);
 		}
 
+		const ctrl = isPc(CodeMirror) ? 'Ctrl' : 'Cmd';
 		if (addons.has('wikiEditor')) {
 			const context = $target.data('wikiEditorContext');
-			CodeMirror.commands.find = /** 替代CodeMirror的搜索功能 */ () => {
+			cm.addKeyMap({/** 替代CodeMirror的搜索功能 */ [`${ctrl}-F`]() {
 				$.wikiEditor.modules.dialogs.api.openDialog(context, 'search-and-replace');
-			};
+			}});
 		}
 
 		handleContextMenu(cm, mode);
@@ -761,7 +762,6 @@
 					$('#Wikiplus-Quickedit-MinorEdit').click();
 					$('#Wikiplus-Quickedit-Submit').triggerHandler('click');
 				};
-			const ctrl = isPc(CodeMirror) ? 'Ctrl' : 'Cmd';
 			cm.addKeyMap($.extend(
 				{[`${ctrl}-S`]: submit, [`Shift-${ctrl}-S`]: submitMinor},
 				escToExitQuickEdit === true || escToExitQuickEdit === 'true'
