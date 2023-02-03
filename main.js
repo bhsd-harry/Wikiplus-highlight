@@ -214,6 +214,9 @@
 		escapeURI = convert(str => {
 			if (str.includes('%')) {
 				try {
+					return decodeURIComponent(str.replace(/\.([\da-f]{2})/giu, '%$1'));
+				} catch (e) {}
+				try {
 					return decodeURIComponent(str);
 				} catch (e) {}
 			}
