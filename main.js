@@ -6,6 +6,7 @@
  */
 
 (async () => {
+	/* eslint es-x/no-regexp-u-flag: 2 */
 	/* eslint-disable require-unicode-regexp */
 	'use strict';
 
@@ -221,7 +222,7 @@
 		}),
 		escapeHash = convert(str => {
 			try {
-				return decodeURIComponent(str.replace(/\.([\da-f]{2})/giu, '%$1'));
+				return decodeURIComponent(str.replace(/\.([\da-f]{2})/gi, '%$1'));
 			} catch (e) {
 				return str;
 			}
