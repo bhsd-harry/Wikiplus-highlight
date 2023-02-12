@@ -18,7 +18,7 @@
 			html: [$search, $searchNext, $searchPrev, $searchClose],
 		}),
 		$searchBtn = $('<span>', {class: 'Wikiplus-Btn', html: msg('addon-search')}),
-		$replace = $('<input>', {class: 'Wikiplus-Quickedit-Search', placeholder: msg('replace-placeholder')}),
+		$replace = $('<textarea>', {class: 'Wikiplus-Quickedit-Search', placeholder: msg('replace-placeholder'), rows: 1}),
 		$replaceClose = $('<span>', {text: '×', class: 'Wikiplus-Symbol-Btn'}),
 		$replaceNext = $('<span>', {text: '▼', class: 'Wikiplus-Symbol-Btn'}),
 		$replacePrev = $('<span>', {text: '▲', class: 'Wikiplus-Symbol-Btn'}),
@@ -152,7 +152,9 @@
 			val = cm.getValue(),
 			mt = val.match(replacePtn);
 		if (mt && await OO.ui.confirm(msg('replace-count', mt.length))) {
+			const {left, top} = cm.getScrollInfo();
 			cm.setValue(val.replace(replacePtn, $replace.val()));
+			cm.scrollTo(left, top);
 			$replaceContainer.hide();
 		}
 	};
@@ -258,7 +260,10 @@
 		'.Wikiplus-Btn{line-height:1.4}'
 		+ '.Wikiplus-Quickedit-Search-Div{margin:7px 0 5px;}'
 		+ '.Wikiplus-Symbol-Btn{font-size:20px;margin:7px;vertical-align:middle;cursor:pointer;}'
-		+ '.Wikiplus-Quickedit-Search{width:50%;padding:revert;border:revert;background:revert;vertical-align:middle}'
+		+ '.Wikiplus-Quickedit-Search{'
+		+ 'width:50%;padding:revert;border:revert;background:revert;vertical-align:middle;font:inherit;box-sizing:border-box'
+		+ '}'
+		+ 'textarea.Wikiplus-Quickedit-Search{display:inline;resize:none}'
 		+ '.cm-search{background-color:#ffc0cb83;}'
 		+ 'span.CodeMirror-selectedtext{background:#d7d4f0}',
 	);
