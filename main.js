@@ -203,7 +203,10 @@
 	const entity = {'"': 'quot', "'": 'apos', '<': 'lt', '>': 'gt', '&': 'amp', ' ': 'nbsp'},
 		/** @type {(func: (str: string) => string) => (doc: CodeMirror.Editor) => void} */
 		convert = func => doc => {
-			doc.replaceSelection(doc.getSelection().split('\n').map(func).join('\n'), 'around');
+			doc.replaceSelections(
+				doc.getSelections().map(selection => selection.split('\n').map(func).join('\n')),
+				'around',
+			);
 		},
 		escapeHTML = convert(str => [...str].map(c => {
 			if (c in entity) {
