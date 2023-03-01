@@ -809,25 +809,6 @@
 		},
 	);
 
-	// 添加样式
-	const wphlStyle = document.querySelector('#wphl-style') || mw.loader.addStyleTag(
-		'#Wikiplus-CodeMirror{border:1px solid #c8ccd1;line-height:1.3;clear:both;'
-		+ '-moz-user-select:auto;-webkit-user-select:auto;user-select:auto}' // fix mobile select
-		+ '#Wikiplus-CodeMirror .CodeMirror-gutter-wrapper{'
-		+ '-moz-user-select:none;-webkit-user-select:none;user-select:none}' // fix iOS select-all
-		+ 'div.Wikiplus-InterBox{font-size:14px;z-index:100}'
-		+ '.skin-minerva .Wikiplus-InterBox{font-size:16px}'
-		+ '.cm-trailingspace{text-decoration:underline wavy red}'
-		+ 'div.CodeMirror span.CodeMirror-matchingbracket{box-shadow:0 0 0 2px #9aef98}'
-		+ 'div.CodeMirror span.CodeMirror-nonmatchingbracket{box-shadow:0 0 0 2px #eace64}'
-		+ '#Wikiplus-highlight-dialog .oo-ui-messageDialog-title{margin-bottom:0.28571429em}'
-		+ '#Wikiplus-highlight-dialog .oo-ui-flaggedElement-notice{font-weight:normal;margin:0}'
-		+ '.CodeMirror-contextmenu .cm-mw-template-name{cursor:pointer}'
-		+ '.skin-moeskin #ca-more-actions li>a{display:inline-block;padding:0.4rem 0.8rem;line-height:1.5}'
-		+ '.skin-moeskin .oo-ui-windowManager-modal>.oo-ui-dialog{z-index:101}',
-	);
-	wphlStyle.id = 'wphl-style';
-
 	/**
 	 * 对编辑框调用jQuery.val方法时从CodeMirror获取文本
 	 * @type {{get: (elem: HTMLTextAreaElement) => string, set: (elem: HTMLTextAreaElement, value: string) => void}}
@@ -1001,13 +982,14 @@
 		}
 	});
 
+	mw.loader.load(`${CDN}/${REPO_CDN}/styles.min.css`, 'text/css');
+
 	Object.assign(mw.libs.wphl, {
 		version,
 		options,
 		addons,
 		i18n,
 		i18nLang,
-		wphlStyle,
 		$portlet,
 		USING_LOCAL,
 		MODE_LIST,

@@ -261,11 +261,4 @@
 			cm.on('cursorActivity', showTooltip);
 		}
 	});
-
-	mw.loader.addStyleTag(
-		'.CodeMirror-sizer{overflow:visible}'
-		+ '.CodeMirror-tooltip{position:absolute;z-index:101;cursor:pointer;'
-		+ 'background-color:#ffd;border:1px solid;padding:0 1px;font-size:10pt;line-height:1.2}'
-		+ '.CodeMirror-widget-unfold{cursor:pointer;border:1px dotted}',
-	);
 })();

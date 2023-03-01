@@ -30,19 +30,6 @@
 		});
 	};
 
-	mw.loader.addStyleTag(
-		'.CodeMirror-line .CodeMirror-lint-mark-warning{background:#ffbf00;color:#fff;caret-color:#000}'
-		+ '.CodeMirror-line .CodeMirror-lint-mark-error{background:#d33;color:#fff}'
-		+ '.CodeMirror-lint-scroll-warn{'
-			+ 'background:#fc3;border-top:1px solid #fc3;border-bottom:1px solid #fc3;box-sizing:border-box'
-		+ '}'
-		+ '.CodeMirror-lint-scroll-error{'
-			+ 'background:#d33;border-top:1px solid #d33;border-bottom:1px solid #d33;box-sizing:border-box'
-		+ '}'
-		+ '#wphl-lint-panel{background:#f7f7f7;border:1px solid #c8ccd1}'
-		+ '.wphl-lint-subpanel{margin-left:1ch;cursor:pointer}'
-		+ '.wphl-lint-count{display:inline-block;width:5ch;padding:1px 0 1px 1ch}',
-	);
 	CodeMirror.registerHelper('lint', 'mediawiki', annotate);
 
 	/**

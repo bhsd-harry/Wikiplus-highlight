@@ -323,9 +323,4 @@
 			}
 		});
 	};
-
-	mw.loader.addStyleTag(
-		'.cm-matchingtag{background-color:#c9ffc8}'
-		+ '.cm-nonmatchingtag{background-color:#fff0a8}',
-	);
 })();
