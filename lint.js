@@ -73,10 +73,12 @@
 		} else if (!wikiparse.config) {
 			const {config: {values: {wgFormattedNamespaces, wgNamespaceIds}}} = mw,
 				{parserFunction: [withPound,, ...modifiers]} = await wikiparse.getConfig(),
-				valuesWithPound = new Set(Object.values(withPound)),
-				mwConfig = cm.getOption('mwConfig'),
-				{tags, functionSynonyms: [insensitive, sensitive], doubleUnderscore} = mwConfig,
-				img = mwConfig.img || (await getMwConfig('mediawiki')).img;
+				valuesWithPound = new Set(Object.values(withPound));
+			let mwConfig = cm.getOption('mwConfig');
+			if (!mwConfig.img || Object.values(mwConfig.functionSynonyms[0]).includes(true)) {
+				mwConfig = await getMwConfig('mediawiki');
+			}
+			const {tags, functionSynonyms: [insensitive, sensitive], doubleUnderscore, img} = mwConfig;
 			for (const [k, v] of Object.entries(insensitive)) {
 				if (valuesWithPound.has(v) && !k.startsWith('#')) {
 					delete insensitive[k];
