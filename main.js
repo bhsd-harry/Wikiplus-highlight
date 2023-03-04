@@ -540,7 +540,9 @@
 			setPlainMode(config);
 			mw.config.set('extCodeMirrorConfig', config);
 		}
-		if (config && config.redirect && config.img) { // 情形1：config已更新，可能来自localStorage
+		const isIPE = config && Object.values(config.functionSynonyms[0]).includes(true);
+		// 情形1：config已更新，可能来自localStorage
+		if (config && config.redirect && config.img && !isIPE) {
 			return config;
 		}
 
@@ -552,12 +554,12 @@
 		 */
 		const {query: {magicwords, extensiontags, functionhooks, variables}} = await new mw.Api().get({
 			meta: 'siteinfo',
-			siprop: config ? 'magicwords' : 'magicwords|extensiontags|functionhooks|variables',
+			siprop: config && !isIPE ? 'magicwords' : 'magicwords|extensiontags|functionhooks|variables',
 			formatversion: 2,
 		});
 		const otherMagicwords = new Set(['msg', 'raw', 'msgnw', 'subst', 'safesubst']);
 
-		if (config) { // 情形2或3
+		if (config && !isIPE) { // 情形2或3
 			const {functionSynonyms: [insensitive]} = config;
 			if (!insensitive.subst) {
 				const aliases = getAliases(magicwords.filter(({name}) => otherMagicwords.has(name)));
