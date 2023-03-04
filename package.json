@@ -16,7 +16,8 @@
   "files": [
     "/dist/",
     "/i18n/",
-    "/*.js"
+    "/*.js",
+    "/*.css"
   ],
   "browser": "/main.js",
   "repository": {
