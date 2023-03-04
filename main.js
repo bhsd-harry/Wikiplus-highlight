@@ -951,7 +951,13 @@
 		mode = mode === 'text/mediawiki' ? 'mediawiki' : mode;
 		const addonScript = getAddonScript(CodeMirror, true),
 			json = doc.getOption('json'),
-			{optionHandlers, helpers: {lint}} = CodeMirror;
+			{prototype, optionHandlers, helpers: {lint}} = CodeMirror;
+		if (!prototype.annotateScrollbar && mode === 'mediawiki' && addons.has('lint')) {
+			addonScript.push(ADDON_LIST.annotateScrollbar);
+		}
+		if (!window.wikiparse && mode === 'mediawiki' && addons.has('lint')) {
+			addonScript.push(ADDON_LIST.parser);
+		}
 		if (!optionHandlers.lint && mode === 'mediawiki' && addons.has('lint')) {
 			mw.loader.load(`${CDN}/${CM_CDN}/addon/lint/lint.min.css`, 'text/css');
 			addonScript.push(ADDON_LIST.lint);
