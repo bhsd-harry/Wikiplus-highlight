@@ -107,12 +107,12 @@ span.CodeMirror-selectedtext {
 }
 
 /* lint.js */
-.CodeMirror-line .CodeMirror-lint-mark-warning {
+.CodeMirror-line span.CodeMirror-lint-mark-warning {
 	background: #ffbf00;
 	color: #fff;
 	caret-color: #000;
 }
-.CodeMirror-line .CodeMirror-lint-mark-error {
+.CodeMirror-line span.CodeMirror-lint-mark-error {
 	background: #d33;
 	color: #fff;
 }
