@@ -8,7 +8,7 @@
 	'use strict';
 
 	/** 加载 I18N */
-	const {libs: {wphl: {version, storage, addons, lintOptions, CDN, PARSER_CDN, isPc}}} = mw,
+	const {libs: {wphl: {version, storage, addons, lintOptions, CDN, PARSER_CDN, isPc, getMwConfig}}} = mw,
 		/** @type {Record<string, string>} */ i18n = storage.getObject('wikiparser-i18n') || {},
 		/** @type {Record<string, string>} */ i18nLanguages = {
 			zh: 'zh-hans',
@@ -80,6 +80,9 @@
 					delete insensitive[k];
 					insensitive[`#${k}`] = v;
 				}
+			}
+			if (!img) {
+				Object.assign(img, (await getMwConfig('mediawiki')).img);
 			}
 			wikiparse.config = {
 				ext: Object.keys(tags),
