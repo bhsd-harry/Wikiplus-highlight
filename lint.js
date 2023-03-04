@@ -7,6 +7,36 @@
 	/* global wikiparse */
 	'use strict';
 
+	/** 加载 I18N */
+	const {libs: {wphl: {version, storage, CDN, PARSER_CDN}}} = mw,
+		/** @type {Record<string, string>} */ i18n = storage.getObject('wikiparser-i18n') || {},
+		/** @type {Record<string, string>} */ i18nLanguages = {
+			zh: 'zh-hans',
+			'zh-hans': 'zh-hans',
+			'zh-cn': 'zh-hans',
+			'zh-my': 'zh-hans',
+			'zh-sg': 'zh-hans',
+			'zh-hant': 'zh-hant',
+			'zh-tw': 'zh-hant',
+			'zh-hk': 'zh-hant',
+			'zh-mo': 'zh-hant',
+		},
+		i18nLang = i18nLanguages[mw.config.get('wgUserLanguage')],
+		I18N_CDN = i18nLang && `${CDN}/${PARSER_CDN}/i18n/${i18nLang}.json`;
+	if (i18nLang) {
+		(async () => {
+			if (i18n['wphl-version'] !== version || i18n['wphl-lang'] !== i18nLang) {
+				Object.assign(
+					i18n,
+					await $.ajax(`${I18N_CDN}`, {dataType: 'json', cache: true}),
+					{'wphl-version': version, 'wphl-lang': i18nLang},
+				);
+				storage.setObject('wikiparser-i18n', i18n);
+			}
+			wikiparse.setI18N(i18n);
+		})();
+	}
+
 	const include = mw.config.get('wgNamespaceNumber') === 10 && !mw.config.get('wgPageName').endsWith('/doc'),
 		{cmpPos, Pos} = CodeMirror;
 
