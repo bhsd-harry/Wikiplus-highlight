@@ -8,7 +8,7 @@
 	'use strict';
 
 	/** 加载 I18N */
-	const {libs: {wphl: {version, storage, CDN, PARSER_CDN}}} = mw,
+	const {libs: {wphl: {version, storage, addons, lintOptions, CDN, PARSER_CDN, isPc}}} = mw,
 		/** @type {Record<string, string>} */ i18n = storage.getObject('wikiparser-i18n') || {},
 		/** @type {Record<string, string>} */ i18nLanguages = {
 			zh: 'zh-hans',
@@ -160,7 +160,7 @@
 					$panelElement.detach();
 				} else {
 					cm.setOption('lint', {
-						delay: 1000, ...mw.libs.wphl.lintOptions, selfContain: true, onUpdateLinting,
+						delay: 1000, ...lintOptions, selfContain: true, onUpdateLinting,
 					});
 					$lineDiv.on('input', onInput);
 					$panelElement.insertAfter(cm.getWrapperElement());
@@ -168,7 +168,7 @@
 			};
 		cm.setOption('gutters', ['CodeMirror-lint-markers']);
 		switchOption();
-		const ctrl = mw.libs.wphl.isPc(CodeMirror) ? 'Ctrl' : 'Cmd';
+		const ctrl = isPc(CodeMirror) ? 'Ctrl' : 'Cmd';
 		cm.addKeyMap({[`${ctrl}-K`]: performLint, [`${ctrl}-L`]: switchOption});
 		cm.on('cursorActivity', () => {
 			positionMap.clear();
@@ -180,10 +180,16 @@
 	 * @param {CodeMirror.Editor} cm
 	 */
 	const hook = cm => {
-		if (mw.libs.wphl.addons.has('lint') && cm.getTextArea && cm.getTextArea().id === 'Wikiplus-Quickedit') {
+		if (addons.has('lint') && cm.getTextArea
+			&& (addons.has('otherEditors') || cm.getTextArea().id === 'Wikiplus-Quickedit')
+		) {
 			lint(cm);
 		}
 	};
 	mw.hook('wiki-codemirror').add(hook);
+	mw.hook('InPageEdit.quickEdit.codemirror').add(
+		/** @param {{cm: CodeMirror.Editor}} */ ({cm: doc}) => hook(doc),
+	);
+	mw.hook('inspector').add(hook);
 	mw.libs.wphl.lintHook = hook;
 })();

@@ -845,7 +845,6 @@
 		/** @type {OOUI.CheckboxMultiselectInputWidget} */ widget,
 		/** @type {OOUI.CheckboxMultioptionWidget} */ searchWidget,
 		/** @type {OOUI.CheckboxMultioptionWidget} */ wikiEditorWidget,
-		/** @type {OOUI.CheckboxMultioptionWidget} */ lintWidget,
 		/** @type {OOUI.NumberInputWidget} */ indentWidget,
 		/** @type {OOUI.FieldLayout} */ field,
 		/** @type {OOUI.FieldLayout} */ indentField;
@@ -889,7 +888,6 @@
 			const {checkboxMultiselectWidget} = widget;
 			searchWidget = checkboxMultiselectWidget.findItemFromData('search');
 			wikiEditorWidget = checkboxMultiselectWidget.findItemFromData('wikiEditor');
-			lintWidget = checkboxMultiselectWidget.findItemFromData('lint');
 			indentWidget = new OO.ui.NumberInputWidget({min: 0, value: indent});
 			field = new OO.ui.FieldLayout(widget, {
 				label: msg('addon-label'),
@@ -903,7 +901,6 @@
 		const wikiplusLoaded = typeof window.Wikiplus === 'object' || typeof window.Pages === 'object';
 		searchWidget.setDisabled(!wikiplusLoaded);
 		wikiEditorWidget.setDisabled(!wikiplusLoaded || !mw.loader.getState('ext.wikiEditor'));
-		lintWidget.setDisabled(!wikiplusLoaded);
 		const data = await dialog.open({
 			title: msg('addon-title'),
 			message: field.$element.add(indentField.$element).add(
@@ -953,7 +950,15 @@
 		let mode = doc.getOption('mode');
 		mode = mode === 'text/mediawiki' ? 'mediawiki' : mode;
 		const addonScript = getAddonScript(CodeMirror, true),
-			json = doc.getOption('json');
+			json = doc.getOption('json'),
+			{optionHandlers, helpers: {lint}} = CodeMirror;
+		if (!optionHandlers.lint && mode === 'mediawiki' && addons.has('lint')) {
+			mw.loader.load(`${CDN}/${CM_CDN}/addon/lint/lint.min.css`, 'text/css');
+			addonScript.push(ADDON_LIST.lint);
+		}
+		if (!(lint && lint.mediawiki) && mode === 'mediawiki' && addons.has('lint')) {
+			addonScript.push(ADDON_LIST.lintWikitext);
+		}
 		await getScript(addonScript);
 		for (const {
 			option, addon = option, modes, complex = (/** @type {string} */ mod) => !modes || modes.has(mod),
