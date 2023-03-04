@@ -74,15 +74,14 @@
 			const {config: {values: {wgFormattedNamespaces, wgNamespaceIds}}} = mw,
 				{parserFunction: [withPound,, ...modifiers]} = await wikiparse.getConfig(),
 				valuesWithPound = new Set(Object.values(withPound)),
-				{tags, functionSynonyms: [insensitive, sensitive], doubleUnderscore, img} = cm.getOption('mwConfig');
+				mwConfig = cm.getOption('mwConfig'),
+				{tags, functionSynonyms: [insensitive, sensitive], doubleUnderscore} = mwConfig,
+				img = mwConfig.img || (await getMwConfig('mediawiki')).img;
 			for (const [k, v] of Object.entries(insensitive)) {
 				if (valuesWithPound.has(v) && !k.startsWith('#')) {
 					delete insensitive[k];
 					insensitive[`#${k}`] = v;
 				}
-			}
-			if (!img) {
-				Object.assign(img, (await getMwConfig('mediawiki')).img);
 			}
 			wikiparse.config = {
 				ext: Object.keys(tags),
