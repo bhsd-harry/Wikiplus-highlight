@@ -532,7 +532,6 @@
 		"unicorn/prefer-native-coercion-functions": 2,
 		"unicorn/prefer-negative-index": 2,
 		"unicorn/prefer-prototype-methods": 2,
-		"unicorn/prefer-query-selector": 2,
 		"unicorn/prefer-spread": [
 			2,
 			{
