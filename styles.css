@@ -75,7 +75,7 @@ textarea.Wikiplus-Quickedit-Search {
 .cm-search {
 	background-color: rgba(255, 192, 203, .51);
 }
-pre span.CodeMirror-selectedtext {
+.CodeMirror-line span.CodeMirror-selectedtext {
 	background: #d7d4f0;
 }
 
