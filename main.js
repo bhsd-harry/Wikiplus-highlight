@@ -15,7 +15,7 @@
 	}
 	mw.libs.wphl = mw.libs.wphl || {}; // 开始加载
 
-	const version = '2.55.1',
+	const version = '2.55.2',
 		newAddon = 0;
 
 	/** @type {typeof mw.storage} */
@@ -368,7 +368,7 @@
 	 * @param {boolean|undefined} local 是否先从本地下载
 	 */
 	const getScript = async (urls, local) => {
-		urls = [...new Set(urls)];
+		urls = [...new Set(urls)]; // eslint-disable-line no-param-reassign
 		const internal = urls.filter(url => !url.includes('/')),
 			external = urls.filter(url => url.includes('/'));
 		if (local === true) {
