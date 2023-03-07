@@ -175,11 +175,6 @@
 			only: true,
 			/** @implements */ complex: () => !addons.has('wikiEditor'),
 		},
-		{
-			option: 'styleSelectedText',
-			addon: 'lint',
-			download: 'markSelection',
-		},
 		{option: 'styleActiveLine', addon: 'activeLine'},
 		{option: 'showTrailingSpace', addon: 'trailingspace'},
 		{
@@ -368,7 +363,6 @@
 	 * @param {boolean|undefined} local 是否先从本地下载
 	 */
 	const getScript = async (urls, local) => {
-		urls = [...new Set(urls)]; // eslint-disable-line no-param-reassign
 		const internal = urls.filter(url => !url.includes('/')),
 			external = urls.filter(url => url.includes('/'));
 		if (local === true) {
