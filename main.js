@@ -864,8 +864,7 @@
 	};
 	const $portlet = $(mw.util.addPortletLink(
 		portletContainer[skin] || 'p-cactions', '#', msg('portlet'), 'wphl-settings',
-	)).click(async e => {
-		e.preventDefault();
+	)).click(async () => {
 		if (dialog) {
 			widget.setValue([...addons]);
 			indentWidget.setValue(indent);
