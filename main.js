@@ -862,7 +862,6 @@
 	};
 	const portletContainer = {
 		minerva: 'page-actions-overflow',
-		citizen: 'p-actions',
 		moeskin: 'ca-more-actions',
 	};
 	const $portlet = $(mw.util.addPortletLink(
