@@ -78,7 +78,7 @@
 			if (!mwConfig.img || Object.values(mwConfig.functionSynonyms[0]).includes(true)) {
 				mwConfig = await getMwConfig('mediawiki');
 			}
-			const {tags, functionSynonyms: [insensitive, sensitive], doubleUnderscore, img} = mwConfig;
+			const {tags, functionSynonyms: [insensitive, sensitive], doubleUnderscore, img, variants} = mwConfig;
 			for (const [k, v] of Object.entries(insensitive)) {
 				if (valuesWithPound.has(v) && !k.startsWith('#')) {
 					delete insensitive[k];
@@ -96,6 +96,7 @@
 				],
 				doubleUnderscore: doubleUnderscore.map(Object.keys),
 				img: Object.fromEntries(Object.entries(img).map(([k, v]) => [k, v.slice(4)])),
+				variants,
 			};
 			wikiparse.setConfig(wikiparse.config);
 		}
