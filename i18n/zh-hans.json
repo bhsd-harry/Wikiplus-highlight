@@ -1,5 +1,5 @@
 {
-	"wphl-version": "2.58",
+	"wphl-version": "2.58.1",
 	"wphl-lang": "zh-hans",
 	"wphl-addon-search": "<span title=\"搜索字符串或正则表达式\">搜索</span>",
 	"wphl-addon-activeline": "高亮显示光标所在行",
