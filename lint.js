@@ -75,7 +75,7 @@
 				{parserFunction: [withPound,, ...modifiers]} = await wikiparse.getConfig(),
 				valuesWithPound = new Set(Object.values(withPound));
 			let mwConfig = cm.getOption('mwConfig');
-			if (!mwConfig.img || Object.values(mwConfig.functionSynonyms[0]).includes(true)) {
+			if (!mwConfig.img || !mwConfig.variants || Object.values(mwConfig.functionSynonyms[0]).includes(true)) {
 				mwConfig = await getMwConfig('mediawiki');
 			}
 			const {tags, functionSynonyms: [insensitive, sensitive], doubleUnderscore, img, variants} = mwConfig;
