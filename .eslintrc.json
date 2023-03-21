@@ -8,7 +8,8 @@
 		"es-x",
 		"regexp",
 		"unicorn",
-		"jsdoc"
+		"jsdoc",
+		"jsonc"
 	],
 	"extends": [
 		"eslint:recommended",
@@ -111,7 +112,7 @@
 		"default-case": 2,
 		"default-case-last": 2,
 		"default-param-last": 2,
-		"dot-notation":2,
+		"dot-notation": 2,
 		"eqeqeq": 2,
 		"func-name-matching": [
 			2,
@@ -664,5 +665,34 @@
 		"es-x": {
 			"aggressive": true
 		}
-	}
+	},
+	"overrides": [
+		{
+			"files": "**/*.json",
+			"extends": [
+				"plugin:jsonc/recommended-with-json"
+			],
+			"rules": {
+				"eol-last": [
+					2,
+					"never"
+				],
+				"jsonc/array-bracket-newline": [
+					2,
+					{
+						"minItems": 1
+					}
+				],
+				"jsonc/array-element-newline": 2,
+				"jsonc/object-curly-newline": [
+					2,
+					{
+						"minProperties": 1
+					}
+				],
+				"jsonc/object-property-newline": 2,
+				"jsonc/auto": 2
+			}
+		}
+	]
 }
