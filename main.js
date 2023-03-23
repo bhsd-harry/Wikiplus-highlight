@@ -5,9 +5,9 @@
  * @license GPL-3.0
  */
 
+/* eslint es-x/no-regexp-u-flag: 2 */
+/* eslint-disable require-unicode-regexp */
 (async () => {
-	/* eslint es-x/no-regexp-u-flag: 2 */
-	/* eslint-disable require-unicode-regexp */
 	'use strict';
 
 	if (mw.libs.wphl && mw.libs.wphl.version) {
@@ -546,12 +546,10 @@
 			return config;
 		}
 
-		/*
-		 * 以下情形均需要发送API请求
-		 * 情形2：localStorage未过期但不包含新设置
-		 * 情形3：新加载的 ext.CodeMirror.data
-		 * 情形4：`config === null`
-		 */
+		// 以下情形均需要发送API请求
+		// 情形2：localStorage未过期但不包含新设置
+		// 情形3：新加载的 ext.CodeMirror.data
+		// 情形4：`config === null`
 		const {
 			query: {general: {variants}, magicwords, extensiontags, functionhooks, variables},
 		} = await new mw.Api().get({

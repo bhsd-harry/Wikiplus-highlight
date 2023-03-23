@@ -14,7 +14,8 @@
 		"eslint:recommended",
 		"plugin:promise/recommended",
 		"plugin:es-x/restrict-to-es2018",
-		"plugin:regexp/recommended"
+		"plugin:regexp/recommended",
+		"plugin:eslint-comments/recommended"
 	],
 	"parserOptions": {
 		"ecmaVersion": 9
@@ -129,7 +130,10 @@
 			"getBeforeSet"
 		],
 		"guard-for-in": 2,
-		"multiline-comment-style": 2,
+		"multiline-comment-style": [
+			2,
+			"separate-lines"
+		],
 		"new-cap": [
 			2,
 			{
@@ -209,6 +213,8 @@
 				],
 				"enforceInMethodNames": true,
 				"enforceInClassFields": true,
+				"allowInArrayDestructuring": false,
+				"allowInObjectDestructuring": false,
 				"allowFunctionParams": false
 			}
 		],
@@ -658,7 +664,13 @@
 			}
 		],
 		"jsdoc/require-returns-type": 1,
-		"jsdoc/require-throws": 1
+		"jsdoc/require-throws": 1,
+		"eslint-comments/disable-enable-pair": [
+			2,
+			{
+				"allowWholeFile": true
+			}
+		]
 	},
 	"settings": {
 		"es-x": {

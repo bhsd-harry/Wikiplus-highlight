@@ -1,8 +1,6 @@
-/*
- * CodeMirror, copyright (c) by Marijn Haverbeke and others
- * Distributed under an MIT license: https://codemirror.net/LICENSE
- * Modified for MediaWiki by Bhsd <https://github.com/bhsd-harry>
- */
+// CodeMirror, copyright (c) by Marijn Haverbeke and others
+// Distributed under an MIT license: https://codemirror.net/LICENSE
+// Modified for MediaWiki by Bhsd <https://github.com/bhsd-harry>
 
 (() => {
 	'use strict';
