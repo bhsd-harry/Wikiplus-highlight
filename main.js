@@ -15,7 +15,7 @@
 	}
 	mw.libs.wphl = mw.libs.wphl || {}; // 开始加载
 
-	const version = '2.59.2',
+	const version = '2.59.3',
 		newAddon = 0;
 
 	/** @type {typeof mw.storage} */
@@ -100,8 +100,8 @@
 	const CDN = '//fastly.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.65.3',
 		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.10',
-		PARSER_CDN = 'gh/bhsd-harry/wikiparser-node@0.9.7-b',
-		REPO_CDN = `npm/wikiplus-highlight@${majorVersion}`;
+		PARSER_CDN = 'npm/wikiparser-node@0.11.0-b',
+		REPO_CDN = `gh/bhsd-harry/Wikiplus-highlight@${majorVersion}`;
 
 	const {config: {values: {
 		wgPageName: page,
@@ -163,7 +163,7 @@
 		contextmenu: 'mediawiki.Title',
 		lint: `${CM_CDN}/addon/lint/lint.min.js`,
 		annotateScrollbar: `${CM_CDN}/addon/scroll/annotatescrollbar.min.js`,
-		parser: `${PARSER_CDN}/extensions/editor.min.js`,
+		parser: `${PARSER_CDN}/extensions/base.min.js`,
 		lintWikitext: `${REPO_CDN}/lint.min.js`,
 	};
 
