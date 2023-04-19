@@ -813,30 +813,19 @@
 	);
 
 	/**
-	 * 对编辑框调用jQuery.val方法时从CodeMirror获取文本
-	 * @type {{get: (elem: HTMLTextAreaElement) => string, set: (elem: HTMLTextAreaElement, value: string) => void}}
-	 */
-	const {
-		get = elem => elem.value,
-		set = (elem, value) => {
-			elem.value = value;
-		},
-	} = $.valHooks.textarea || {};
-
-	/**
 	 * 是否是Wikiplus编辑区
 	 * @param {HTMLTextAreaElement} elem textarea元素
 	 */
 	const isWikiplus = elem => elem.id === 'Wikiplus-Quickedit' || elem.id === 'Wikiplus-Setting-Input';
 	$.valHooks.textarea = {
 		/** @override */ get(elem) {
-			return isWikiplus(elem) && cm ? cm.getValue() : get(elem);
+			return isWikiplus(elem) && cm ? cm.getValue() : elem.value;
 		},
 		/** @override */ set(elem, value) {
 			if (isWikiplus(elem) && cm) {
 				cm.setValue(value);
 			} else {
-				set(elem, value);
+				elem.value = value;
 			}
 		},
 	};
