@@ -753,15 +753,8 @@
 		$('#Wikiplus-Quickedit-Jump').children('a').attr('href', '#Wikiplus-CodeMirror');
 
 		if (!setting) { // 普通Wikiplus编辑区
-			const /** @type {Wikiplus} */ Wikiplus = typeof window.Wikiplus === 'object'
-					? window.Wikiplus
-					: {
-						/** @override */ getSetting(key) {
-							const settings = storage.getObject('Wikiplus_Settings');
-							return settings && settings[key];
-						},
-					},
-				escToExitQuickEdit = Wikiplus.getSetting('esc_to_exit_quickedit'),
+			const settings = storage.getObject('Wikiplus_Settings'),
+				escToExitQuickEdit = settings && settings.esc_to_exit_quickedit || settings.escToExitQuickEdit,
 				submit = /** 提交编辑 */ () => {
 					$('#Wikiplus-Quickedit-Submit').triggerHandler('click');
 				},
@@ -888,7 +881,7 @@
 			toggleIndent();
 			Object.assign(mw.libs.wphl, {widget, indentWidget});
 		}
-		const wikiplusLoaded = typeof window.Wikiplus === 'object' || typeof window.Pages === 'object';
+		const wikiplusLoaded = typeof window.Wikiplus === 'object' || typeof window._WikiplusPages === 'object';
 		searchWidget.setDisabled(!wikiplusLoaded);
 		wikiEditorWidget.setDisabled(!wikiplusLoaded || !mw.loader.getState('ext.wikiEditor'));
 		const data = await dialog.open({
