@@ -99,7 +99,7 @@
 		CM_CDN = 'npm/codemirror@5.65.3',
 		MW_CDN = 'gh/bhsd-harry/codemirror-mediawiki@1.1.11',
 		PARSER_CDN = 'npm/wikiparser-node@0.11.0-b',
-		REPO_CDN = `gh/bhsd-harry/Wikiplus-highlight@${majorVersion}`;
+		REPO_CDN = `npm/wikiplus-highlight@${majorVersion}`;
 
 	const {config: {values: {
 		wgPageName: page,
