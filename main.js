@@ -5,8 +5,6 @@
  * @license GPL-3.0
  */
 
-/* eslint es-x/no-regexp-u-flag: 2 */
-/* eslint-disable require-unicode-regexp */
 (async () => {
 	'use strict';
 
@@ -180,7 +178,7 @@
 		{
 			option: 'matchBrackets',
 			/** @implements */ complex: (mode, json) => mode === 'mediawiki' || json
-				? {bracketRegex: /[{}[\]]/}
+				? {bracketRegex: /[{}[\]]/u}
 				: true,
 		},
 		{
@@ -225,7 +223,7 @@
 		}),
 		escapeHash = convert(str => {
 			try {
-				return decodeURIComponent(str.replace(/\.([\da-f]{2})/gi, '%$1'));
+				return decodeURIComponent(str.replace(/\.([\da-f]{2})/giu, '%$1'));
 			} catch (e) {
 				return str;
 			}
@@ -263,7 +261,7 @@
 			const pos = doc.coordsChar({left: pageX, top: pageY}),
 				{line, ch} = pos,
 				curType = doc.getTokenTypeAt(pos);
-			if (!/\bmw-(?:template-name|parserfunction)\b/.test(curType)) {
+			if (!/\bmw-(?:template-name|parserfunction)\b/u.test(curType)) {
 				return undefined;
 			}
 			const tokens = doc.getLineTokens(line);
@@ -276,8 +274,8 @@
 				}
 			}
 			const index = tokens.findIndex(({start, end}) => start < ch && end >= ch),
-				text = tokens[index].string.replace(/\u200E/g, '').replace(/_/g, ' ').trim();
-			if (/\bmw-template-name\b/.test(curType)) {
+				text = tokens[index].string.replace(/\u200E/gu, '').replace(/_/gu, ' ').trim();
+			if (/\bmw-template-name\b/u.test(curType)) {
 				const title = new mw.Title(text);
 				if (title.namespace !== 0 || text.startsWith(':')) {
 					open(title.getUrl(), '_blank');
@@ -285,8 +283,8 @@
 					open(mw.util.getUrl(`Template:${text}`), '_blank');
 				}
 				return false;
-			} else if (index < 2 || !/\bmw-parserfunction-delimiter\b/.test(tokens[index - 1].type)
-				|| !/\bmw-parserfunction-name\b/.test(tokens[index - 2].type)
+			} else if (index < 2 || !/\bmw-parserfunction-delimiter\b/u.test(tokens[index - 1].type)
+				|| !/\bmw-parserfunction-name\b/u.test(tokens[index - 2].type)
 			) {
 				return undefined;
 			}
@@ -504,7 +502,7 @@
 	 * @returns {Record<string, string>}
 	 */
 	const getConfig = aliases => Object.fromEntries(
-		aliases.map(({alias, name}) => [alias.replace(/:$/, ''), name]),
+		aliases.map(({alias, name}) => [alias.replace(/:$/u, ''), name]),
 	);
 
 	/**
@@ -564,7 +562,7 @@
 			if (!insensitive.subst) {
 				const aliases = getAliases(magicwords.filter(({name}) => otherMagicwords.has(name)));
 				for (const {alias, name} of aliases) {
-					insensitive[alias.replace(/:$/, '')] = name;
+					insensitive[alias.replace(/:$/u, '')] = name;
 				}
 			}
 		} else { // 情形4：`config === null`
@@ -581,7 +579,7 @@
 			};
 			const realMagicwords = new Set([...functionhooks, ...variables, ...otherMagicwords]),
 				allMagicwords = magicwords.filter(
-					({name, aliases}) => aliases.some(alias => /^__.+__$/.test(alias)) || realMagicwords.has(name),
+					({name, aliases}) => aliases.some(alias => /^__.+__$/u.test(alias)) || realMagicwords.has(name),
 				),
 				sensitive = getAliases(
 					allMagicwords.filter(word => word['case-sensitive']),
@@ -590,12 +588,12 @@
 					allMagicwords.filter(word => !word['case-sensitive']),
 				).map(({alias, name}) => ({alias: alias.toLowerCase(), name}));
 			config.doubleUnderscore = [
-				getConfig(insensitive.filter(({alias}) => /^__.+__$/.test(alias))),
-				getConfig(sensitive.filter(({alias}) => /^__.+__$/.test(alias))),
+				getConfig(insensitive.filter(({alias}) => /^__.+__$/u.test(alias))),
+				getConfig(sensitive.filter(({alias}) => /^__.+__$/u.test(alias))),
 			];
 			config.functionSynonyms = [
-				getConfig(insensitive.filter(({alias}) => !/^__.+__|^#$/.test(alias))),
-				getConfig(sensitive.filter(({alias}) => !/^__.+__|^#$/.test(alias))),
+				getConfig(insensitive.filter(({alias}) => !/^__.+__|^#$/u.test(alias))),
+				getConfig(sensitive.filter(({alias}) => !/^__.+__|^#$/u.test(alias))),
 			];
 		}
 		config.redirect = magicwords.find(({name}) => name === 'redirect').aliases;
@@ -712,7 +710,7 @@
 		cm = CodeMirror.fromTextArea($target[0], $.extend(
 			{
 				inputStyle: 'contenteditable',
-				lineNumbers: !/Android\b/.test(navigator.userAgent),
+				lineNumbers: !/Android\b/u.test(navigator.userAgent),
 				lineWrapping: true,
 				mode,
 				mwConfig,
