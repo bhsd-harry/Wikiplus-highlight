@@ -113,6 +113,7 @@
 
 	// 和本地缓存有关的常数
 	const USING_LOCAL = mw.loader.getState('ext.CodeMirror') !== null,
+		DATA_MODULE = mw.loader.getState('ext.CodeMirror.data') ? 'ext.CodeMirror.data' : 'ext.CodeMirror',
 		/** @type {Record<string, {time: number, config: mwConfig}>} */
 		ALL_SETTINGS_CACHE = storage.getObject('InPageEditMwConfig') || {},
 		SITE_ID = `${server}${scriptPath}`,
@@ -133,7 +134,7 @@
 			css: 'ext.CodeMirror.lib.mode.css',
 			javascript: 'ext.CodeMirror.lib.mode.javascript',
 			lua: `${CM_CDN}/mode/lua/lua.min.js`,
-			mediawiki: EXPIRED ? 'ext.CodeMirror.data' : [],
+			mediawiki: EXPIRED ? DATA_MODULE : [],
 			htmlmixed: 'ext.CodeMirror.lib.mode.htmlmixed',
 			xml: [],
 		}
