@@ -66,7 +66,7 @@
 
 	/**
 	 * 搜索括号
-	 * @param {CodeMirror.Editor} cm
+	 * @param {CodeMirror.Editor} cm CodeMirror实例
 	 * @param {CodeMirror.Position} where 当前位置
 	 * @param {1|-1} dir 搜索方向
 	 * @returns {CodeMirror.MarkerRange}
@@ -122,7 +122,7 @@
 
 	/**
 	 * 搜索模板
-	 * @param {CodeMirror.Editor} cm
+	 * @param {CodeMirror.Editor} cm CodeMirror实例
 	 * @param {CodeMirror.Position} cursor 当前位置
 	 * @returns {CodeMirror.MarkerRange}
 	 */
@@ -143,7 +143,7 @@
 
 	/**
 	 * 搜索注释
-	 * @param {CodeMirror.Editor} cm
+	 * @param {CodeMirror.Editor} cm CodeMirror实例
 	 * @param {CodeMirror.Position} cursor 当前位置
 	 * @returns {CodeMirror.MarkerRange|undefined}
 	 */
@@ -166,7 +166,7 @@
 
 	/**
 	 * 显示tooltip
-	 * @param {CodeMirror.EditorFoldable} cm
+	 * @param {CodeMirror.EditorFoldable} cm CodeMirror实例
 	 */
 	const showTooltip = cm => {
 		const {state: {fold: {$tooltip, hide}}} = cm;

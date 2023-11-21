@@ -248,8 +248,7 @@
 			{
 				"VariableDeclarator": {
 					"array": true,
-					"object": true,
-					"enforceForRenamedProperties": "literal"
+					"object": true
 				},
 				"AssignmentExpression": {
 					"array": true,
@@ -539,12 +538,6 @@
 		"unicorn/prefer-native-coercion-functions": 2,
 		"unicorn/prefer-negative-index": 2,
 		"unicorn/prefer-prototype-methods": 2,
-		"unicorn/prefer-spread": [
-			2,
-			{
-				"concat": "certain"
-			}
-		],
 		"unicorn/prefer-string-starts-ends-with": 2,
 		"unicorn/prefer-switch": 2,
 		"unicorn/prefer-ternary": 2,
@@ -567,10 +560,6 @@
 		],
 		"jsdoc/check-types": 1,
 		"jsdoc/multiline-blocks": 1,
-		"jsdoc/newline-after-description": [
-			1,
-			"never"
-		],
 		"jsdoc/no-bad-blocks": [
 			1,
 			{
@@ -622,9 +611,6 @@
 					"VariableDeclarator > FunctionExpression",
 					"MethodDefinition > FunctionExpression",
 					"VariableDeclarator > ArrowFunctionExpression"
-				],
-				"exceptions": [
-					"cm"
 				]
 			}
 		],
@@ -640,20 +626,6 @@
 			}
 		],
 		"jsdoc/require-param-type": 1,
-		"jsdoc/require-param": [
-			1,
-			{
-				"exceptions": [
-					"_"
-				],
-				"contexts": [
-					"FunctionDeclaration",
-					"VariableDeclarator > FunctionExpression",
-					"MethodDefinition > FunctionExpression",
-					"VariableDeclarator > ArrowFunctionExpression"
-				]
-			}
-		],
 		"jsdoc/require-property": 1,
 		"jsdoc/require-property-description": 1,
 		"jsdoc/require-property-name": 1,

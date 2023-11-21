@@ -43,7 +43,7 @@
 	/**
 	 * annotationSource
 	 * @param {string} str wikitext
-	 * @param {CodeMirror.Editor} cm
+	 * @param {CodeMirror.Editor} cm CodeMirror实例
 	 * @returns {Promise<CodeMirror.LintAnnotation>}
 	 */
 	const annotate = async (str, _, cm) => {
@@ -64,7 +64,7 @@
 
 	/**
 	 * start linting
-	 * @param {CodeMirror.Editor} cm
+	 * @param {CodeMirror.Editor} cm CodeMirror实例
 	 */
 	const lint = async cm => {
 		const mode = cm.getOption('mode');
@@ -182,7 +182,7 @@
 
 	/**
 	 * 分离hook函数以便调试
-	 * @param {CodeMirror.Editor} cm
+	 * @param {CodeMirror.Editor} cm CodeMirror实例
 	 */
 	const hook = cm => {
 		if (addons.has('lint') && cm.getTextArea

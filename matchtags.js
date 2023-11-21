@@ -13,7 +13,7 @@
 	/** @ignore */
 	class Iter {
 		/**
-		 * @param {CodeMirror.Editor} cm
+		 * @param {CodeMirror.Editor} cm CodeMirror实例
 		 * @param {CodeMirror.Position} pos 当前位置
 		 */
 		constructor(cm, {line, ch}) {
@@ -281,7 +281,7 @@
 
 	/**
 	 * 清除高亮
-	 * @param {CodeMirror.EditorWithMatchingTags} cm
+	 * @param {CodeMirror.EditorWithMatchingTags} cm CodeMirror实例
 	 */
 	const clear = cm => {
 		if (cm.state.tagHit) {
@@ -296,7 +296,7 @@
 
 	/**
 	 * 搜索并高亮匹配的标签
-	 * @param {CodeMirror.EditorWithMatchingTags} cm
+	 * @param {CodeMirror.EditorWithMatchingTags} cm CodeMirror实例
 	 */
 	const doMatchTags = cm => {
 		cm.operation(() => {

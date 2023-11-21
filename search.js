@@ -65,7 +65,7 @@
 
 	/**
 	 * 更新搜索字符串
-	 * @param {CodeMirror.Editor} cm
+	 * @param {CodeMirror.Editor} cm CodeMirror实例
 	 */
 	const updatePtn = cm => {
 		const /** @type {string} */ source = $search.val();
@@ -89,7 +89,7 @@
 
 	/**
 	 * keyboard event handler of `$search`
-	 * @param {CodeMirror.Editor} cm
+	 * @param {CodeMirror.Editor} cm CodeMirror实例
 	 * @param {boolean} dir 搜索方向
 	 * @param {boolean} update 是否先更新搜索字符串
 	 */
@@ -123,7 +123,7 @@
 
 	/**
 	 * replace one by one
-	 * @param {CodeMirror.Editor} cm
+	 * @param {CodeMirror.Editor} cm CodeMirror实例
 	 * @param {boolean} dir 搜索方向
 	 */
 	const replaceNext = (cm, dir) => {
@@ -139,7 +139,7 @@
 
 	/**
 	 * keyboard event handler of `$replace`
-	 * @param {CodeMirror.Editor} cm
+	 * @param {CodeMirror.Editor} cm CodeMirror实例
 	 */
 	const replace = async cm => {
 		const ptn = updatePtn(cm);
@@ -176,7 +176,7 @@
 
 	/**
 	 * click event handler of `$searchClose`
-	 * @param {CodeMirror.Editor} cm
+	 * @param {CodeMirror.Editor} cm CodeMirror实例
 	 */
 	const reset = cm => {
 		cm.removeOverlay(overlay);
