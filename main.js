@@ -95,10 +95,10 @@
 	const majorVersion = getVersion().slice(0, 2).join('.');
 
 	// 路径
-	const CDN = '//fastly.jsdelivr.net',
+	const CDN = '//testingcf.jsdelivr.net',
 		CM_CDN = 'npm/codemirror@5.65.3',
 		MW_CDN = 'npm/@bhsd/codemirror-mediawiki@1.1.11',
-		PARSER_CDN = 'npm/wikiparser-node@1.0.2-b',
+		PARSER_CDN = 'npm/wikiparser-node@1.0.3-b',
 		REPO_CDN = `npm/wikiplus-highlight@${majorVersion}`;
 
 	const {config: {values: {
