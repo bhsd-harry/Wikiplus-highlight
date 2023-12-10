@@ -1,6 +1,6 @@
 {
 	"name": "wikiplus-highlight",
-	"version": "2.60.1",
+	"version": "2.60.3",
 	"description": "A plugin for the MediaWiki front-end add-on \"Wikiplus\"",
 	"keywords": [
 		"mediawiki",
