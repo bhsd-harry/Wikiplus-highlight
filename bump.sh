@@ -7,7 +7,6 @@ then
 	sed -i '' -E "s/\"version\": \".+\"/\"version\": \"$1\"/" package.json
 	git add -A
 	git commit -m "chore: publish $1 to npm"
-	git push
 	npm publish
 else
 	eslint . && stylelint styles.css
