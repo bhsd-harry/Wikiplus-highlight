@@ -13,7 +13,7 @@
 
 	// 路径
 	const CDN = '//testingcf.jsdelivr.net',
-		MW_CDN = 'npm/@bhsd/codemirror-mediawiki@2.4.4/dist/mw.min.js',
+		MW_CDN = 'npm/@bhsd/codemirror-mediawiki@2.4.5/dist/mw.min.js',
 		REPO_CDN = 'npm/wikiplus-highlight';
 
 	const {
