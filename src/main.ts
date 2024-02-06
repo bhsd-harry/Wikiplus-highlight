@@ -13,7 +13,7 @@
 
 	// 路径
 	const CDN = '//testingcf.jsdelivr.net',
-		MW_CDN = 'npm/@bhsd/codemirror-mediawiki@2.4.2/dist/mw.min.js',
+		MW_CDN = 'npm/@bhsd/codemirror-mediawiki@2.4.3/dist/mw.min.js',
 		REPO_CDN = 'npm/wikiplus-highlight';
 
 	const {
@@ -92,6 +92,32 @@
 					? [{key: 'Esc', run: escapeEdit}]
 					: [],
 			]);
+		}
+
+		/** @todo 以下过渡代码添加于2024-02-07，将于一段时间后弃用 */
+		const oldKey = 'Wikiplus-highlight-addons',
+			oldPrefs: string[] | null = JSON.parse(String(localStorage.getItem(oldKey))),
+			mapping: Record<string, string> = {
+				activeLine: 'highlightActiveLine',
+				trailingspace: 'highlightTrailingWhitespace',
+				matchBrackets: 'bracketMatching',
+				closeBrackets: 'closeBrackets',
+				matchTags: 'tagMatching',
+				fold: 'codeFolding',
+				wikiEditor: 'wikiEditor',
+				escape: 'escape',
+				contextmenu: 'openLinks',
+				lint: 'lint',
+			};
+		localStorage.removeItem(oldKey);
+		if (oldPrefs) {
+			const obj: Record<string, true> = {};
+			for (const k of oldPrefs) {
+				if (k in mapping) {
+					obj[mapping[k]!] = true;
+				}
+			}
+			cm.prefer(obj);
 		}
 	};
 
