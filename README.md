@@ -12,13 +12,13 @@
 在*个人 JS 页*添加以下代码：
 
 ```javascript
-mw.loader.load('//cdn.jsdelivr.net/npm/wikiplus-highlight@3.0.1');
+mw.loader.load('//cdn.jsdelivr.net/npm/wikiplus-highlight@3.0.2');
 ```
 
 或
 
 ```javascript
-mw.loader.load('//unpkg.com/wikiplus-highlight@3.0.1/dist/main.js');
+mw.loader.load('//unpkg.com/wikiplus-highlight@3.0.2/dist/main.js');
 ```
 
 ### 稳定版本
@@ -91,6 +91,10 @@ MediaWiki 模式下自动闭合生效的字符包括 `(`、`[`、`{` 和 `"`，�
 ### 维基语法检查
 
 这个功能基于 [wikiparser-node](https://github.com/bhsd-harry/wikiparser-node)。开启后将在编辑框内提示可能存在的维基语法错误。
+
+### 添加 WikiEditor 工具栏
+
+工具栏遵从当前网站安装的 [WikiEditor](https://www.mediawiki.org/wiki/Extension:WikiEditor) 扩展的版本。
 
 ### 调整缩进
 
