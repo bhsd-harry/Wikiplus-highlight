@@ -8,7 +8,7 @@
 	if ('wphl' in mw.libs) {
 		return;
 	}
-	const version = '3.0.0';
+	const version = '3.0.1';
 	mw.libs['wphl'] = {version}; // 开始加载
 
 	// 路径

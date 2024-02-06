@@ -12,13 +12,13 @@
 在*个人 JS 页*添加以下代码：
 
 ```javascript
-mw.loader.load('//cdn.jsdelivr.net/npm/wikiplus-highlight@3.0.0');
+mw.loader.load('//cdn.jsdelivr.net/npm/wikiplus-highlight@3.0.1');
 ```
 
 或
 
 ```javascript
-mw.loader.load('//unpkg.com/wikiplus-highlight@3.0.0/dist/main.js');
+mw.loader.load('//unpkg.com/wikiplus-highlight@3.0.1/dist/main.js');
 ```
 
 ### 稳定版本
