@@ -13,7 +13,7 @@
 
 	// 路径
 	const CDN = '//testingcf.jsdelivr.net',
-		MW_CDN = 'npm/@bhsd/codemirror-mediawiki@2.4.3/dist/mw.min.js',
+		MW_CDN = 'npm/@bhsd/codemirror-mediawiki@2.4.4/dist/mw.min.js',
 		REPO_CDN = 'npm/wikiplus-highlight';
 
 	const {
@@ -26,6 +26,9 @@
 		'sanitized-css': 'css',
 		wikitext: 'mediawiki',
 	};
+
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/unbound-method
+	const getObject = mw.storage.getObject || ((key): unknown => JSON.parse(String(localStorage.getItem(key))));
 
 	/** 根据需要加载CodeMirror6 */
 	const init = (): Promise<void> =>
@@ -70,8 +73,7 @@
 		document.querySelector<HTMLAnchorElement>('#Wikiplus-Quickedit-Jump > a')!.href = '#Wikiplus-CodeMirror';
 
 		if (!setting) { // 普通Wikiplus编辑区
-			const settings: Record<string, unknown> | null
-					= JSON.parse(String(localStorage.getItem('Wikiplus_Settings'))),
+			const settings: Record<string, unknown> | null = getObject('Wikiplus_Settings'),
 				escToExitQuickEdit = settings && (settings['esc_to_exit_quickedit'] || settings['escToExitQuickEdit']),
 				submit = /** 提交编辑 */ (): true => {
 					document.getElementById('Wikiplus-Quickedit-Submit')!.dispatchEvent(new MouseEvent('click'));
@@ -96,7 +98,7 @@
 
 		/** @todo 以下过渡代码添加于2024-02-07，将于一段时间后弃用 */
 		const oldKey = 'Wikiplus-highlight-addons',
-			oldPrefs: string[] | null = JSON.parse(String(localStorage.getItem(oldKey))),
+			oldPrefs: string[] | null = getObject(oldKey),
 			mapping: Record<string, string> = {
 				activeLine: 'highlightActiveLine',
 				trailingspace: 'highlightTrailingWhitespace',
