@@ -94,6 +94,8 @@ MediaWiki 模式下自动闭合生效的字符包括 `(`、`[`、`{` 和 `"`，�
 
 ### 添加 WikiEditor 工具栏
 
+*加入的版本：3.0.2*
+
 工具栏遵从当前网站安装的 [WikiEditor](https://www.mediawiki.org/wiki/Extension:WikiEditor) 扩展的版本。
 
 ### 调整缩进
