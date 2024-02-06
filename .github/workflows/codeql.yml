@@ -14,10 +14,12 @@ name: "CodeQL"
 on:
   push:
     paths:
-      - '*.js'
+      - '**/*.ts'
+      - '!**/*.d.ts'
   pull_request:
     paths:
-      - '*.js'
+      - '**/*.ts'
+      - '!**/*.d.ts'
 
 jobs:
   analyze:

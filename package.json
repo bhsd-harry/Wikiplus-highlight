@@ -19,21 +19,25 @@
 		"/*.js",
 		"/*.css"
 	],
-	"browser": "/main.js",
+	"browser": "/dist/main.js",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/bhsd-harry/Wikiplus-highlight.git"
 	},
 	"scripts": {
-		"test": "eslint . && stylelint styles.css && http-server -c-1 --cors"
+		"lint:ts": "tsc --noEmit && eslint --cache .",
+		"lint:css": "stylelint *.css",
+		"lint": "npm run lint:ts && npm run lint:css",
+		"build": "tsc"
 	},
 	"devDependencies": {
+		"@bhsd/codemirror-mediawiki": "^2.4.2",
 		"@stylistic/eslint-plugin": "^1.5.4",
 		"@stylistic/stylelint-plugin": "^2.0.0",
 		"@types/jquery": "^3.5.29",
+		"@types/oojs-ui": "^0.47.6",
 		"@typescript-eslint/eslint-plugin": "^6.19.1",
 		"@typescript-eslint/parser": "^6.19.1",
-		"esbuild": "^0.19.12",
 		"eslint": "^8.56.0",
 		"eslint-plugin-es-x": "^7.5.0",
 		"eslint-plugin-eslint-comments": "^3.2.0",
@@ -42,7 +46,6 @@
 		"eslint-plugin-promise": "^6.1.1",
 		"eslint-plugin-regexp": "^2.2.0",
 		"eslint-plugin-unicorn": "^50.0.1",
-		"http-server": "^14.1.0",
 		"stylelint": "^16.1.0",
 		"stylelint-config-recommended": "^14.0.0",
 		"types-mediawiki": "^1.4.0",

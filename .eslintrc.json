@@ -626,6 +626,7 @@
 			1,
 			{
 				"exemptedBy": [
+					"license",
 					"type"
 				],
 				"checkConstructors": false,
