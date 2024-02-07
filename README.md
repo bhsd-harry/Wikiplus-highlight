@@ -18,7 +18,7 @@ mw.loader.load('//cdn.jsdelivr.net/npm/wikiplus-highlight@3.0.2');
 或
 
 ```javascript
-mw.loader.load('//unpkg.com/wikiplus-highlight@3.0.2/dist/main.js');
+mw.loader.load('//unpkg.com/wikiplus-highlight@3.0.2');
 ```
 
 ### 稳定版本
@@ -32,7 +32,7 @@ mw.loader.load('//cdn.jsdelivr.net/npm/wikiplus-highlight');
 或
 
 ```javascript
-mw.loader.load('//unpkg.com/wikiplus-highlight/dist/main.js');
+mw.loader.load('//unpkg.com/wikiplus-highlight');
 ```
 
 由于 CDN 的缓存机制，稳定版本的更新大约会滞后一周。
