@@ -4,7 +4,7 @@
 
 **Fixed**
 
-- When using the new version of [Wikiplus](https://npmjs.com/package/wikiplus-core), the guessing of the highlight mode is improved
+- When using the new version of [Wikiplus](https://www.npmjs.com/package/wikiplus-core), the guessing of the highlight mode is improved
 
 ## v3.0.2
 
