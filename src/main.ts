@@ -22,10 +22,19 @@
 		wgPageContentModel: contentmodel,
 	} = mw.config.get();
 
-	const CONTENTMODEL: Record<string, string> = {
-		'sanitized-css': 'css',
-		wikitext: 'mediawiki',
-	};
+	const CONTENTMODELS: Record<string, string> = {
+			'sanitized-css': 'css',
+			wikitext: 'mediawiki',
+		},
+		EXTS: Record<string, string> = {
+			css: 'css',
+			js: 'javascript',
+			json: 'json',
+		},
+		NAMESPACES: Record<number, string> = {
+			828: 'lua',
+			274: 'html',
+		};
 
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/unbound-method
 	const getObject = mw.storage.getObject || ((key): unknown => JSON.parse(String(localStorage.getItem(key))));
@@ -44,10 +53,34 @@
 				document.head.appendChild(script);
 			});
 
-	/** 检查页面语言类型 */
-	const getPageMode = async (): Promise<string> => {
+	/**
+	 * 检查页面语言类型
+	 * @param value 页面内容
+	 */
+	const getPageMode = async (value: string): Promise<string> => {
+		if (typeof _WikiplusPages === 'object') {
+			const pages = Object.values(_WikiplusPages)
+				.filter(({sectionCache}) => Object.values(sectionCache).includes(value));
+			if (pages.some(({title}) => !title.endsWith('/doc'))) {
+				await mw.loader.using('mediawiki.Title');
+			}
+			const modes = new Set(pages.map(({title}) => {
+				if (title.endsWith('/doc')) {
+					return 'mediawiki';
+				}
+				const t = new mw.Title(title),
+					namespace = t.getNamespaceId();
+				return namespace % 2
+					? 'mediawiki'
+					: EXTS[t.getExtension()?.toLowerCase() || ''] || NAMESPACES[namespace] || 'mediawiki';
+			}));
+			if (modes.size === 1) {
+				const [mode] = modes;
+				return mode!;
+			}
+		}
 		if (ns !== 274 && contentmodel !== 'Scribunto' || page.endsWith('/doc')) {
-			return CONTENTMODEL[contentmodel] || contentmodel;
+			return CONTENTMODELS[contentmodel] || contentmodel;
 		}
 		await mw.loader.using('oojs-ui-windows');
 		if (
@@ -67,7 +100,7 @@
 	 */
 	const renderEditor = async ($target: JQuery<HTMLTextAreaElement>, setting: boolean): Promise<void> => {
 		await init();
-		const cm = await CodeMirror6.fromTextArea($target[0]!, setting ? 'json' : await getPageMode());
+		const cm = await CodeMirror6.fromTextArea($target[0]!, setting ? 'json' : await getPageMode($target.val()!));
 		cm.view.dom.id = 'Wikiplus-CodeMirror';
 
 		document.querySelector<HTMLAnchorElement>('#Wikiplus-Quickedit-Jump > a')!.href = '#Wikiplus-CodeMirror';

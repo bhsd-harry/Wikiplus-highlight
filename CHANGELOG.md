@@ -1,3 +1,11 @@
+## v3.0.3
+
+*2024-02-24*
+
+**Fixed**
+
+- When using the new version of [Wikiplus](https://npmjs.com/package/wikiplus-core), the guessing of the highlight mode is improved
+
 ## v3.0.2
 
 *2024-02-07*
