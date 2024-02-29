@@ -7,22 +7,6 @@
 
 ## 使用方法
 
-### 最新版本
-
-在*个人 JS 页*添加以下代码：
-
-```javascript
-mw.loader.load('//cdn.jsdelivr.net/npm/wikiplus-highlight@3.0.4');
-```
-
-或
-
-```javascript
-mw.loader.load('//unpkg.com/wikiplus-highlight@3.0.4');
-```
-
-### 稳定版本
-
 在*个人 JS 页*添加以下代码：
 
 ```javascript
@@ -34,8 +18,6 @@ mw.loader.load('//cdn.jsdelivr.net/npm/wikiplus-highlight');
 ```javascript
 mw.loader.load('//unpkg.com/wikiplus-highlight');
 ```
-
-由于 CDN 的缓存机制，稳定版本的更新大约会滞后一周。
 
 ## 更多插件
 
