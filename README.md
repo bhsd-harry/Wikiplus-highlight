@@ -66,17 +66,15 @@ MediaWiki 模式下自动闭合生效的字符包括 `(`、`[`、`{` 和 `"`，�
 - `Ctrl`/`Cmd` + `[`: 将选中的文字转换为HTML实体
 - `Ctrl`/`Cmd` + `]`: 将选中的文字解码或转换为URL编码
 
-### 快速打开内部链接
+### 快速打开链接
 
-按住 `Ctrl`/`Cmd` 并点击被高亮标记为内部链接或模板标题的文字时，会在新标签页打开对应页面。
+按住 `Ctrl`/`Cmd` 并点击被高亮标记为内部链接、模板标题或外部链接的文字时，会在新标签页打开对应页面。
 
 ### 维基语法检查
 
 这个功能基于 [wikiparser-node](https://github.com/bhsd-harry/wikiparser-node)。开启后将在编辑框内提示可能存在的维基语法错误。
 
 ### 添加 WikiEditor 工具栏
-
-*加入的版本：3.0.2*
 
 工具栏遵从当前网站安装的 [WikiEditor](https://www.mediawiki.org/wiki/Extension:WikiEditor) 扩展的版本。
 
