@@ -16,6 +16,18 @@
 		MW_CDN = 'npm/@bhsd/codemirror-mediawiki/dist/mw.min.js',
 		REPO_CDN = 'npm/wikiplus-highlight';
 
+	const /** 加载CodeMirror 6 */ init: Promise<void> = 'CodeMirror6' in window
+		? Promise.resolve()
+		: new Promise(resolve => {
+			const script = document.createElement('script');
+			script.addEventListener('load', () => {
+				resolve();
+			});
+			script.type = 'module';
+			script.src = `${CDN}/${MW_CDN}`;
+			document.head.appendChild(script);
+		});
+
 	const {
 		wgPageName: page,
 		wgNamespaceNumber: ns,
@@ -38,20 +50,6 @@
 
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/unbound-method
 	const getObject = mw.storage.getObject || ((key): unknown => JSON.parse(String(localStorage.getItem(key))));
-
-	/** 根据需要加载CodeMirror6 */
-	const init = (): Promise<void> =>
-		'CodeMirror6' in window
-			? Promise.resolve()
-			: new Promise(resolve => {
-				const script = document.createElement('script');
-				script.addEventListener('load', () => {
-					resolve();
-				});
-				script.type = 'module';
-				script.src = `${CDN}/${MW_CDN}`;
-				document.head.appendChild(script);
-			});
 
 	/**
 	 * 检查页面语言类型
@@ -99,7 +97,7 @@
 	 * @param setting 是否是Wikiplus设置（使用json语法）
 	 */
 	const renderEditor = async ($target: JQuery<HTMLTextAreaElement>, setting: boolean): Promise<void> => {
-		await init();
+		await init;
 		const cm = await CodeMirror6.fromTextArea($target[0]!, setting ? 'json' : await getPageMode($target.val()!));
 		cm.view.dom.id = 'Wikiplus-CodeMirror';
 

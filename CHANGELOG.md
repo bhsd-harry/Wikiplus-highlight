@@ -1,3 +1,11 @@
+## v3.0.5
+
+*2024-03-05*
+
+**Changed**
+
+- [CodeMirror-MediaWiki](https://github.com/bhsd-harry/codemirror-mediawiki), including the preference dialog, is now loaded before editing
+
 ## v3.0.3
 
 *2024-02-24*
@@ -18,4 +26,4 @@
 
 *2024-02-06*
 
-First TypeScript version dependent on [codemirror-mediawiki](https://github.com/bhsd-harry/codemirror-mediawiki)
+First TypeScript version dependent on [CodeMirror-MediaWiki](https://github.com/bhsd-harry/codemirror-mediawiki)
