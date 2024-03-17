@@ -1,3 +1,11 @@
+## v3.0.7
+
+*2024-03-17*
+
+**Added**
+
+- The version of the [CodeMirror-MediaWiki](https://github.com/bhsd-harry/codemirror-mediawiki) library is now customizable by modifying the `cmVersion` key of the global variable `mw.libs.wphl`
+
 ## v3.0.5
 
 *2024-03-05*

@@ -3,7 +3,9 @@ import type {CodeMirror6} from '@bhsd/codemirror-mediawiki';
 
 declare global {
 	namespace mw {
-		const libs: Record<string, unknown>;
+		const libs: {
+			wphl?: {version?: string, cmVersion: string};
+		};
 	}
 
 	const CodeMirror6: {

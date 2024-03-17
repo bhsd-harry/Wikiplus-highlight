@@ -5,15 +5,17 @@
  */
 
 ((): void => {
-	if ('wphl' in mw.libs) {
+	const {libs} = mw,
+		{wphl} = libs;
+	if (wphl?.version) {
 		return;
 	}
 	const version = '3.0.6';
-	mw.libs['wphl'] = {version}; // 开始加载
+	libs.wphl = {version, cmVersion: '2.9', ...wphl}; // 开始加载
 
 	// 路径
 	const CDN = '//testingcf.jsdelivr.net',
-		MW_CDN = 'npm/@bhsd/codemirror-mediawiki/dist/mw.min.js',
+		MW_CDN = `npm/@bhsd/codemirror-mediawiki@${libs.wphl.cmVersion || 'latest'}/dist/mw.min.js`,
 		REPO_CDN = 'npm/wikiplus-highlight';
 
 	const /** 加载CodeMirror 6 */ init: Promise<void> = 'CodeMirror6' in window
