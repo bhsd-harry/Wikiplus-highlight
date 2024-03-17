@@ -1,7 +1,7 @@
 # Wikiplus-highlight
 
 [![npm version](https://badge.fury.io/js/wikiplus-highlight.svg)](https://www.npmjs.com/package/wikiplus-highlight)
-[![CodeQL](https://github.com/bhsd-harry/Wikiplus-highlight/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/bhsd-harry/Wikiplus-highlight/actions/workflows/github-code-scanning/codeql)
+[![CodeQL](https://github.com/bhsd-harry/Wikiplus-highlight/actions/workflows/codeql.yml/badge.svg)](https://github.com/bhsd-harry/Wikiplus-highlight/actions/workflows/codeql.yml)
 
 **Wikiplus-highlight** 是由 Bhsd 编写的一款 [Wikiplus](https://github.com/Wikiplus/Wikiplus) 语法高亮插件，它主要基于 MediaWiki 内置的 [JavaScript 模块](https://www.mediawiki.org/wiki/ResourceLoader/Core_modules)和 [CodeMirror](https://codemirror.net/) 编写。
 
@@ -9,13 +9,13 @@
 
 在*个人 JS 页*添加以下代码：
 
-```javascript
+```js
 mw.loader.load('//cdn.jsdelivr.net/npm/wikiplus-highlight');
 ```
 
 或
 
-```javascript
+```js
 mw.loader.load('//unpkg.com/wikiplus-highlight');
 ```
 

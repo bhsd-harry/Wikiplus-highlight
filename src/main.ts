@@ -10,7 +10,7 @@
 	if (wphl?.version) {
 		return;
 	}
-	const version = '3.0.6';
+	const version = '3.0.7';
 	libs.wphl = {version, cmVersion: '2.9', ...wphl}; // 开始加载
 
 	// 路径
