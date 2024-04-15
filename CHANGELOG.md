@@ -1,3 +1,11 @@
+## v3.0.8
+
+*2024-04-16*
+
+**Fixed**
+
+- The [CodeMirror-MediaWiki](https://github.com/bhsd-harry/codemirror-mediawiki) library was sometimes loaded twice when [InPageEdit](https://github.com/inpageedit/inpageedit-v2) is also installed
+
 ## v3.0.7
 
 *2024-03-17*

@@ -18,17 +18,15 @@
 		MW_CDN = `npm/@bhsd/codemirror-mediawiki@${libs.wphl.cmVersion || 'latest'}/dist/mw.min.js`,
 		REPO_CDN = 'npm/wikiplus-highlight';
 
-	const /** 加载CodeMirror 6 */ init: Promise<void> = 'CodeMirror6' in window
-		? Promise.resolve()
-		: new Promise(resolve => {
-			const script = document.createElement('script');
-			script.addEventListener('load', () => {
-				resolve();
-			});
-			script.type = 'module';
-			script.src = `${CDN}/${MW_CDN}`;
-			document.head.appendChild(script);
+	window.CodeMirror6 ||= new Promise(resolve => {
+		const script = document.createElement('script');
+		script.addEventListener('load', () => {
+			resolve(CodeMirror6);
 		});
+		script.type = 'module';
+		script.src = `${CDN}/${MW_CDN}`;
+		document.head.appendChild(script);
+	});
 
 	const {
 		wgPageName: page,
@@ -50,8 +48,8 @@
 			274: 'html',
 		};
 
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/unbound-method
-	const getObject = mw.storage.getObject || ((key): unknown => JSON.parse(String(localStorage.getItem(key))));
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const getObject = (key: string): any => JSON.parse(String(localStorage.getItem(key)));
 
 	/**
 	 * 检查页面语言类型
@@ -113,8 +111,7 @@
 	 * @param setting 是否是Wikiplus设置（使用json语法）
 	 */
 	const renderEditor = async ($target: JQuery<HTMLTextAreaElement>, setting: boolean): Promise<void> => {
-		await init;
-		const cm = await CodeMirror6.fromTextArea(
+		const cm = await (await CodeMirror6).fromTextArea(
 			$target[0]!,
 			...setting ? ['json'] as [string] : await getPageMode($target.val()!),
 		);
