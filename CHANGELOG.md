@@ -1,3 +1,11 @@
+## v3.1.0
+
+*2024-04-19*
+
+**Added**
+
+- Alternative highlighting with [Monaco Editor](https://microsoft.github.io/monaco-editor/)
+
 ## v3.0.8
 
 *2024-04-16*

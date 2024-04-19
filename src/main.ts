@@ -11,17 +11,32 @@
 		return;
 	}
 	const version = '3.0.8';
-	libs.wphl = {version, cmVersion: '2.9', ...wphl}; // 开始加载
+	libs.wphl = {version, cmVersion: '2.9', monacoVersion: '0.2.2', ...wphl}; // 开始加载
 
 	// 路径
 	const CDN = '//testingcf.jsdelivr.net',
 		MW_CDN = `npm/@bhsd/codemirror-mediawiki@${libs.wphl.cmVersion || 'latest'}/dist/mw.min.js`,
+		MONACO_CDN = `npm/monaco-wiki@${libs.wphl.monacoVersion || 'latest'}/dist/mw.min.js`,
 		REPO_CDN = 'npm/wikiplus-highlight';
 
-	window.CodeMirror6 ||= (async () => {
-		await $.ajax(`${CDN}/${MW_CDN}`, {dataType: 'script', scriptAttrs: {type: 'module'}} as JQuery.AjaxSettings);
-		return CodeMirror6;
-	})();
+	const useMonaco = wphl?.useMonaco;
+	if (useMonaco) {
+		window.MonacoWikiEditor ||= (async () => {
+			await $.ajax(
+				`${CDN}/${MONACO_CDN}`,
+				{dataType: 'script', scriptAttrs: {type: 'module'}} as JQuery.AjaxSettings,
+			);
+			return MonacoWikiEditor;
+		})();
+	} else {
+		window.CodeMirror6 ||= (async () => {
+			await $.ajax(
+				`${CDN}/${MW_CDN}`,
+				{dataType: 'script', scriptAttrs: {type: 'module'}} as JQuery.AjaxSettings,
+			);
+			return CodeMirror6;
+		})();
+	}
 
 	const {
 		wgPageName: page,
@@ -100,68 +115,98 @@
 		return [ns === 274 ? 'html' : 'lua'];
 	};
 
+	const submit = /** 提交编辑 */ (): true => {
+			document.getElementById('Wikiplus-Quickedit-Submit')!.dispatchEvent(new MouseEvent('click'));
+			return true;
+		},
+		submitMinor = /** 提交小编辑 */ (): true => {
+			document.querySelector<HTMLInputElement>('#Wikiplus-Quickedit-MinorEdit')!.checked = true;
+			return submit();
+		},
+		escapeEdit = /** 按下Esc键退出编辑 */ (): true => {
+			document.getElementById('Wikiplus-Quickedit-Back')!.dispatchEvent(new MouseEvent('click'));
+			return true;
+		};
+
 	/**
 	 * 渲染编辑器
 	 * @param $target 目标编辑框
 	 * @param setting 是否是Wikiplus设置（使用json语法）
 	 */
 	const renderEditor = async ($target: JQuery<HTMLTextAreaElement>, setting: boolean): Promise<void> => {
-		const cm = await (await CodeMirror6).fromTextArea(
-			$target[0]!,
-			...setting ? ['json'] as [string] : await getPageMode($target.val()!),
-		);
-		cm.view.dom.id = 'Wikiplus-CodeMirror';
+		const settings: Record<string, unknown> | null = getObject('Wikiplus_Settings'),
+			escToExitQuickEdit = settings && (settings['esc_to_exit_quickedit'] || settings['escToExitQuickEdit']);
 
-		document.querySelector<HTMLAnchorElement>('#Wikiplus-Quickedit-Jump > a')!.href = '#Wikiplus-CodeMirror';
+		if (useMonaco) {
+			const lang = setting ? 'json' : (await getPageMode($target.val()!))[0],
+				{editor} = await (await MonacoWikiEditor).fromTextArea($target[0]!, lang);
+			editor.getDomNode()!.id = 'Wikiplus-CodeMirror';
 
-		if (!setting) { // 普通Wikiplus编辑区
-			const settings: Record<string, unknown> | null = getObject('Wikiplus_Settings'),
-				escToExitQuickEdit = settings && (settings['esc_to_exit_quickedit'] || settings['escToExitQuickEdit']),
-				submit = /** 提交编辑 */ (): true => {
-					document.getElementById('Wikiplus-Quickedit-Submit')!.dispatchEvent(new MouseEvent('click'));
-					return true;
-				},
-				submitMinor = /** 提交小编辑 */ (): true => {
-					document.querySelector<HTMLInputElement>('#Wikiplus-Quickedit-MinorEdit')!.checked = true;
-					return submit();
-				},
-				escapeEdit = /** 按下Esc键退出编辑 */ (): true => {
-					document.getElementById('Wikiplus-Quickedit-Back')!.dispatchEvent(new MouseEvent('click'));
-					return true;
+			if (!setting) { // 普通Wikiplus编辑区
+				editor.onKeyUp(e => {
+					if (e.keyCode === 49 as MonacoKeyCode && (e.ctrlKey || e.metaKey)) {
+						e.preventDefault();
+						if (e.shiftKey) {
+							submitMinor();
+						} else {
+							submit();
+						}
+					} else if (
+						e.keyCode === 9 as MonacoKeyCode
+						&& (escToExitQuickEdit === true || escToExitQuickEdit === 'true')
+					) {
+						e.preventDefault();
+						escapeEdit();
+					}
+				});
+			}
+		} else {
+			const cm = await (await CodeMirror6).fromTextArea(
+				$target[0]!,
+				...setting ? ['json'] as [string] : await getPageMode($target.val()!),
+			);
+			cm.view.dom.id = 'Wikiplus-CodeMirror';
+
+			if (!setting) { // 普通Wikiplus编辑区
+				cm.extraKeys([
+					{key: 'Mod-S', run: submit},
+					{key: 'Shift-Mod-S', run: submitMinor},
+					...escToExitQuickEdit === true || escToExitQuickEdit === 'true'
+						? [{key: 'Esc', run: escapeEdit}]
+						: [],
+				]);
+			}
+
+			/** @todo 以下过渡代码添加于2024-02-07，将于一段时间后弃用 */
+			const oldKey = 'Wikiplus-highlight-addons',
+				oldPrefs: string[] | null = getObject(oldKey),
+				mapping: Record<string, string> = {
+					activeLine: 'highlightActiveLine',
+					trailingspace: 'highlightTrailingWhitespace',
+					matchBrackets: 'bracketMatching',
+					closeBrackets: 'closeBrackets',
+					matchTags: 'tagMatching',
+					fold: 'codeFolding',
+					wikiEditor: 'wikiEditor',
+					escape: 'escape',
+					contextmenu: 'openLinks',
+					lint: 'lint',
 				};
-			cm.extraKeys([
-				{key: 'Mod-S', run: submit},
-				{key: 'Shift-Mod-S', run: submitMinor},
-				...escToExitQuickEdit === true || escToExitQuickEdit === 'true'
-					? [{key: 'Esc', run: escapeEdit}]
-					: [],
-			]);
+			localStorage.removeItem(oldKey);
+			if (oldPrefs) {
+				const obj: Record<string, true> = {};
+				for (const k of oldPrefs) {
+					if (k in mapping) {
+						obj[mapping[k]!] = true;
+					}
+				}
+				cm.prefer(obj);
+			}
 		}
 
-		/** @todo 以下过渡代码添加于2024-02-07，将于一段时间后弃用 */
-		const oldKey = 'Wikiplus-highlight-addons',
-			oldPrefs: string[] | null = getObject(oldKey),
-			mapping: Record<string, string> = {
-				activeLine: 'highlightActiveLine',
-				trailingspace: 'highlightTrailingWhitespace',
-				matchBrackets: 'bracketMatching',
-				closeBrackets: 'closeBrackets',
-				matchTags: 'tagMatching',
-				fold: 'codeFolding',
-				wikiEditor: 'wikiEditor',
-				escape: 'escape',
-				contextmenu: 'openLinks',
-				lint: 'lint',
-			};
-		localStorage.removeItem(oldKey);
-		if (oldPrefs) {
-			const obj: Record<string, true> = {};
-			for (const k of oldPrefs) {
-				if (k in mapping) {
-					obj[mapping[k]!] = true;
-				}
-			}
-			cm.prefer(obj);
+		const jump = document.querySelector<HTMLAnchorElement>('#Wikiplus-Quickedit-Jump > a');
+		if (jump) {
+			jump.href = '#Wikiplus-CodeMirror';
 		}
 	};
 
