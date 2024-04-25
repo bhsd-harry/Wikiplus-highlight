@@ -4,14 +4,21 @@
  * @license GPL-3.0
  */
 
+declare interface WPHL {
+	version?: string;
+	cmVersion?: string;
+	monacoVersion?: string;
+	useMonaco?: boolean;
+}
+
 ((): void => {
-	const {libs} = mw,
+	const {libs} = mw as {libs: {wphl?: WPHL}},
 		{wphl} = libs;
 	if (wphl?.version) {
 		return;
 	}
 	const version = '3.1.0';
-	libs.wphl = {version, cmVersion: '2.9', monacoVersion: '0.2.2', ...wphl}; // 开始加载
+	libs.wphl = {version, ...wphl}; // 开始加载
 
 	// 路径
 	const CDN = '//testingcf.jsdelivr.net',

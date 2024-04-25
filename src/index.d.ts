@@ -15,17 +15,6 @@ type MonacoOrPromise = MonacoEditor | Promise<MonacoEditor>;
 type CodeMirrorOrPromise = CodeMirror | Promise<CodeMirror>;
 
 declare global {
-	namespace mw {
-		const libs: {
-			wphl?: {
-				version?: string;
-				cmVersion: string;
-				monacoVersion: string;
-				useMonaco?: boolean;
-			};
-		};
-	}
-
 	interface Window {
 		MonacoWikiEditor: MonacoOrPromise | undefined;
 		CodeMirror6: CodeMirrorOrPromise | undefined;
