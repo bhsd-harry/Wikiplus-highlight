@@ -1,27 +1,21 @@
 import 'types-mediawiki';
-import type {KeyCode} from 'monaco-editor';
-import type {MonacoWikiEditor} from 'monaco-wiki/dist/mw/base';
+import type {editor, KeyCode} from 'monaco-editor';
 import type {CodeMirror6} from '@bhsd/codemirror-mediawiki';
 
-interface MonacoEditor {
-	fromTextArea(textarea: HTMLTextAreaElement, lang?: string): Promise<MonacoWikiEditor>;
+interface CodeMirror extends CodeMirror6 {
+	editor?: editor.IStandaloneCodeEditor;
 }
 
-interface CodeMirror {
-	fromTextArea(textarea: HTMLTextAreaElement, lang?: string, ns?: number): Promise<CodeMirror6>;
+interface CodeMirrorStatic {
+	fromTextArea(textarea: HTMLTextAreaElement, lang?: string, ns?: number): Promise<CodeMirror>;
 }
-
-type MonacoOrPromise = MonacoEditor | Promise<MonacoEditor>;
-type CodeMirrorOrPromise = CodeMirror | Promise<CodeMirror>;
 
 declare global {
 	interface Window {
-		MonacoWikiEditor: MonacoOrPromise | undefined;
-		CodeMirror6: CodeMirrorOrPromise | undefined;
+		CodeMirror6: Promise<CodeMirrorStatic> | undefined;
 	}
 
-	const MonacoWikiEditor: MonacoOrPromise;
-	const CodeMirror6: CodeMirrorOrPromise;
+	const CodeMirror6: CodeMirrorStatic | Promise<CodeMirrorStatic>;
 
 	const _WikiplusPages: Record<number, {title: string, sectionCache: Record<string, string>}> | undefined;
 

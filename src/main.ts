@@ -7,8 +7,6 @@
 declare interface WPHL {
 	version?: string;
 	cmVersion?: string;
-	monacoVersion?: string;
-	useMonaco?: boolean;
 }
 
 ((): void => {
@@ -23,27 +21,12 @@ declare interface WPHL {
 	// 路径
 	const CDN = '//testingcf.jsdelivr.net',
 		MW_CDN = `npm/@bhsd/codemirror-mediawiki@${libs.wphl.cmVersion || 'latest'}/dist/mw.min.js`,
-		MONACO_CDN = `npm/monaco-wiki@${libs.wphl.monacoVersion || 'latest'}/dist/mw.min.js`,
 		REPO_CDN = 'npm/wikiplus-highlight';
 
-	const useMonaco = wphl?.useMonaco;
-	if (useMonaco) {
-		window.MonacoWikiEditor ||= (async () => {
-			await $.ajax(
-				`${CDN}/${MONACO_CDN}`,
-				{dataType: 'script', scriptAttrs: {type: 'module'}} as JQuery.AjaxSettings,
-			);
-			return MonacoWikiEditor;
-		})();
-	} else {
-		window.CodeMirror6 ||= (async () => {
-			await $.ajax(
-				`${CDN}/${MW_CDN}`,
-				{dataType: 'script', scriptAttrs: {type: 'module'}} as JQuery.AjaxSettings,
-			);
-			return CodeMirror6;
-		})();
-	}
+	window.CodeMirror6 ||= (async () => {
+		await $.ajax(`${CDN}/${MW_CDN}`, {dataType: 'script', scriptAttrs: {type: 'module'}} as JQuery.AjaxSettings);
+		return CodeMirror6;
+	})();
 
 	const {
 		wgPageName: page,
@@ -142,15 +125,18 @@ declare interface WPHL {
 	 */
 	const renderEditor = async ($target: JQuery<HTMLTextAreaElement>, setting: boolean): Promise<void> => {
 		const settings: Record<string, unknown> | null = getObject('Wikiplus_Settings'),
-			escToExitQuickEdit = settings && (settings['esc_to_exit_quickedit'] || settings['escToExitQuickEdit']);
+			escToExitQuickEdit = settings && (settings['esc_to_exit_quickedit'] || settings['escToExitQuickEdit']),
+			esc = escToExitQuickEdit === true || escToExitQuickEdit === 'true';
 
-		if (useMonaco) {
-			const lang = setting ? 'json' : (await getPageMode($target.val()!))[0],
-				{editor} = await (await MonacoWikiEditor).fromTextArea($target[0]!, lang);
-			editor.getDomNode()!.id = 'Wikiplus-CodeMirror';
+		const cm = await (await CodeMirror6).fromTextArea(
+			$target[0]!,
+			...setting ? ['json'] as [string] : await getPageMode($target.val()!),
+		);
+		(cm.view?.dom || cm.editor!.getDomNode()!).id = 'Wikiplus-CodeMirror';
 
-			if (!setting) { // 普通Wikiplus编辑区
-				editor.onKeyUp(e => {
+		if (!setting) { // 普通Wikiplus编辑区
+			if (cm.editor) {
+				cm.editor.onKeyUp(e => {
 					if (e.keyCode === 49 as MonacoKeyCode && (e.ctrlKey || e.metaKey)) {
 						e.preventDefault();
 						if (e.shiftKey) {
@@ -158,57 +144,44 @@ declare interface WPHL {
 						} else {
 							submit();
 						}
-					} else if (
-						e.keyCode === 9 as MonacoKeyCode
-						&& (escToExitQuickEdit === true || escToExitQuickEdit === 'true')
-					) {
+					} else if (e.keyCode === 9 as MonacoKeyCode && esc) {
 						e.preventDefault();
 						escapeEdit();
 					}
 				});
-			}
-		} else {
-			const cm = await (await CodeMirror6).fromTextArea(
-				$target[0]!,
-				...setting ? ['json'] as [string] : await getPageMode($target.val()!),
-			);
-			cm.view.dom.id = 'Wikiplus-CodeMirror';
-
-			if (!setting) { // 普通Wikiplus编辑区
+			} else {
 				cm.extraKeys([
 					{key: 'Mod-S', run: submit},
 					{key: 'Shift-Mod-S', run: submitMinor},
-					...escToExitQuickEdit === true || escToExitQuickEdit === 'true'
-						? [{key: 'Esc', run: escapeEdit}]
-						: [],
+					...esc ? [{key: 'Esc', run: escapeEdit}] : [],
 				]);
 			}
+		}
 
-			/** @todo 以下过渡代码添加于2024-02-07，将于一段时间后弃用 */
-			const oldKey = 'Wikiplus-highlight-addons',
-				oldPrefs: string[] | null = getObject(oldKey),
-				mapping: Record<string, string> = {
-					activeLine: 'highlightActiveLine',
-					trailingspace: 'highlightTrailingWhitespace',
-					matchBrackets: 'bracketMatching',
-					closeBrackets: 'closeBrackets',
-					matchTags: 'tagMatching',
-					fold: 'codeFolding',
-					wikiEditor: 'wikiEditor',
-					escape: 'escape',
-					contextmenu: 'openLinks',
-					lint: 'lint',
-				};
-			localStorage.removeItem(oldKey);
-			if (oldPrefs) {
-				const obj: Record<string, true> = {};
-				for (const k of oldPrefs) {
-					if (k in mapping) {
-						obj[mapping[k]!] = true;
-					}
+		/** @todo 以下过渡代码添加于2024-02-07，将于一段时间后弃用 */
+		const oldKey = 'Wikiplus-highlight-addons',
+			oldPrefs: string[] | null = getObject(oldKey),
+			mapping: Record<string, string> = {
+				activeLine: 'highlightActiveLine',
+				trailingspace: 'highlightTrailingWhitespace',
+				matchBrackets: 'bracketMatching',
+				closeBrackets: 'closeBrackets',
+				matchTags: 'tagMatching',
+				fold: 'codeFolding',
+				wikiEditor: 'wikiEditor',
+				escape: 'escape',
+				contextmenu: 'openLinks',
+				lint: 'lint',
+			};
+		localStorage.removeItem(oldKey);
+		if (oldPrefs) {
+			const obj: Record<string, true> = {};
+			for (const k of oldPrefs) {
+				if (k in mapping) {
+					obj[mapping[k]!] = true;
 				}
-				cm.prefer(obj);
 			}
+			cm.prefer(obj);
 		}
 
 		const jump = document.querySelector<HTMLAnchorElement>('#Wikiplus-Quickedit-Jump > a');

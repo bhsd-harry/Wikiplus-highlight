@@ -1,3 +1,11 @@
+## v3.2.0
+
+*2024-05-01*
+
+**Changed**
+
+- Alternative highlighting with [Monaco Editor](https://microsoft.github.io/monaco-editor/) is now provided by [CodeMirror-MediaWiki](https://github.com/bhsd-harry/codemirror-mediawiki)
+
 ## v3.1.0
 
 *2024-04-19*
