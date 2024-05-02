@@ -13,7 +13,8 @@ else
 	then
 		git add -A
 		git commit -m "chore: bump version to $1"
+		git push
 		git tag $1
-		git push --follow-tags
+		git push origin $1
 	fi
 fi
