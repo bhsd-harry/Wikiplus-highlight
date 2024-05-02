@@ -15,7 +15,7 @@ declare interface WPHL {
 	if (wphl?.version) {
 		return;
 	}
-	const version = '3.1.1';
+	const version = '3.2.0';
 	libs.wphl = {version, ...wphl}; // 开始加载
 
 	// 路径
