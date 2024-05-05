@@ -4,7 +4,7 @@
 
 **Fixed**
 
-- Fix incompatibility with jQuery <= 3.4, since [v3.1.0](#v310)
+- Fix incompatibility with [jQuery](https://api.jquery.com/jQuery.ajax/#jQuery-ajax-settings-settings) < 3.4, since [v3.1.0](#v310)
 
 ## v3.2.0
 

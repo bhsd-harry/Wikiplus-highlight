@@ -5,6 +5,30 @@
 
 **Wikiplus-highlight** 是由 Bhsd 编写的一款 [Wikiplus](https://github.com/Wikiplus/Wikiplus) 语法高亮插件，它主要基于 MediaWiki 内置的 [JavaScript 模块](https://www.mediawiki.org/wiki/ResourceLoader/Core_modules)和 [CodeMirror](https://codemirror.net/) 编写。
 
+<details>
+	<summary>展开</summary>
+
+- [使用方法](#使用方法)
+- [更多插件](#更多插件)
+	- [高亮当前行](#高亮当前行)
+	- [显示不可见字符](#显示不可见字符)
+	- [显示空白字符](#显示空白字符)
+	- [显示尾随空格](#显示尾随空格)
+	- [匹配括号](#匹配括号)
+	- [自动闭合括号和引号](#自动闭合括号和引号)
+	- [代码折叠](#代码折叠)
+	- [自动填充](#自动填充)
+	- [匹配标签](#匹配标签)
+	- [HTML/URL编码快捷键](#htmlurl编码快捷键)
+	- [快速打开链接](#快速打开链接)
+	- [语法检查](#语法检查)
+	- [添加 WikiEditor 工具栏](#添加-wikieditor-工具栏)
+	- [使用 Monaco Editor](#使用-monaco-editor)
+	- [调整缩进](#调整缩进)
+- [Supported languages](#supported-languages)
+
+</details>
+
 ## 使用方法
 
 在*个人 JS 页*添加以下代码：
@@ -45,43 +69,55 @@ mw.loader.load('//unpkg.com/wikiplus-highlight');
 
 ### 自动闭合括号和引号
 
-MediaWiki 模式下自动闭合生效的字符包括 `(`、`[`、`{` 和 `"`，不包括 `'`。如果在选中部分文字的情况下键入这些字符，选中的文字会被成对的括号或引号包裹。
-
-### 匹配标签
-
-匹配的标签对或自封闭标签会添加青色背景，未匹配的标签会添加暗红色背景。注意被高亮标记为错误的标签不会进行匹配。
+MediaWiki 模式下自动闭合生效的字符包括 `(`、`[`、`{` 和 `"`，其他模式还额外包括 `'`。如果在选中部分文字的情况下键入这些字符，选中的文字会被成对的括号或引号包裹。
 
 ### 代码折叠
 
-光标移动至模板内部时会在光标上方出现一个 `－` 标记，点击即可折叠模板参数。折叠后使用一个带有虚线边框的 `⋯` 标记占位，点击该标记将重新展开折叠的代码部分。同时添加以下快捷键：
+MediaWiki 模式下，光标移动至模板、解析器函数或扩展标签内部时会在光标上方出现一个 `－` 标记，点击即可折叠模板和解析器函数的参数或扩展标签内部的文本。折叠后使用一个带有虚线边框的 `⋯` 标记占位，点击该标记将重新展开折叠的代码部分。其他模式下，可折叠的代码行行号左侧会出现箭头 `⌄` 作为折叠按钮。同时添加以下快捷键：
 
 - `Ctrl` + `Shift` + `[`/`Cmd` + `Alt` + `[`: 折叠选中的文字（如果可行）
 - `Ctrl` + `Shift` + `]`/`Cmd` + `Alt` + `]`: 展开选中的文字
-- `Ctrl` + `Alt` + `[`: 折叠所有模板的参数
+- `Ctrl` + `Alt` + `[`: 折叠所有可折叠的代码
 - `Ctrl` + `Alt` + `]`: 展开所有折叠的代码
+
+### 自动填充
+
+MediaWiki 模式下，自动填充功能会在输入 `{{#` 或 `__` 时自动填充魔术字，输入 `<` 或 `</` 时自动填充标签名，此外按下 `Ctrl` + `Space` 还可触发页面名称和模板参数（需要 [TemplateData](https://www.mediawiki.org/wiki/Extension:TemplateData) 扩展）的自动填充。JavaScript 和 CSS 模式下可自动填充关键字和常数。
+
+### 匹配标签
+
+仅用于 MediaWiki 模式，匹配的标签对或自封闭标签会添加青色背景，未匹配的标签会添加暗红色背景。注意被高亮标记为错误的标签不会进行匹配。
 
 ### HTML/URL编码快捷键
 
-添加以下快捷键：
+仅用于 MediaWiki 模式，添加以下快捷键：
 
 - `Ctrl`/`Cmd` + `[`: 将选中的文字转换为HTML实体
 - `Ctrl`/`Cmd` + `]`: 将选中的文字解码或转换为URL编码
 
 ### 快速打开链接
 
-按住 `Ctrl`/`Cmd` 并点击被高亮标记为内部链接、模板标题或外部链接的文字时，会在新标签页打开对应页面。
+仅用于 MediaWiki 模式，按住 `Ctrl`/`Cmd` 并点击被高亮标记为内部链接、模板标题或外部链接的文字时，会在新标签页打开对应页面。
 
-### 维基语法检查
+### 语法检查
 
-这个功能基于 [wikiparser-node](https://github.com/bhsd-harry/wikiparser-node)。开启后将在编辑框内提示可能存在的维基语法错误。
+开启后将在编辑框内提示可能存在的语法错误。
+
+|模式|语法检查库|
+|:-:|:-:|
+|MediaWiki|[WikiParser-Node](https://github.com/bhsd-harry/wikiparser-node)|
+|JavaScript|[ESLint](https://eslint.org/)|
+|CSS|[Stylelint](https://stylelint.io/)|
+|JSON|[JSON.parse](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse)|
+|Lua|[luaparse](https://npmjs.com/package/luaparse)|
 
 ### 添加 WikiEditor 工具栏
 
 工具栏遵从当前网站安装的 [WikiEditor](https://www.mediawiki.org/wiki/Extension:WikiEditor) 扩展的版本。
 
-### 自动填充
+### 使用 Monaco Editor
 
-自动填充功能会在输入 `{{` 或 `__` 时自动填充魔术字，输入 `<` 或 `</` 时自动填充标签名。
+不使用默认的 [CodeMirror 6](https://codemirror.net/) 编辑器，而是使用 [Monaco Editor](https://microsoft.github.io/monaco-editor/)。
 
 ### 调整缩进
 
