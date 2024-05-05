@@ -1,3 +1,11 @@
+## 3.2.1
+
+*2024-05-05*
+
+**Fixed**
+
+- Fix incompatibility with jQuery <= 3.4, since [v3.1.0](#v310)
+
 ## v3.2.0
 
 *2024-05-01*

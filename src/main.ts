@@ -23,10 +23,15 @@ declare interface WPHL {
 		MW_CDN = `npm/@bhsd/codemirror-mediawiki@${libs.wphl.cmVersion || 'latest'}/dist/mw.min.js`,
 		REPO_CDN = 'npm/wikiplus-highlight';
 
-	window.CodeMirror6 ||= (async () => {
-		await $.ajax(`${CDN}/${MW_CDN}`, {dataType: 'script', scriptAttrs: {type: 'module'}} as JQuery.AjaxSettings);
-		return CodeMirror6;
-	})();
+	window.CodeMirror6 ||= new Promise(resolve => {
+		const script = document.createElement('script');
+		script.addEventListener('load', () => {
+			resolve(CodeMirror6);
+		});
+		script.type = 'module';
+		script.src = `${CDN}/${MW_CDN}`;
+		document.head.append(script);
+	});
 
 	const {
 		wgPageName: page,
