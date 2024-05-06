@@ -82,7 +82,7 @@ MediaWiki 模式下，光标移动至模板、解析器函数或扩展标签内�
 
 ### 自动填充
 
-MediaWiki 模式下，自动填充功能会在输入 `{{#` 或 `__` 时自动填充魔术字，输入 `<` 或 `</` 时自动填充标签名，此外按下 `Ctrl` + `Space` 还可触发页面名称和模板参数（需要 [TemplateData](https://www.mediawiki.org/wiki/Extension:TemplateData) 扩展）的自动填充。JavaScript 和 CSS 模式下可自动填充关键字和常数。
+MediaWiki 模式下可自动填充魔术字（包括状态开关和解析器函数）、标签名、标签属性名、URL 协议和图片参数。此外按下 `Ctrl` + `Space` 还可触发页面名称和模板参数（需要 [TemplateData](https://www.mediawiki.org/wiki/Extension:TemplateData) 扩展）的自动填充。JavaScript 和 CSS 模式下可自动填充关键字和常数。
 
 ### 匹配标签
 

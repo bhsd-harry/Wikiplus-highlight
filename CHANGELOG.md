@@ -1,3 +1,11 @@
+## 3.2.2
+
+*2024-05-06*
+
+**Fixed**
+
+- Fix keyboard shortcuts for submission in [Monaco Editor](https://microsoft.github.io/monaco-editor/)
+
 ## 3.2.1
 
 *2024-05-05*

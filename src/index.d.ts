@@ -1,9 +1,9 @@
 import 'types-mediawiki';
-import type {editor, KeyCode} from 'monaco-editor';
+import type * as Monaco from 'monaco-editor';
 import type {CodeMirror6} from '@bhsd/codemirror-mediawiki';
 
 interface CodeMirror extends CodeMirror6 {
-	editor?: editor.IStandaloneCodeEditor;
+	editor?: Monaco.editor.IStandaloneCodeEditor;
 }
 
 interface CodeMirrorStatic {
@@ -17,9 +17,9 @@ declare global {
 
 	const CodeMirror6: CodeMirrorStatic | Promise<CodeMirrorStatic>;
 
-	const _WikiplusPages: Record<number, {title: string, sectionCache: Record<string, string>}> | undefined;
+	const monaco: typeof Monaco;
 
-	type MonacoKeyCode = KeyCode;
+	const _WikiplusPages: Record<number, {title: string, sectionCache: Record<string, string>}> | undefined;
 }
 
 export {};

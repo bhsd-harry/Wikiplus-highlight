@@ -141,15 +141,15 @@ declare interface WPHL {
 
 		if (!setting) { // 普通Wikiplus编辑区
 			if (cm.editor) {
-				cm.editor.onKeyUp(e => {
-					if (e.keyCode === 49 as MonacoKeyCode && (e.ctrlKey || e.metaKey)) {
+				cm.editor.onKeyDown(e => {
+					if (e.keyCode === monaco.KeyCode.KeyS && (e.ctrlKey || e.metaKey)) {
 						e.preventDefault();
 						if (e.shiftKey) {
 							submitMinor();
 						} else {
 							submit();
 						}
-					} else if (e.keyCode === 9 as MonacoKeyCode && esc) {
+					} else if (e.keyCode === monaco.KeyCode.Escape && esc) {
 						e.preventDefault();
 						escapeEdit();
 					}
