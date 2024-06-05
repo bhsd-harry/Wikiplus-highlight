@@ -4,13 +4,12 @@
  * @license GPL-3.0
  */
 
-declare interface WPHL {
-	version?: string;
-	cmVersion?: string;
+declare namespace mw.libs {
+	let wphl: {version?: string, cmVersion?: string} | undefined;
 }
 
 ((): void => {
-	const {libs} = mw as {libs: {wphl?: WPHL}},
+	const {libs} = mw,
 		{wphl} = libs;
 	if (wphl?.version) {
 		return;
