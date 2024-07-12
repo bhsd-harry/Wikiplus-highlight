@@ -117,9 +117,14 @@ declare namespace mw.libs {
 			document.querySelector<HTMLInputElement>('#Wikiplus-Quickedit-MinorEdit')!.checked = true;
 			return submit();
 		},
-		escapeEdit = /** 按下Esc键退出编辑 */ (): true => {
-			document.getElementById('Wikiplus-Quickedit-Back')!.dispatchEvent(new MouseEvent('click'));
-			return true;
+		escapeEdit = /** 按下Esc键退出编辑 */ (): boolean => {
+			const settings: Record<string, unknown> | null = getObject('Wikiplus_Settings'),
+				escToExitQuickEdit = settings && (settings['esc_to_exit_quickedit'] || settings['escToExitQuickEdit']);
+			if (escToExitQuickEdit === true || escToExitQuickEdit === 'true') {
+				document.getElementById('Wikiplus-Quickedit-Back')!.dispatchEvent(new MouseEvent('click'));
+				return true;
+			}
+			return false;
 		};
 
 	/**
@@ -128,10 +133,6 @@ declare namespace mw.libs {
 	 * @param setting 是否是Wikiplus设置（使用json语法）
 	 */
 	const renderEditor = async ($target: JQuery<HTMLTextAreaElement>, setting: boolean): Promise<void> => {
-		const settings: Record<string, unknown> | null = getObject('Wikiplus_Settings'),
-			escToExitQuickEdit = settings && (settings['esc_to_exit_quickedit'] || settings['escToExitQuickEdit']),
-			esc = escToExitQuickEdit === true || escToExitQuickEdit === 'true';
-
 		const cm = await (await CodeMirror6).fromTextArea(
 			$target[0]!,
 			...setting ? ['json'] as [string] : await getPageMode($target.val()!),
@@ -140,24 +141,16 @@ declare namespace mw.libs {
 
 		if (!setting) { // 普通Wikiplus编辑区
 			if (cm.editor) {
-				cm.editor.onKeyDown(e => {
-					if (e.keyCode === monaco.KeyCode.KeyS && (e.ctrlKey || e.metaKey)) {
-						e.preventDefault();
-						if (e.shiftKey) {
-							submitMinor();
-						} else {
-							submit();
-						}
-					} else if (e.keyCode === monaco.KeyCode.Escape && esc) {
-						e.preventDefault();
-						escapeEdit();
-					}
-				});
+				/* eslint-disable no-bitwise */
+				cm.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, submit);
+				cm.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyS, submitMinor);
+				/* eslint-enable no-bitwise */
+				cm.editor.addCommand(monaco.KeyCode.Escape, escapeEdit);
 			} else {
 				cm.extraKeys([
 					{key: 'Mod-S', run: submit},
 					{key: 'Shift-Mod-S', run: submitMinor},
-					...esc ? [{key: 'Esc', run: escapeEdit}] : [],
+					{key: 'Esc', run: escapeEdit},
 				]);
 			}
 		}
