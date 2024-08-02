@@ -14,7 +14,7 @@ declare namespace mw.libs {
 	if (wphl?.version) {
 		return;
 	}
-	const version = '3.2.2';
+	const version = '3.2.3';
 	libs.wphl = {version, ...wphl}; // 开始加载
 
 	// 路径
@@ -22,7 +22,7 @@ declare namespace mw.libs {
 		MW_CDN = `npm/@bhsd/codemirror-mediawiki@${libs.wphl.cmVersion || 'latest'}/dist/mw.min.js`,
 		REPO_CDN = 'npm/wikiplus-highlight';
 
-	window.CodeMirror6 ||= new Promise(resolve => {
+	window.CodeMirror6 ??= new Promise(resolve => {
 		const script = document.createElement('script');
 		script.addEventListener('load', () => {
 			resolve(CodeMirror6);
@@ -81,7 +81,7 @@ declare namespace mw.libs {
 				if (namespace % 2) {
 					return 'mediawiki';
 				}
-				const mode = EXTS[t.getExtension()?.toLowerCase() || ''] || NAMESPACES[namespace];
+				const mode = EXTS[t.getExtension()?.toLowerCase() ?? ''] ?? NAMESPACES[namespace];
 				if (mode) {
 					return mode === 'javascript' && (namespace === 8 || namespace === 2300) ? 'gadget' : mode;
 				}
@@ -103,7 +103,7 @@ declare namespace mw.libs {
 			}
 		}
 		if (ns !== 274 && contentmodel !== 'Scribunto' || page.endsWith('/doc')) {
-			return [CONTENTMODELS[contentmodel] || contentmodel, contentmodel === 'javascript' ? ns : undefined];
+			return [CONTENTMODELS[contentmodel] ?? contentmodel, contentmodel === 'javascript' ? ns : undefined];
 		}
 		await mw.loader.using('oojs-ui-windows');
 		if (
@@ -144,7 +144,7 @@ declare namespace mw.libs {
 			$target[0]!,
 			...setting ? ['json'] as [string] : await getPageMode($target.val()!),
 		);
-		(cm.view?.dom || cm.editor!.getDomNode()!).id = 'Wikiplus-CodeMirror';
+		(cm.view?.dom ?? cm.editor!.getDomNode()!).id = 'Wikiplus-CodeMirror';
 
 		if (!setting) { // 普通Wikiplus编辑区
 			if (cm.editor) {
