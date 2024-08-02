@@ -59,9 +59,15 @@ declare namespace mw.libs {
 	 * 检查页面语言类型
 	 * @param value 页面内容
 	 */
-	const getPageMode = async (value: string): Promise<[string, (number | undefined)?]> => {
+	const getPageMode = async (value: string): Promise<[string, (number | undefined)?, (string | undefined)?]> => {
+		let WikiplusPages;
 		if (typeof _WikiplusPages === 'object') {
-			const pages = Object.values(_WikiplusPages)
+			WikiplusPages = _WikiplusPages;
+		} else if (typeof Pages === 'object') {
+			WikiplusPages = Pages;
+		}
+		if (WikiplusPages) {
+			const pages = Object.values(WikiplusPages)
 				.filter(({sectionCache}) => Object.values(sectionCache).includes(value));
 			if (pages.some(({title}) => !title.endsWith('/doc'))) {
 				await mw.loader.using('mediawiki.Title');
@@ -82,11 +88,12 @@ declare namespace mw.libs {
 				return namespace === 10 || namespace === 2 ? 'template' : 'mediawiki';
 			}));
 			if (modes.size === 1) {
-				const [mode] = modes;
+				const [mode] = modes,
+					title = pages.length === 1 ? pages[0]!.title : undefined;
 				if (mode === 'gadget') {
 					return ['javascript', 8];
 				}
-				return mode === 'template' ? ['mediawiki', 10] : [mode!];
+				return mode === 'template' ? ['mediawiki', 10, title] : [mode!, undefined, title];
 			} else if (modes.size === 2) {
 				if (modes.has('javascript') && modes.has('gadget')) {
 					return ['javascript'];

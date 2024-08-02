@@ -7,8 +7,10 @@ interface CodeMirror extends CodeMirror6 {
 }
 
 interface CodeMirrorStatic {
-	fromTextArea(textarea: HTMLTextAreaElement, lang?: string, ns?: number): Promise<CodeMirror>;
+	fromTextArea(textarea: HTMLTextAreaElement, lang?: string, ns?: number, page?: string): Promise<CodeMirror>;
 }
+
+type WikiplusPages = Record<number, {title: string, sectionCache: Record<string, string>}>;
 
 declare global {
 	interface Window {
@@ -19,7 +21,8 @@ declare global {
 
 	const monaco: typeof Monaco;
 
-	const _WikiplusPages: Record<number, {title: string, sectionCache: Record<string, string>}> | undefined;
+	const _WikiplusPages: WikiplusPages | undefined;
+	const Pages: WikiplusPages | undefined;
 }
 
 export {};
