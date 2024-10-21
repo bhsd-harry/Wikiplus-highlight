@@ -17,7 +17,7 @@
 		"/dist/",
 		"/*.css"
 	],
-	"browser": "/dist/main.js",
+	"browser": "/dist/main.min.js",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/bhsd-harry/Wikiplus-highlight.git"
@@ -26,7 +26,7 @@
 		"lint:ts": "tsc --noEmit && eslint --cache .",
 		"lint:css": "stylelint *.css",
 		"lint": "npm run lint:ts && npm run lint:css",
-		"build": "tsc && eslint --no-eslintrc -c .eslintrc.dist.cjs dist/*.js"
+		"build": "esbuild ./src/main.ts --bundle --minify --target=es2018 --format=iife --sourcemap --outfile=dist/main.min.js && eslint --no-eslintrc -c .eslintrc.dist.cjs dist/*.js"
 	},
 	"devDependencies": {
 		"@bhsd/codemirror-mediawiki": "^2.17.4",
