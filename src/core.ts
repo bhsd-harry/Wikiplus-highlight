@@ -144,13 +144,7 @@ export const renderEditor = async ($target: JQuery<HTMLTextAreaElement>, setting
 		};
 	localStorage.removeItem(oldKey);
 	if (oldPrefs) {
-		const obj: Record<string, true> = {};
-		for (const k of oldPrefs) {
-			if (k in mapping) {
-				obj[mapping[k]!] = true;
-			}
-		}
-		cm.prefer(obj);
+		cm.prefer(Object.fromEntries(oldPrefs.filter(k => k in mapping).map(k => [mapping[k]!, true])));
 	}
 
 	const jump = document.querySelector<HTMLAnchorElement>('#Wikiplus-Quickedit-Jump > a');
