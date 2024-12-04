@@ -105,7 +105,7 @@ const submit = /** 提交编辑 */ (): true => {
  * @param setting 是否是Wikiplus设置（使用json语法）
  */
 export const renderEditor = async ($target: JQuery<HTMLTextAreaElement>, setting: boolean): Promise<void> => {
-	const cm = await (await CodeMirror6).fromTextArea(
+	const cm = await CodeMirror6.fromTextArea(
 		$target[0]!,
 		...setting ? ['json'] as [string] : await getPageMode($target.val()!),
 	);
