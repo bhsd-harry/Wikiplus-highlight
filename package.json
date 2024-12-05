@@ -23,13 +23,14 @@
 		"url": "git+https://github.com/bhsd-harry/Wikiplus-highlight.git"
 	},
 	"scripts": {
+		"prepublishOnly": "npm run build",
 		"lint:ts": "tsc --noEmit && eslint --cache .",
 		"lint:css": "stylelint *.css",
 		"lint": "npm run lint:ts && npm run lint:css",
 		"build": "esbuild ./src/main.ts --charset=utf8 --bundle --minify --target=es2019 --format=iife --sourcemap --outfile=dist/main.min.js && eslint --no-eslintrc -c .eslintrc.dist.cjs dist/*.js"
 	},
 	"devDependencies": {
-		"@bhsd/codemirror-mediawiki": "^2.18.9",
+		"@bhsd/codemirror-mediawiki": "^2.19.4",
 		"@bhsd/common": "^0.4.6",
 		"@stylistic/eslint-plugin": "^2.11.0",
 		"@stylistic/stylelint-plugin": "^3.1.1",
