@@ -107,7 +107,7 @@ const submit = /** 提交编辑 */ (): true => {
 export const renderEditor = async ($target: JQuery<HTMLTextAreaElement>, setting: boolean): Promise<void> => {
 	const cm = await CodeMirror6.fromTextArea(
 		$target[0]!,
-		...setting ? ['json'] as [string] : await getPageMode($target.val()!),
+		...setting ? ['json'] satisfies [string] : await getPageMode($target.val()!),
 	);
 	(cm.view?.dom ?? cm.editor!.getDomNode()!).id = 'Wikiplus-CodeMirror';
 
@@ -125,26 +125,6 @@ export const renderEditor = async ($target: JQuery<HTMLTextAreaElement>, setting
 				{key: 'Esc', run: escapeEdit},
 			]);
 		}
-	}
-
-	/** @todo 以下过渡代码添加于2024-02-07，将于一段时间后弃用 */
-	const oldKey = 'Wikiplus-highlight-addons',
-		oldPrefs: string[] | null = getObject(oldKey),
-		mapping: Record<string, string> = {
-			activeLine: 'highlightActiveLine',
-			trailingspace: 'highlightTrailingWhitespace',
-			matchBrackets: 'bracketMatching',
-			closeBrackets: 'closeBrackets',
-			matchTags: 'tagMatching',
-			fold: 'codeFolding',
-			wikiEditor: 'wikiEditor',
-			escape: 'escape',
-			contextmenu: 'openLinks',
-			lint: 'lint',
-		};
-	localStorage.removeItem(oldKey);
-	if (oldPrefs) {
-		cm.prefer(Object.fromEntries(oldPrefs.filter(k => k in mapping).map(k => [mapping[k]!, true])));
 	}
 
 	const jump = document.querySelector<HTMLAnchorElement>('#Wikiplus-Quickedit-Jump > a');
