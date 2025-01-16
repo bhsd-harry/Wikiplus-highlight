@@ -6,7 +6,6 @@
 		"target": "ES2019",
 		"module": "CommonJS",
 		"declaration": false,
-		"removeComments": true,
 		"outDir": "dist",
 		"alwaysStrict": true,
 		"exactOptionalPropertyTypes": true,

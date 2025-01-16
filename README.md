@@ -3,7 +3,7 @@
 [![npm version](https://badge.fury.io/js/wikiplus-highlight.svg)](https://www.npmjs.com/package/wikiplus-highlight)
 [![CodeQL](https://github.com/bhsd-harry/Wikiplus-highlight/actions/workflows/codeql.yml/badge.svg)](https://github.com/bhsd-harry/Wikiplus-highlight/actions/workflows/codeql.yml)
 [![jsDelivr hits (npm)](https://img.shields.io/jsdelivr/npm/hm/wikiplus-highlight)](https://www.npmjs.com/package/wikiplus-highlight)
-[![codebeat badge](https://codebeat.co/badges/6dba86ca-1474-4a72-8d08-9cb1b828496a)](https://codebeat.co/projects/github-com-bhsd-harry-wikiplus-highlight-main)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/12c4209a299b4a378759f425abe445af)](https://app.codacy.com/gh/bhsd-harry/Wikiplus-highlight/dashboard)
 
 **Wikiplus-highlight** 是由 Bhsd 编写的一款 [Wikiplus](https://github.com/Wikiplus/Wikiplus) 语法高亮插件，它主要基于 MediaWiki 内置的 [JavaScript 模块](https://www.mediawiki.org/wiki/ResourceLoader/Core_modules)和 [CodeMirror](https://codemirror.net/) 编写。
 
