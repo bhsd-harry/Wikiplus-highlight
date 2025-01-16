@@ -14,7 +14,7 @@ declare namespace mw.libs {
 	const {libs} = mw,
 		{wphl} = libs;
 	if (!wphl?.version) {
-		const version = '3.2.4';
+		const version = '3.2.5';
 		libs.wphl = {version, ...wphl}; // 开始加载
 
 		// 路径
