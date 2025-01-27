@@ -18,7 +18,7 @@ declare namespace mw.libs {
 		libs.wphl = {version, ...wphl}; // 开始加载
 
 		// 路径
-		const MW_CDN = `npm/@bhsd/codemirror-mediawiki@${libs.wphl.cmVersion || 'latest'}/dist/wiki.min.js`,
+		const MW_CDN = `npm/@bhsd/codemirror-mediawiki@${libs.wphl.cmVersion ?? 'latest'}/dist/wiki.min.js`,
 			REPO_CDN = 'npm/wikiplus-highlight';
 
 		if (!('CodeMirror6' in globalThis)) {
