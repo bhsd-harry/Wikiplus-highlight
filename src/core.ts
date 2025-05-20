@@ -7,7 +7,6 @@ const {
 } = mw.config.get();
 
 const CONTENTMODELS: Record<string, string> = {
-		'sanitized-css': 'css',
 		wikitext: 'mediawiki',
 	},
 	EXTS: Record<string, string> = {
@@ -47,10 +46,16 @@ const getPageMode = async (value: string): Promise<[string, (number | undefined)
 				return 'mediawiki';
 			}
 			const mode = EXTS[t.getExtension()?.toLowerCase() ?? ''] ?? NAMESPACES[namespace];
-			if (mode) {
-				return mode === 'javascript' && (namespace === 8 || namespace === 2300) ? 'gadget' : mode;
+			switch (mode) {
+				case 'javascript':
+					return namespace === 8 || namespace === 2300 ? 'gadget' : mode;
+				case 'css':
+					return namespace === 2 || namespace === 8 || namespace === 2300 ? mode : 'sanitized-css';
+				case undefined:
+					return namespace === 10 || namespace === 2 ? 'template' : 'mediawiki';
+				default:
+					return mode;
 			}
-			return namespace === 10 || namespace === 2 ? 'template' : 'mediawiki';
 		}));
 		if (modes.size === 1) {
 			const [mode] = modes,

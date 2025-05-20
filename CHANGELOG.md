@@ -1,3 +1,11 @@
+## 3.2.3
+
+*2025-06-18*
+
+**Fixed**
+
+- Support the customized CSS mode for [Extension:TemplateStyles](https://www.mediawiki.org/wiki/Extension:TemplateStyles) in [CodeMirror-MediaWiki](https://github.com/bhsd-harry/codemirror-mediawiki) [v2.27.3](https://github.com/bhsd-harry/codemirror-mediawiki/blob/npm/CHANGELOG.md#2273)
+
 ## 3.2.2
 
 *2024-05-09*
