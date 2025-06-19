@@ -10,6 +10,7 @@ type WikiplusPages = Record<number, {title: string, sectionCache: Record<string,
 
 declare global {
 	const CodeMirror6: {
+		instances?: WeakMap<HTMLTextAreaElement, CodeMirror>;
 		fromTextArea(textarea: HTMLTextAreaElement, lang?: string, ns?: number, page?: string): Promise<CodeMirror>;
 	};
 

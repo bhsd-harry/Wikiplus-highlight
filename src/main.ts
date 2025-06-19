@@ -27,11 +27,18 @@ declare namespace mediaWiki.libs {
 
 		// 监视 Wikiplus 编辑框
 		const observer = new MutationObserver(records => {
-			const $editArea = $(records.flatMap(({addedNodes}) => [...addedNodes]))
-				.find<HTMLTextAreaElement>('#Wikiplus-Quickedit, #Wikiplus-Setting-Input');
-			if ($editArea.length > 0) {
-				void renderEditor($editArea, $editArea.attr('id') === 'Wikiplus-Setting-Input');
+			const selector = '#Wikiplus-Quickedit, #Wikiplus-Setting-Input',
+				[added] = $(records.flatMap(({addedNodes}) => [...addedNodes])).find<HTMLTextAreaElement>(selector);
+			if (added) {
+				void renderEditor(added, added.id === 'Wikiplus-Setting-Input');
 			}
+			const [removed] = $(records.flatMap(({removedNodes}) => [...removedNodes]))
+					.find<HTMLTextAreaElement>(selector),
+				cm = CodeMirror6.instances?.get(removed!);
+			if (typeof cm?.destroy === 'function') {
+				cm.destroy();
+			}
+			Object.assign(globalThis, {records});
 		});
 		observer.observe(document.body, {childList: true});
 

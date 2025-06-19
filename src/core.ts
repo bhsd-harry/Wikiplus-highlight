@@ -106,13 +106,13 @@ const submit = /** 提交编辑 */ (): true => {
 
 /**
  * 渲染编辑器
- * @param $target 目标编辑框
+ * @param target 目标编辑框
  * @param setting 是否是Wikiplus设置（使用json语法）
  */
-export const renderEditor = async ($target: JQuery<HTMLTextAreaElement>, setting: boolean): Promise<void> => {
+export const renderEditor = async (target: HTMLTextAreaElement, setting: boolean): Promise<void> => {
 	const cm = await CodeMirror6.fromTextArea(
-		$target[0]!,
-		...setting ? ['json'] satisfies [string] : await getPageMode($target.val()!),
+		target,
+		...setting ? ['json'] satisfies [string] : await getPageMode(target.value),
 	);
 	(cm.view?.dom ?? cm.editor!.getDomNode()!).id = 'Wikiplus-CodeMirror';
 

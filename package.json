@@ -1,6 +1,6 @@
 {
 	"name": "wikiplus-highlight",
-	"version": "3.2.6",
+	"version": "3.2.7",
 	"description": "A plugin for the MediaWiki front-end add-on \"Wikiplus\"",
 	"keywords": [
 		"mediawiki",
@@ -30,7 +30,7 @@
 		"build": "esbuild ./src/main.ts --charset=utf8 --bundle --minify --target=es2019 --format=iife --sourcemap --outfile=dist/main.min.js && eslint --no-eslintrc -c .eslintrc.dist.cjs dist/*.js"
 	},
 	"devDependencies": {
-		"@bhsd/codemirror-mediawiki": "^2.28.0",
+		"@bhsd/codemirror-mediawiki": "^2.28.1",
 		"@bhsd/common": "^0.13.0",
 		"@stylistic/eslint-plugin": "^3.1.0",
 		"@stylistic/stylelint-plugin": "^3.1.2",

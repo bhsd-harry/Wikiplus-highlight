@@ -1,10 +1,18 @@
+## 3.2.7
+
+*2025-06-20*
+
+**Added**
+
+- The CodeMirror instances is [destroyed](https://github.com/bhsd-harry/codemirror-mediawiki#destroy) when the Wikiplus editor is closed
+
 ## 3.2.6
 
 *2025-06-18*
 
 **Fixed**
 
-- Support the customized CSS mode for [Extension:TemplateStyles](https://www.mediawiki.org/wiki/Extension:TemplateStyles) in [CodeMirror-MediaWiki](https://github.com/bhsd-harry/codemirror-mediawiki) [v2.27.3](https://github.com/bhsd-harry/codemirror-mediawiki/blob/npm/CHANGELOG.md#2273)
+- Support the customized CSS mode for [Extension:TemplateStyles](https://www.mediawiki.org/wiki/Extension:TemplateStyles)
 
 ## 3.2.2
 
@@ -60,7 +68,7 @@
 
 **Changed**
 
-- [CodeMirror-MediaWiki](https://github.com/bhsd-harry/codemirror-mediawiki), including the preference dialog, is now loaded before editing
+- `CodeMirror6`, including the preference dialog, is now loaded before editing
 
 ## v3.0.3
 
