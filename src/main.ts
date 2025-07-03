@@ -22,7 +22,7 @@ declare namespace mediaWiki.libs {
 			REPO_CDN = 'npm/wikiplus-highlight';
 
 		if (typeof CodeMirror6 !== 'function') {
-			await $.ajax(`${CDN}/${MW_CDN}`, {dataType: 'script'});
+			await $.ajax(`${CDN}/${MW_CDN}`, {dataType: 'script', cache: true});
 		}
 
 		// 监视 Wikiplus 编辑框

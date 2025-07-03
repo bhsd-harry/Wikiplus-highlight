@@ -1,3 +1,11 @@
+## 3.2.8
+
+*2025-07-04*
+
+**Fixed**
+
+- The [CodeMirror-MediaWiki](https://github.com/bhsd-harry/codemirror-mediawiki) library is now cached
+
 ## 3.2.7
 
 *2025-06-20*
