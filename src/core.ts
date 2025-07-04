@@ -1,4 +1,4 @@
-import {getObject} from '@bhsd/common';
+import {getObject} from '@bhsd/browser';
 
 const {
 	wgPageName: page,

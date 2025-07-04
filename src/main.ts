@@ -3,7 +3,7 @@
  * @author Bhsd <https://github.com/bhsd-harry>
  * @license GPL-3.0
  */
-import {CDN} from '@bhsd/common';
+import {CDN} from '@bhsd/browser';
 import {renderEditor} from './core';
 
 declare namespace mediaWiki.libs {

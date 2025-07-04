@@ -1,6 +1,6 @@
 /* eslint-env node */
 'use strict';
 
-const config = require('@bhsd/common/eslintrc.dist.cjs');
+const config = require('@bhsd/code-standard/eslintrc.dist.cjs');
 
 module.exports = config;
