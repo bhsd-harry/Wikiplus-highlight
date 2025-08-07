@@ -14,7 +14,7 @@ declare namespace mediaWiki.libs {
 	const {libs} = mediaWiki,
 		{wphl} = libs;
 	if (!wphl?.version) {
-		const version = '3.2.8';
+		const version = '3.2.9';
 		libs.wphl = {version, ...wphl}; // 开始加载
 
 		// 路径
@@ -38,7 +38,6 @@ declare namespace mediaWiki.libs {
 			if (typeof cm?.destroy === 'function') {
 				cm.destroy();
 			}
-			Object.assign(globalThis, {records});
 		});
 		observer.observe(document.body, {childList: true});
 
