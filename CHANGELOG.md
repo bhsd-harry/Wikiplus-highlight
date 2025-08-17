@@ -4,7 +4,7 @@
 
 **Fixed**
 
-- The [CodeMirror-MediaWiki](https://github.com/bhsd-harry/codemirror-mediawiki) library is now cached
+- The [CodeMirror-MediaWiki](https://www.npmjs.com/package/@bhsd/codemirror-mediawiki) library is now cached
 
 ## 3.2.7
 
@@ -12,7 +12,7 @@
 
 **Added**
 
-- The CodeMirror instances is [destroyed](https://github.com/bhsd-harry/codemirror-mediawiki#destroy) when the Wikiplus editor is closed
+- The CodeMirror instances is [destroyed](https://www.npmjs.com/package/@bhsd/codemirror-mediawiki#destroy) when the Wikiplus editor is closed
 
 ## 3.2.6
 
@@ -44,7 +44,7 @@
 
 **Changed**
 
-- Alternative highlighting with [Monaco Editor](https://microsoft.github.io/monaco-editor/) is now provided by [CodeMirror-MediaWiki](https://github.com/bhsd-harry/codemirror-mediawiki)
+- Alternative highlighting with [Monaco Editor](https://microsoft.github.io/monaco-editor/) is now provided by [CodeMirror-MediaWiki](https://www.npmjs.com/package/@bhsd/codemirror-mediawiki)
 
 ## v3.1.0
 
@@ -60,7 +60,7 @@
 
 **Fixed**
 
-- The [CodeMirror-MediaWiki](https://github.com/bhsd-harry/codemirror-mediawiki) library was sometimes loaded twice when [InPageEdit](https://github.com/inpageedit/inpageedit-v2) is also installed
+- The [CodeMirror-MediaWiki](https://www.npmjs.com/package/@bhsd/codemirror-mediawiki) library was sometimes loaded twice when [InPageEdit](https://www.ipe.wiki/) is also installed
 
 ## v3.0.7
 
@@ -68,7 +68,7 @@
 
 **Added**
 
-- The version of the [CodeMirror-MediaWiki](https://github.com/bhsd-harry/codemirror-mediawiki) library is now customizable by modifying the `cmVersion` key of the global variable `mw.libs.wphl`
+- The version of the [CodeMirror-MediaWiki](https://www.npmjs.com/package/@bhsd/codemirror-mediawiki) library is now customizable by modifying the `cmVersion` key of the global variable `mw.libs.wphl`
 
 ## v3.0.5
 
@@ -98,4 +98,4 @@
 
 *2024-02-06*
 
-First TypeScript version dependent on [CodeMirror-MediaWiki](https://github.com/bhsd-harry/codemirror-mediawiki)
+First TypeScript version dependent on [CodeMirror-MediaWiki](https://www.npmjs.com/package/@bhsd/codemirror-mediawiki)
