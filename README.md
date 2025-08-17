@@ -28,4 +28,4 @@ mw.loader.load('//unpkg.com/wikiplus-highlight');
 
 使用 *[Vector](https://www.mediawiki.org/wiki/Skin:Vector)* 皮肤或 MediaWiki 1.35 及以上的 *[Minerva Neue](https://www.mediawiki.org/wiki/Skin:Minerva_Neue)* 皮肤时，在右上角的【更多】菜单将添加一个【CodeMirror插件】选项，点击后可以选择想要加载的 CodeMirror 插件。其他桌面版皮肤（包括 *[Timeless](https://www.mediawiki.org/wiki/Skin:Timeless)*、*[MonoBook](https://www.mediawiki.org/wiki/Skin:MonoBook)* 和 *[Citizen](https://www.mediawiki.org/wiki/Skin:Citizen)*）会在类似性质的菜单中插入这一选项。修改插件设置后将立刻生效。
 
-详细的插件列表和说明请参见 [CodeMirror-MediaWiki](https://www.npmjs.com/package/@bhsd/codemirror-mediawiki) 文档[1](https://www.npmjs.com/package/@bhsd/codemirror-mediawiki#extensions) 和 [2](https://github.com/bhsd-harry/codemirror-mediawiki/blob/npm/mw/README.md#extensions)。
+详细的插件列表和说明请参见 [CodeMirror-MediaWiki](https://www.npmjs.com/package/@bhsd/codemirror-mediawiki) 文档 [1](https://www.npmjs.com/package/@bhsd/codemirror-mediawiki#extensions) 和 [2](https://github.com/bhsd-harry/codemirror-mediawiki/blob/npm/mw/README.md#extensions)。
