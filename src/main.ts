@@ -11,6 +11,9 @@ declare namespace mediaWiki.libs {
 }
 
 (async () => {
+	if (!mw.config.get('wgIsArticle') || mw.config.get('wgAction') !== 'view') {
+		return;
+	}
 	const {libs} = mediaWiki,
 		{wphl} = libs;
 	if (!wphl?.version) {

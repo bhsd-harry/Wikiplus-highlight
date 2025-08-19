@@ -34,7 +34,7 @@
 	"devDependencies": {
 		"@bhsd/browser": "^0.0.1",
 		"@bhsd/code-standard": "^1.0.1",
-		"@bhsd/codemirror-mediawiki": "^3.1.0",
+		"@bhsd/codemirror-mediawiki": "^3.3.0",
 		"@stylistic/eslint-plugin": "^3.1.0",
 		"@stylistic/stylelint-plugin": "^4.0.0",
 		"@types/jquery": "^3.5.32",

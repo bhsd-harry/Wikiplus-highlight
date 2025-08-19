@@ -1,3 +1,11 @@
+## 3.2.10
+
+*2025-08-24*
+
+**Fixed**
+
+- Do not load the [CodeMirror-MediaWiki](https://www.npmjs.com/package/@bhsd/codemirror-mediawiki) library if [`wgAction`](https://www.mediawiki.org/wiki/Manual:Interface/JavaScript#wgAction) is not `view`
+
 ## 3.2.8
 
 *2025-07-04*
