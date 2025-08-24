@@ -17,7 +17,7 @@ declare namespace mediaWiki.libs {
 	const {libs} = mediaWiki,
 		{wphl} = libs;
 	if (!wphl?.version) {
-		const version = '3.2.9';
+		const version = '3.2.10';
 		libs.wphl = {version, ...wphl}; // 开始加载
 
 		// 路径
