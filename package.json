@@ -14,11 +14,9 @@
 	"license": "GPL-3.0",
 	"author": "Bhsd",
 	"files": [
-		"/dist/",
-		"/*.css"
+		"/dist/main.min.js*"
 	],
 	"browser": "/dist/main.min.js",
-	"style": "styles.css",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/bhsd-harry/Wikiplus-highlight.git"
@@ -28,13 +26,14 @@
 		"lint:ts": "tsc --noEmit && eslint --cache .",
 		"lint:css": "stylelint *.css",
 		"lint": "npm run lint:ts && npm run lint:css",
-		"bundle": "esbuild ./src/main.ts --charset=utf8 --bundle --format=esm --outfile=build/main.js",
+		"bundle": "npm run build:css && node bundle.cjs",
+		"build:css": "esbuild styles.css --minify --outfile=dist/styles.css",
 		"build": "npm run bundle && esbuild ./build/main.js --charset=utf8 --minify --target=es2019 --format=iife --sourcemap --outfile=dist/main.min.js && eslint --no-eslintrc -c .eslintrc.dist.cjs dist/*.js"
 	},
 	"devDependencies": {
 		"@bhsd/browser": "^0.0.1",
 		"@bhsd/code-standard": "^1.0.1",
-		"@bhsd/codemirror-mediawiki": "^3.3.0",
+		"@bhsd/codemirror-mediawiki": "^3.4.1",
 		"@stylistic/eslint-plugin": "^3.1.0",
 		"@stylistic/stylelint-plugin": "^4.0.0",
 		"@types/jquery": "^3.5.32",
@@ -46,7 +45,7 @@
 		"eslint": "^8.57.1",
 		"eslint-plugin-es-x": "^8.7.0",
 		"eslint-plugin-eslint-comments": "^3.2.0",
-		"eslint-plugin-jsdoc": "^52.0.2",
+		"eslint-plugin-jsdoc": "^54.1.1",
 		"eslint-plugin-json-es": "^1.6.0",
 		"eslint-plugin-promise": "^7.2.1",
 		"eslint-plugin-regexp": "^2.9.0",
@@ -54,7 +53,7 @@
 		"monaco-editor": "^0.52.2",
 		"stylelint": "^16.23.1",
 		"stylelint-config-recommended": "^17.0.0",
-		"types-mediawiki": "^1.10.1",
+		"types-mediawiki": "^2.0.0",
 		"typescript": "^5.8.2"
 	}
 }
