@@ -1,3 +1,11 @@
+## 3.2.11
+
+*2025-10-22*
+
+**Changed**
+
+- Styles are now combined into the minified JavaScript file
+
 ## 3.2.10
 
 *2025-08-24*
