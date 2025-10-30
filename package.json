@@ -28,11 +28,11 @@
 		"lint": "npm run lint:ts && npm run lint:css",
 		"bundle": "npm run build:css && node bundle.cjs",
 		"build:css": "esbuild styles.css --minify --outfile=dist/styles.css",
-		"build": "npm run bundle && esbuild ./build/main.js --charset=utf8 --minify --target=es2019 --format=iife --sourcemap --outfile=dist/main.min.js && eslint --no-eslintrc -c .eslintrc.dist.cjs dist/*.js"
+		"build": "npm run bundle && esbuild ./build/main.js --charset=utf8 --minify --target=es2019 --format=iife --sourcemap --outfile=dist/main.min.js && eslint --no-config-lookup -c eslint.dist.mjs dist/*.js"
 	},
 	"devDependencies": {
 		"@bhsd/browser": "^0.0.1",
-		"@bhsd/code-standard": "^1.2.0",
+		"@bhsd/code-standard": "^1.3.0",
 		"@bhsd/codemirror-mediawiki": "^3.6.1",
 		"@stylistic/eslint-plugin": "^3.1.0",
 		"@stylistic/stylelint-plugin": "^4.0.0",
