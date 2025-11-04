@@ -1,3 +1,4 @@
+<!-- markdownlint-disable first-line-h1 -->
 ## 3.2.11
 
 *2025-10-22*

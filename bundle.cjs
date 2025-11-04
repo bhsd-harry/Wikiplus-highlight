@@ -1,7 +1,6 @@
 'use strict';
 
 const fs = require('fs'),
-	path = require('path'),
 	esbuild = require('esbuild'),
 	{version} = require('./package.json');
 
@@ -13,7 +12,12 @@ esbuild.buildSync({
 	outfile: 'build/main.js',
 	define: {
 		$VERSION: JSON.stringify(version),
-		$STYLE: JSON.stringify(fs.readFileSync(path.join('dist', 'styles.css'), 'utf8').trim()),
+		$STYLE: JSON.stringify(
+			esbuild.transformSync(
+				fs.readFileSync('styles.css', 'utf8'),
+				{loader: 'css', minify: true},
+			).code.trim(),
+		),
 	},
 	logLevel: 'info',
 });
