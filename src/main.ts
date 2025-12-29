@@ -7,7 +7,7 @@ import {CDN} from '@bhsd/browser';
 import {renderEditor} from './core';
 
 declare namespace mediaWiki.libs {
-	let wphl: {version?: string, cmVersion?: string} | undefined;
+	let wphl: {version?: string, cmVersion?: string, monacoVersion?: string, CDN?: string} | undefined;
 }
 
 declare const $VERSION: string,
@@ -29,6 +29,10 @@ declare const $VERSION: string,
 		if (typeof CodeMirror6 !== 'function') {
 			await $.ajax(`${CDN}/${MW_CDN}`, {dataType: 'script', cache: true});
 		}
+		Object.assign(CodeMirror6!, {
+			CDN: wphl?.CDN,
+			monacoVersion: wphl?.monacoVersion,
+		});
 
 		// 监视 Wikiplus 编辑框
 		const observer = new MutationObserver(records => {

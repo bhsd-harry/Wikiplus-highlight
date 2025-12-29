@@ -30,6 +30,7 @@ mw.loader.load('//unpkg.com/wikiplus-highlight');
 mw.libs.wphl = {
 	cmVersion: '3', // 使用 CodeMirror-MediaWiki 3.x.x 版本
 	monacoVersion: '1', // 使用 Monaco-Wiki 1.x.x 版本
+	CDN: 'https://cdn.jsdelivr.net' // 指定 jsDelivr CDN，默认为 https://testingcf.jsdelivr.net
 };
 mw.loader.load('//cdn.jsdelivr.net/npm/wikiplus-highlight');
 ```
