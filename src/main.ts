@@ -27,7 +27,7 @@ declare const $VERSION: string,
 		const MW_CDN = `npm/@bhsd/codemirror-mediawiki@${libs.wphl.cmVersion ?? 'latest'}/dist/wiki.min.js`;
 
 		if (typeof CodeMirror6 !== 'function') {
-			await $.ajax(`${CDN}/${MW_CDN}`, {dataType: 'script', cache: true});
+			await $.ajax(`${wphl?.CDN || CDN}/${MW_CDN}`, {dataType: 'script', cache: true});
 		}
 		Object.assign(CodeMirror6!, {
 			CDN: wphl?.CDN,
