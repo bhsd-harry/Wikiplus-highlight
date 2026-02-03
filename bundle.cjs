@@ -4,7 +4,7 @@ const fs = require('fs'),
 	esbuild = require('esbuild'),
 	{version} = require('./package.json');
 
-esbuild.buildSync({
+const config = {
 	entryPoints: ['src/main.ts'],
 	charset: 'utf8',
 	bundle: true,
@@ -20,4 +20,14 @@ esbuild.buildSync({
 		),
 	},
 	logLevel: 'info',
+};
+
+esbuild.buildSync(config);
+esbuild.buildSync({
+	...config,
+	minify: true,
+	target: 'es2019',
+	format: 'iife',
+	sourcemap: true,
+	outfile: 'dist/main.min.js',
 });

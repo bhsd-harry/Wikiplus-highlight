@@ -1,4 +1,12 @@
 <!-- markdownlint-disable first-line-h1 -->
+## 3.4.0
+
+*2026-02-05*
+
+**Changed**
+
+- The default CDN for loading the [CodeMirror-MediaWiki](https://www.npmjs.com/package/@bhsd/codemirror-mediawiki) library is now https://fastly.jsdelivr.net
+
 ## 3.3.1
 
 *2025-12-30*
