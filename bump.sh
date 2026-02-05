@@ -3,7 +3,7 @@ if [[ $2 == 'npm' ]]
 then
 	npm publish --tag "${3-latest}"
 else
-	sed -i '' -E "s/\"version\": \".+\"/\"version\": \"$1\"/" package.json
+	gsed -i -E "s/\"version\": \".+\"/\"version\": \"$1\"/" package.json
 	npm run lint && npm run build
 	if [[ $? -eq 0 ]]
 	then
