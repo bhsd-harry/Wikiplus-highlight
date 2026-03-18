@@ -3,10 +3,12 @@
 		"src/*.ts"
 	],
 	"compilerOptions": {
+		"types": [
+			"oojs-ui"
+		],
 		"target": "ES2019",
 		"module": "CommonJS",
-		"declaration": false,
-		"outDir": "dist",
+		"noEmit": true,
 		"alwaysStrict": true,
 		"exactOptionalPropertyTypes": true,
 		"noImplicitAny": true,
