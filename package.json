@@ -56,6 +56,6 @@
 		"stylelint-config-recommended": "^18.0.0",
 		"stylelint-plugin-use-baseline": "^1.2.7",
 		"types-mediawiki": "^2.0.0",
-		"typescript": "^5.9.3"
+		"typescript": "^6.0.2"
 	}
 }
