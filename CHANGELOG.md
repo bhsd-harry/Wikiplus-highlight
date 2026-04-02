@@ -1,4 +1,12 @@
 <!-- markdownlint-disable first-line-h1 -->
+## 3.4.1
+
+*2026-04-02*
+
+**Fixed**
+
+- Fix a potential issue due to arbitrary page titles
+
 ## 3.4.0
 
 *2026-02-05*
