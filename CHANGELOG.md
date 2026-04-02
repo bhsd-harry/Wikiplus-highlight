@@ -77,9 +77,9 @@
 
 **Fixed**
 
-- Fix incompatibility with [jQuery](https://api.jquery.com/jQuery.ajax/#jQuery-ajax-settings-settings) < 3.4, since [v3.1.0](#v310)
+- Fix incompatibility with [jQuery](https://api.jquery.com/jQuery.ajax/#jQuery-ajax-settings-settings) < 3.4, since [v3.1.0](#310)
 
-## v3.2.0
+## 3.2.0
 
 *2024-05-01*
 
@@ -87,7 +87,7 @@
 
 - Alternative highlighting with [Monaco Editor](https://microsoft.github.io/monaco-editor/) is now provided by [CodeMirror-MediaWiki](https://www.npmjs.com/package/@bhsd/codemirror-mediawiki)
 
-## v3.1.0
+## 3.1.0
 
 *2024-04-19*
 
@@ -95,7 +95,7 @@
 
 - Alternative highlighting with [Monaco Editor](https://microsoft.github.io/monaco-editor/)
 
-## v3.0.8
+## 3.0.8
 
 *2024-04-16*
 
@@ -103,7 +103,7 @@
 
 - The [CodeMirror-MediaWiki](https://www.npmjs.com/package/@bhsd/codemirror-mediawiki) library was sometimes loaded twice when [InPageEdit](https://www.ipe.wiki/) is also installed
 
-## v3.0.7
+## 3.0.7
 
 *2024-03-17*
 
@@ -111,7 +111,7 @@
 
 - The version of the [CodeMirror-MediaWiki](https://www.npmjs.com/package/@bhsd/codemirror-mediawiki) library is now customizable by modifying the `cmVersion` key of the global variable `mw.libs.wphl`
 
-## v3.0.5
+## 3.0.5
 
 *2024-03-05*
 
@@ -119,7 +119,7 @@
 
 - `CodeMirror6`, including the preference dialog, is now loaded before editing
 
-## v3.0.3
+## 3.0.3
 
 *2024-02-24*
 
@@ -127,7 +127,7 @@
 
 - When using the new version of [Wikiplus](https://www.npmjs.com/package/wikiplus-core), the guessing of the highlight mode is improved
 
-## v3.0.2
+## 3.0.2
 
 *2024-02-07*
 
@@ -135,7 +135,7 @@
 
 - User preference in version 2 is not inherited in version 3
 
-## v3.0.0
+## 3.0.0
 
 *2024-02-06*
 
