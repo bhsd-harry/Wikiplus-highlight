@@ -1,4 +1,12 @@
 <!-- markdownlint-disable first-line-h1 -->
+## 3.4.2
+
+*2026-05-20*
+
+**Changed**
+
+- Upgrade dev dependencies, notably [ESLint](https://eslint.org/) to v10
+
 ## 3.4.1
 
 *2026-04-02*
