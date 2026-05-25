@@ -1,4 +1,4 @@
-import {getObject} from '@bhsd/browser';
+import {getObject, isGlobal} from '@bhsd/browser';
 
 const {
 	wgPageName: page,
@@ -25,9 +25,9 @@ const CONTENTMODELS: Record<string, string> = {
  */
 const getPageMode = async (value: string): Promise<[string, (number | undefined)?, (string | undefined)?]> => {
 	let WikiplusPages;
-	if (typeof _WikiplusPages === 'object') {
+	if (typeof _WikiplusPages === 'object' && isGlobal('_WikiplusPages')) {
 		WikiplusPages = _WikiplusPages;
-	} else if (typeof Pages === 'object') {
+	} else if (typeof Pages === 'object' && isGlobal('Pages')) {
 		WikiplusPages = Pages;
 	}
 	if (WikiplusPages) {
