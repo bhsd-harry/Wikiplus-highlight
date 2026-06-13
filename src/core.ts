@@ -45,12 +45,13 @@ const getPageMode = async (value: string): Promise<[string, (number | undefined)
 			if (namespace % 2) {
 				return 'mediawiki';
 			}
-			const mode = EXTS.get(t.getExtension()?.toLowerCase() ?? '') ?? NAMESPACES[namespace];
+			const mode = EXTS.get(t.getExtension()?.toLowerCase() ?? '') ?? NAMESPACES[namespace],
+				isGadget = namespace === 8 || namespace === 2300;
 			switch (mode) {
 				case 'javascript':
-					return namespace === 8 || namespace === 2300 ? 'gadget' : mode;
+					return isGadget ? 'gadget' : mode;
 				case 'css':
-					return namespace === 2 || namespace === 8 || namespace === 2300 ? mode : 'sanitized-css';
+					return isGadget || namespace === 2 ? mode : 'sanitized-css';
 				case undefined:
 					return namespace === 10 || namespace === 2 ? 'template' : 'mediawiki';
 				default:

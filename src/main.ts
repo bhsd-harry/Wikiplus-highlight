@@ -3,7 +3,7 @@
  * @author Bhsd <https://github.com/bhsd-harry>
  * @license GPL-3.0-or-later
  */
-import {CDN} from '@bhsd/browser';
+import {CDN, compareVersion} from '@bhsd/browser';
 import {renderEditor} from './core';
 
 declare namespace mediaWiki.libs {
@@ -24,7 +24,10 @@ declare const $VERSION: string,
 		libs.wphl = {version, ...wphl}; // 开始加载
 
 		// 路径
-		const MW_CDN = `npm/@bhsd/codemirror-mediawiki@${libs.wphl.cmVersion ?? 'latest'}/dist/wiki.min.js`;
+		const cmVersion = String(libs.wphl.cmVersion),
+			MW_CDN = `npm/@bhsd/codemirror-mediawiki@${
+				compareVersion(cmVersion, '4') ? 3 : cmVersion
+			}/dist/wiki.min.js`;
 
 		if (typeof CodeMirror6 !== 'function') {
 			await $.ajax(`${wphl?.CDN || CDN}/${MW_CDN}`, {dataType: 'script', cache: true});

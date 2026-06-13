@@ -1,4 +1,12 @@
 <!-- markdownlint-disable first-line-h1 -->
+## 3.4.4
+
+*2026-06-13*
+
+**Changed**
+
+- Enforce [@bhsd/codemirror-mediawiki](https://www.npmjs.com/package/@bhsd/codemirror-mediawiki) version 3 in preparation for the upcoming major version 4
+
 ## 3.4.2
 
 *2026-05-20*
