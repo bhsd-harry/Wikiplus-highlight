@@ -9,9 +9,13 @@ interface CodeMirror extends CodeMirrorBase {
 type WikiplusPages = Record<number, {title: string, sectionCache: Record<string, string>}>;
 
 declare global {
+	interface CodeMirrorOptions {
+		ns?: number | undefined;
+		page?: string | undefined;
+	}
 	const CodeMirror6: typeof CodeMirrorBase & {
 		instances?: WeakMap<HTMLTextAreaElement, CodeMirror>;
-		fromTextArea(textarea: HTMLTextAreaElement, lang?: string, ns?: number, page?: string): Promise<CodeMirror>;
+		fromTextArea(textarea: HTMLTextAreaElement, lang?: string, opt?: CodeMirrorOptions): Promise<CodeMirror>;
 	};
 
 	const monaco: typeof Monaco;

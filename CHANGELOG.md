@@ -1,4 +1,12 @@
 <!-- markdownlint-disable first-line-h1 -->
+## 3.5.0
+
+*2026-06-21*
+
+**Changed**
+
+- Upgrade [@bhsd/codemirror-mediawiki](https://www.npmjs.com/package/@bhsd/codemirror-mediawiki) to [version 4](https://github.com/bhsd-harry/codemirror-mediawiki/blob/npm/CHANGELOG.md#400)
+
 ## 3.4.4
 
 *2026-06-13*

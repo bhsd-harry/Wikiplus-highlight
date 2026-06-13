@@ -1,7 +1,7 @@
 import {getObject, isGlobal} from '@bhsd/browser';
 
 const {
-	wgPageName: page,
+	wgPageName: pageName,
 	wgNamespaceNumber: ns,
 	wgPageContentModel: contentmodel,
 } = mw.config.get();
@@ -23,7 +23,7 @@ const CONTENTMODELS: Record<string, string> = {
  * 检查页面语言类型
  * @param value 页面内容
  */
-const getPageMode = async (value: string): Promise<[string, (number | undefined)?, (string | undefined)?]> => {
+const getPageMode = async (value: string): Promise<[string, (CodeMirrorOptions | undefined)?]> => {
 	let WikiplusPages;
 	if (typeof _WikiplusPages === 'object' && isGlobal('_WikiplusPages')) {
 		WikiplusPages = _WikiplusPages;
@@ -60,11 +60,11 @@ const getPageMode = async (value: string): Promise<[string, (number | undefined)
 		}));
 		if (modes.size === 1) {
 			const [mode] = modes,
-				title = pages.length === 1 ? pages[0]!.title : undefined;
+				page = pages.length === 1 ? pages[0]!.title : undefined;
 			if (mode === 'gadget') {
-				return ['javascript', 8];
+				return ['javascript', {ns: 8}];
 			}
-			return mode === 'template' ? ['mediawiki', 10, title] : [mode!, undefined, title];
+			return mode === 'template' ? ['mediawiki', {ns: 10, page}] : [mode!, {page}];
 		} else if (modes.size === 2) {
 			if (modes.has('javascript') && modes.has('gadget')) {
 				return ['javascript'];
@@ -73,8 +73,8 @@ const getPageMode = async (value: string): Promise<[string, (number | undefined)
 			}
 		}
 	}
-	if (ns !== 274 && contentmodel !== 'Scribunto' || page.endsWith('/doc')) {
-		return [CONTENTMODELS[contentmodel] ?? contentmodel, contentmodel === 'javascript' ? ns : undefined];
+	if (ns !== 274 && contentmodel !== 'Scribunto' || pageName.endsWith('/doc')) {
+		return [CONTENTMODELS[contentmodel] ?? contentmodel, contentmodel === 'javascript' ? {ns} : undefined];
 	}
 	await mw.loader.using('oojs-ui-windows');
 	if (

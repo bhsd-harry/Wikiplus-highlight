@@ -26,7 +26,7 @@ declare const $VERSION: string,
 		// 路径
 		const cmVersion = String(libs.wphl.cmVersion),
 			MW_CDN = `npm/@bhsd/codemirror-mediawiki@${
-				compareVersion(cmVersion, '4') ? 3 : cmVersion
+				compareVersion(cmVersion, '4') ? cmVersion : 4
 			}/dist/wiki.min.js`;
 
 		if (typeof CodeMirror6 !== 'function') {
