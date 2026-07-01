@@ -59,11 +59,11 @@ const getPageMode = async (value: string): Promise<[string, (CodeMirrorOptions |
 			}
 		}));
 		if (modes.size === 1) {
-			const [mode] = modes,
-				page = pages.length === 1 ? pages[0]!.title : undefined;
+			const [mode] = modes;
 			if (mode === 'gadget') {
 				return ['javascript', {ns: 8}];
 			}
+			const page = pages.length === 1 ? pages[0]!.title : undefined;
 			return mode === 'template' ? ['mediawiki', {ns: 10, page}] : [mode!, {page}];
 		} else if (modes.size === 2) {
 			if (modes.has('javascript') && modes.has('gadget')) {
