@@ -32,13 +32,13 @@
 		"build": "npm run bundle && eslint --no-config-lookup -c eslint.dist.mjs dist/*.js"
 	},
 	"devDependencies": {
-		"@bhsd/browser": "^2.0.0",
-		"@bhsd/code-standard": "^4.0.0",
-		"@bhsd/codemirror-mediawiki": "^4.2.3",
+		"@bhsd/browser": "^2.1.1",
+		"@bhsd/code-standard": "^4.1.0",
+		"@bhsd/codemirror-mediawiki": "^4.4.0",
 		"@types/jquery": "^3.5.34",
 		"@types/oojs-ui": "^0.50.0",
-		"esbuild": "^0.28.1",
-		"eslint": "^10.8.0",
+		"esbuild": "^0.28.2",
+		"eslint": "^10.8.1",
 		"markdownlint-cli2": "^0.23.2",
 		"monaco-editor": "~0.53.0",
 		"stylelint": "^17.14.1",
