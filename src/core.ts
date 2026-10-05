@@ -1,13 +1,6 @@
 import {getObject, isGlobal} from '@bhsd/browser';
 import type {CodeMirrorOptions} from '@bhsd/codemirror-mediawiki/mwConfig';
 
-const {
-	wgPageName: pageName,
-	wgNamespaceNumber: nsid,
-	wgPageContentModel: contentmodel,
-	wgArticleId: id,
-} = mw.config.get();
-
 const EXTS = new Map<string, string>([
 		['css', 'css'],
 		['js', 'javascript'],
@@ -23,8 +16,18 @@ const isDoc = (title: string): boolean => title.endsWith('/doc');
 /**
  * 根据页面标题获取语言模型
  * @param title 页面标题
+ * @param pageName wgPageName
+ * @param nsid wgNamespaceNumber
+ * @param contentmodel wgPageContentModel
+ * @param id wgArticleId
  */
-const getModeFromTitle = (title: string): [string, number] => {
+const getModeFromTitle = (
+	title: string,
+	pageName: string,
+	nsid: number,
+	contentmodel: string,
+	id: number,
+): [string, number] => {
 	if (id && pageName === title) {
 		return [contentmodel.toLowerCase(), nsid];
 	}
@@ -41,7 +44,13 @@ const getModeFromTitle = (title: string): [string, number] => {
  * 根据页面内容获取语言模型
  * @param value 页面内容
  */
-const getModeFromValue = async (value: string): Promise<[string, (CodeMirrorOptions | undefined)?]> => {
+export const getModeFromValue = async (value: string): Promise<[string, (CodeMirrorOptions | undefined)?]> => {
+	const {
+		wgPageName: pageName,
+		wgNamespaceNumber: nsid,
+		wgPageContentModel: contentmodel,
+		wgArticleId: id,
+	} = mw.config.get();
 	let WikiplusPages;
 	if (typeof _WikiplusPages === 'object' && isGlobal('_WikiplusPages')) {
 		WikiplusPages = _WikiplusPages;
@@ -54,7 +63,7 @@ const getModeFromValue = async (value: string): Promise<[string, (CodeMirrorOpti
 				.filter(({sectionCache}) => Object.values(sectionCache).includes(value)),
 			l = pages.length;
 		if (l) {
-			const params = pages.map(({title}) => getModeFromTitle(title)),
+			const params = pages.map(({title}) => getModeFromTitle(title, pageName, nsid, contentmodel, id)),
 				[mode, ns] = params[0]!;
 			if (l === 1) {
 				return [mode, {ns, page: pages[0]!.title}];

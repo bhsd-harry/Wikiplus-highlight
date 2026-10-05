@@ -1,0 +1,12 @@
+{
+	"extends": "../tsconfig.json",
+	"include": [
+		"src/*.ts"
+	],
+	"compilerOptions": {
+		"target": "es2024",
+		"declaration": false,
+		"rootDir": "src",
+		"outDir": "dist"
+	}
+}

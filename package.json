@@ -1,6 +1,6 @@
 {
 	"name": "wikiplus-highlight",
-	"version": "3.5.0",
+	"version": "3.6.0",
 	"description": "A plugin for the MediaWiki front-end add-on \"Wikiplus\"",
 	"keywords": [
 		"mediawiki",
@@ -24,17 +24,19 @@
 	"scripts": {
 		"ls": "npm i --package-lock-only && npm ls --package-lock-only --all --omit=dev",
 		"prepublishOnly": "npm run build",
-		"lint:ts": "tsc && eslint --cache .",
+		"lint:ts": "tsc --noEmit && eslint --cache .",
 		"lint:css": "stylelint --cache *.css",
 		"lint:md": "markdownlint-cli2 '**/*.md'",
 		"lint": "npm run lint:ts && npm run lint:css && npm run lint:md",
+		"test": "tsc -p test/tsconfig.json && testUtil --require=./test/dist/require.js test/dist/*.test.js",
 		"bundle": "node bundle.cjs",
-		"build": "npm run bundle && eslint --no-config-lookup -c eslint.dist.mjs dist/*.js"
+		"build": "tsc && npm run bundle && eslint --no-config-lookup -c eslint.dist.mjs dist/*.min.js"
 	},
 	"devDependencies": {
 		"@bhsd/browser": "^2.1.1",
 		"@bhsd/code-standard": "^4.3.0",
-		"@bhsd/codemirror-mediawiki": "^4.6.1",
+		"@bhsd/codemirror-mediawiki": "^4.7.1",
+		"@bhsd/test-util": "^3.2.1",
 		"@types/jquery": "^3.5.34",
 		"@types/oojs-ui": "^0.50.0",
 		"esbuild": "^0.28.2",
@@ -43,6 +45,7 @@
 		"monaco-editor": "^0.57.0",
 		"stylelint": "^17.16.0",
 		"types-mediawiki": "^2.1.0",
-		"typescript": "^6.0.3"
+		"typescript": "^6.0.3",
+		"wikiparser-node": "^1.48.0"
 	}
 }
