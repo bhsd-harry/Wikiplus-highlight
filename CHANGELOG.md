@@ -1,4 +1,12 @@
 <!-- markdownlint-disable first-line-h1 line-length -->
+## 3.6.0
+
+*2026-10-05*
+
+**Fixed**
+
+- Improve the detection of language modes for CodeMirror syntax highlighting
+
 ## 3.5.0
 
 *2026-06-21*

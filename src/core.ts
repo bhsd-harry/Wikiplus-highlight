@@ -1,15 +1,14 @@
 import {getObject, isGlobal} from '@bhsd/browser';
+import type {CodeMirrorOptions} from '@bhsd/codemirror-mediawiki/mwConfig';
 
 const {
 	wgPageName: pageName,
-	wgNamespaceNumber: ns,
+	wgNamespaceNumber: nsid,
 	wgPageContentModel: contentmodel,
+	wgArticleId: id,
 } = mw.config.get();
 
-const CONTENTMODELS: Record<string, string> = {
-		wikitext: 'mediawiki',
-	},
-	EXTS = new Map<string, string>([
+const EXTS = new Map<string, string>([
 		['css', 'css'],
 		['js', 'javascript'],
 		['json', 'json'],
@@ -19,11 +18,30 @@ const CONTENTMODELS: Record<string, string> = {
 		274: 'html',
 	};
 
+const isDoc = (title: string): boolean => title.endsWith('/doc');
+
 /**
- * 检查页面语言类型
+ * 根据页面标题获取语言模型
+ * @param title 页面标题
+ */
+const getModeFromTitle = (title: string): [string, number] => {
+	if (id && pageName === title) {
+		return [contentmodel.toLowerCase(), nsid];
+	}
+	const t = new mw.Title(title),
+		ns = t.getNamespaceId();
+	if (ns % 2 || isDoc(title)) {
+		return ['wikitext', ns];
+	}
+	const mode = EXTS.get(t.getExtension()?.toLowerCase() ?? '') ?? NAMESPACES[ns] ?? 'wikitext';
+	return [mode === 'css' && ![2, 8, 2300].includes(ns) ? 'sanitized-css' : mode, ns];
+};
+
+/**
+ * 根据页面内容获取语言模型
  * @param value 页面内容
  */
-const getPageMode = async (value: string): Promise<[string, (CodeMirrorOptions | undefined)?]> => {
+const getModeFromValue = async (value: string): Promise<[string, (CodeMirrorOptions | undefined)?]> => {
 	let WikiplusPages;
 	if (typeof _WikiplusPages === 'object' && isGlobal('_WikiplusPages')) {
 		WikiplusPages = _WikiplusPages;
@@ -31,60 +49,29 @@ const getPageMode = async (value: string): Promise<[string, (CodeMirrorOptions |
 		WikiplusPages = Pages;
 	}
 	if (WikiplusPages) {
+		await mw.loader.using('mediawiki.Title');
 		const pages = Object.values(WikiplusPages)
-			.filter(({sectionCache}) => Object.values(sectionCache).includes(value));
-		if (pages.some(({title}) => !title.endsWith('/doc'))) {
-			await mw.loader.using('mediawiki.Title');
-		}
-		const modes = new Set(pages.map(({title}) => {
-			if (title.endsWith('/doc')) {
-				return 'template';
-			}
-			const t = new mw.Title(title),
-				namespace = t.getNamespaceId();
-			if (namespace % 2) {
-				return 'mediawiki';
-			}
-			const mode = EXTS.get(t.getExtension()?.toLowerCase() ?? '') ?? NAMESPACES[namespace],
-				isGadget = namespace === 8 || namespace === 2300;
-			switch (mode) {
-				case 'javascript':
-					return isGadget ? 'gadget' : mode;
-				case 'css':
-					return isGadget || namespace === 2 ? mode : 'sanitized-css';
-				case undefined:
-					return namespace === 10 || namespace === 2 ? 'template' : 'mediawiki';
-				default:
-					return mode;
-			}
-		}));
-		if (modes.size === 1) {
-			const [mode] = modes;
-			if (mode === 'gadget') {
-				return ['javascript', {ns: 8}];
-			}
-			const page = pages.length === 1 ? pages[0]!.title : undefined;
-			return mode === 'template' ? ['mediawiki', {ns: 10, page}] : [mode!, {page}];
-		} else if (modes.size === 2) {
-			if (modes.has('javascript') && modes.has('gadget')) {
-				return ['javascript'];
-			} else if (modes.has('mediawiki') && modes.has('template')) {
-				return ['mediawiki'];
+				.filter(({sectionCache}) => Object.values(sectionCache).includes(value)),
+			l = pages.length;
+		if (l) {
+			const params = pages.map(({title}) => getModeFromTitle(title)),
+				[mode, ns] = params[0]!;
+			if (l === 1) {
+				return [mode, {ns, page: pages[0]!.title}];
+			} else if (new Set(params.map(([x]) => x)).size === 1) {
+				return [mode, new Set(params.map(([, y]) => y)).size === 1 ? {ns} : undefined];
 			}
 		}
 	}
-	if (ns !== 274 && contentmodel !== 'Scribunto' || pageName.endsWith('/doc')) {
-		return [CONTENTMODELS[contentmodel] ?? contentmodel, contentmodel === 'javascript' ? {ns} : undefined];
+	if (nsid !== 274 && contentmodel !== 'Scribunto' || isDoc(pageName)) {
+		return [contentmodel.toLowerCase(), contentmodel === 'wikitext' ? undefined : {ns: nsid}];
 	}
 	await mw.loader.using('oojs-ui-windows');
-	if (
-		await OO.ui.confirm(mw.msg('cm-mw-contentmodel'), {
-			actions: [{label: ns === 274 ? 'Widget' : 'Lua'}, {label: 'Wikitext', action: 'accept'}],
-		})
-	) {
-		return ['mediawiki'];
-	}
-	return [ns === 274 ? 'html' : 'lua'];
+	return await OO.ui.confirm(mw.msg('cm-mw-contentmodel'), {
+		actions: [{label: nsid === 274 ? 'Widget' : 'Lua'}, {label: 'Wikitext', action: 'accept'}],
+	})
+		? ['wikitext']
+		: [nsid === 274 ? 'html' : 'lua'];
 };
 
 const submit = /** 提交编辑 */ (): true => {
@@ -115,7 +102,7 @@ const submit = /** 提交编辑 */ (): true => {
 export const renderEditor = async (target: HTMLTextAreaElement, setting: boolean): Promise<void> => {
 	const cm = await CodeMirror6.fromTextArea(
 		target,
-		...setting ? ['json'] satisfies [string] : await getPageMode(target.value),
+		...setting ? ['json'] satisfies [string] : await getModeFromValue(target.value),
 	);
 	(cm.view?.dom ?? cm.editor!.getDomNode()!).id = 'Wikiplus-CodeMirror';
 
