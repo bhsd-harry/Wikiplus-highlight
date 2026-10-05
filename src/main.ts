@@ -45,11 +45,8 @@ declare const $VERSION: string,
 				void renderEditor(added, added.id === 'Wikiplus-Setting-Input');
 			}
 			const [removed] = $(records.flatMap(({removedNodes}) => [...removedNodes]))
-					.find<HTMLTextAreaElement>(selector),
-				cm = CodeMirror6.instances?.get(removed!);
-			if (typeof cm?.destroy === 'function') {
-				cm.destroy();
-			}
+				.find<HTMLTextAreaElement>(selector);
+			CodeMirror6.instances.get(removed!)?.destroy();
 		});
 		observer.observe(document.body, {childList: true});
 
