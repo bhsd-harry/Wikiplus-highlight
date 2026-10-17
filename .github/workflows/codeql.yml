@@ -13,6 +13,8 @@ name: CodeQL
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'src/*.ts'
   pull_request:

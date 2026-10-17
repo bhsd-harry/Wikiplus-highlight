@@ -22,7 +22,6 @@
 		"url": "git+https://github.com/bhsd-harry/Wikiplus-highlight.git"
 	},
 	"scripts": {
-		"ls": "npm i --package-lock-only && npm ls --package-lock-only --all --omit=dev",
 		"prepublishOnly": "npm run build",
 		"lint:ts": "tsc --noEmit && eslint --cache .",
 		"lint:css": "stylelint --cache *.css",
@@ -35,16 +34,16 @@
 	"devDependencies": {
 		"@bhsd/browser": "^2.1.1",
 		"@bhsd/code-standard": "^5.0.0",
-		"@bhsd/codemirror-mediawiki": "^4.7.1",
-		"@bhsd/test-util": "^3.2.1",
+		"@bhsd/codemirror-mediawiki": "^4.8.0",
+		"@bhsd/test-util": "^3.3.0",
 		"@types/jquery": "^3.5.34",
 		"@types/oojs-ui": "^0.50.0",
 		"esbuild": "^0.28.2",
-		"eslint": "^10.12.0",
+		"eslint": "^10.13.0",
 		"monaco-editor": "^0.57.0",
 		"stylelint": "^17.16.0",
 		"types-mediawiki": "^2.1.0",
 		"typescript": "^6.0.3",
-		"wikiparser-node": "^1.48.0"
+		"wikiparser-node": "^1.48.1"
 	}
 }
