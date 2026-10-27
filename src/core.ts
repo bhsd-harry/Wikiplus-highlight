@@ -117,14 +117,14 @@ export const renderEditor = async (target: HTMLTextAreaElement, setting: boolean
 
 	if (!setting) { // 普通Wikiplus编辑区
 		if (cm.editor) {
-			/* eslint-disable no-bitwise */
+			/* oxlint-disable no-bitwise */
 			cm.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
 				submit();
 			});
 			cm.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyS, () => {
 				submitMinor();
 			});
-			/* eslint-enable no-bitwise */
+			/* oxlint-enable no-bitwise */
 			cm.editor.addCommand(monaco.KeyCode.Escape, () => {
 				escapeEdit();
 			});

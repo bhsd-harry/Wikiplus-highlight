@@ -12,5 +12,3 @@ declare global {
 	const _WikiplusPages: WikiplusPages | undefined;
 	const Pages: WikiplusPages | undefined;
 }
-
-export {};

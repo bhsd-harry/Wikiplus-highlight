@@ -7,6 +7,7 @@ import {CDN, compareVersion} from '@bhsd/browser';
 import {renderEditor} from './core';
 
 declare namespace mediaWiki.libs {
+	// oxlint-disable-next-line no-unused-vars
 	let wphl: {version?: string, cmVersion?: string, monacoVersion?: string, CDN?: string} | undefined;
 }
 
