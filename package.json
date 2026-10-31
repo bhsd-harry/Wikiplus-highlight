@@ -29,7 +29,7 @@
 		"lint": "npm run lint:ts && npm run lint:css && npm run lint:md",
 		"migrate": "oxlint-migrate eslint.config.mjs",
 		"test": "tsc -p test/tsconfig.json && testUtil --require=./test/dist/require.js test/dist/*.test.js",
-		"bundle": "node bundle.cjs",
+		"bundle": "node build.cjs",
 		"build": "tsc && npm run bundle && eslint --no-config-lookup -c eslint.dist.mjs dist/*.min.js"
 	},
 	"devDependencies": {
@@ -41,7 +41,7 @@
 		"@types/jquery": "^3.5.34",
 		"@types/oojs-ui": "^0.50.0",
 		"esbuild": "^0.28.2",
-		"eslint": "^10.13.0",
+		"eslint": "^10.14.0",
 		"monaco-editor": "^0.57.0",
 		"oxlint": "^1.89.0",
 		"stylelint": "^17.16.0",

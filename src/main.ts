@@ -5,14 +5,14 @@
  */
 import {CDN, compareVersion} from '@bhsd/browser';
 import {renderEditor} from './core';
+import STYLE from '../styles.css';
 
 declare namespace mediaWiki.libs {
 	// oxlint-disable-next-line no-unused-vars
 	let wphl: {version?: string, cmVersion?: string, monacoVersion?: string, CDN?: string} | undefined;
 }
 
-declare const $VERSION: string,
-	$STYLE: string;
+declare const $VERSION: string;
 
 (async () => {
 	if (!mw.config.get('wgIsArticle') || mw.config.get('wgAction') !== 'view') {
@@ -51,6 +51,6 @@ declare const $VERSION: string,
 		});
 		observer.observe(document.body, {childList: true});
 
-		mw.loader.addStyleTag($STYLE);
+		mw.loader.addStyleTag(STYLE);
 	}
 })();
